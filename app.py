@@ -151,7 +151,7 @@ def capture_html_screenshot_playwright(html_content):
 def save_html(headline, image_url, cta_text, output_file="advertisement.html"):
     html_template = f"""
 
-    
+
    <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -168,7 +168,7 @@ def save_html(headline, image_url, cta_text, output_file="advertisement.html"):
             justify-content: center;
             align-items: center;
             height: 100vh;
-            
+
         }}
         .ad-container {{
             width: 1000px;
@@ -263,18 +263,19 @@ write what is seen like a camera! show a SENSATIONAL AND DRAMATIC SCENE VERY SIM
                 if image_url:
                     topic_images.append({
                         'url': image_url,
-                        
+
                         'selected': False  # Add selection state
                     })
-
-        st.session_state.generated_images[topic] = topic_images
-        st.session_state.generated_images[lang] = lang
+            st.session_state.generated_images.append({"topic": topic, "lang": lang, "images": topic_images})
 
 # Display generated images in a grid
 if st.session_state.generated_images:
     st.subheader("Select Images to Process")
-    print(st.session_state.generated_images.items())
-    for topic, images,lang in st.session_state.generated_images.items():
+    for entry in st.session_state.generated_images:
+        topic = entry["topic"]
+        lang = entry["lang"]
+        images = entry["images"]
+
         st.write(f"### {topic}")
         cols = st.columns(len(images))
 
@@ -287,19 +288,23 @@ if st.session_state.generated_images:
     if st.button("Process Selected Images"):
         final_results = []
 
-        for topic, images,lang in st.session_state.generated_images.items():
-            res = {
-                'Topic': topic,
-            }
+        for entry in st.session_state.generated_images:
+            topic = entry["topic"]
+            lang = entry["lang"]
+            images = entry["images"]
+
+            res = {'Topic': topic, 'Language': lang}
             selected_images = [img for img in images if img['selected']]
 
-            for idx, img in enumerate(selected_images):                # Generate HTML with the selected image
+            for idx, img in enumerate(selected_images):  # Generate HTML with the selected image
                 html_content = save_html(
-                    headline=chatGPT(f"write a short text (up to 20 words) for a creative to promote an article containing information about {topic} in language{lang} , your goal is to be concise but convenience users to enter the article").replace('"',''),
-                    
+                    headline=chatGPT(
+                        f"write a short text (up to 20 words) for a creative to promote an article containing information about {topic} in language{lang} , your goal is to be concise but convenience users to enter the article").replace(
+                        '"', ''),
+
                     image_url=img['url'],
-                    cta_text=chatGPT(f"return EXACTLY the cta 'Learn More' in the following language {lang}")).replace('"','')
-                
+                    cta_text=chatGPT(f"return EXACTLY the cta 'Learn More' in the following language {lang}")).replace(
+                    '"', '')
 
                 # Capture screenshot
                 screenshot_image = capture_html_screenshot_playwright(html_content)
@@ -320,7 +325,6 @@ if st.session_state.generated_images:
                         res[f'Image_{idx + 1}'] = s3_url
 
             final_results.append(res)
-
 
         # Display Final Results
         if final_results:
