@@ -15,6 +15,8 @@ from tempfile import NamedTemporaryFile
 # --------------------------------------------
 # Setup and Installation
 # --------------------------------------------
+st.set_page_config(layout="wide")
+
 def install_playwright_browsers():
     try:
         os.system('playwright install-deps')
