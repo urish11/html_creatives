@@ -247,7 +247,7 @@ if st.button("Generate Images"):
     for _, row in df.iterrows():
         topic = row['topic']
         count = int(row['count'])
-        lang - row['lang']
+        lang = row['lang']
 
         st.subheader(f"Generating images for: {topic}")
         topic_images = []
