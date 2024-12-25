@@ -67,26 +67,35 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0):
 
 
 def gen_flux_img(prompt):
-    url = "https://api.together.xyz/v1/images/generations"
-    payload = {
-        "prompt": f"{prompt}",
-        "model": "black-forest-labs/FLUX.1-schnell-Free",
-        "steps": 4,
-        "n": 1,
-        "height": 960,
-        "width": 960
-    }
-    headers = {
-        "accept": "application/json",
-        "content-type": "application/json",
-        "authorization": f"Bearer {FLUX_API_KEY}"
-    }
-    response = requests.post(url, json=payload, headers=headers)
-    if response.status_code == 200:
-        return response.json()["data"][0]["url"]
-    else:
-        st.error("Error generating image.")
-        return None
+    print('start' + prompt)
+    while True:
+        try:
+            url = "https://api.together.xyz/v1/images/generations"
+
+
+            payload = {
+                "prompt": f"{prompt}" ,
+                "model": "black-forest-labs/FLUX.1-schnell-Free",
+                "steps": 4,
+                "n": 1,
+                "height": 480*2,
+                "width": 480*2,
+                # "seed": 0
+            }
+            headers = {
+                "accept": "application/json",
+                "content-type": "application/json",
+                "authorization": f"Bearer {FLUX_API_KEY}"
+            }
+
+            response = requests.post(url, json=payload, headers=headers)
+            print(response.json())
+            return response.json()["data"][0]["url"]
+        except Exception as e:
+            if "NSFW" in str(e):
+                return " "
+            print(e)
+            time.sleep(2)
 
 
 def test_background_remover(image_url, output_path="output_image.png"):
