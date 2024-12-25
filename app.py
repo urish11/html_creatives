@@ -295,7 +295,7 @@ if st.session_state.generated_images:
                     headline=chatGPT(f"write a short text (up to 20 words) for a creative to promote an article containing information about {topic} in language , your goal is to be concise but convenience users to enter the article").replace('"',''),
                     
                     image_url=img['url'],
-                    cta_text=chatGPT(f"return the cta 'Learn More' in the following language (english)"))
+                    cta_text=chatGPT(f"return the cta 'Learn More' in the following language (english)")).replace('"','')
                 
 
                 # Capture screenshot
