@@ -273,7 +273,7 @@ write what is seen like a camera! show a SENSATIONAL AND DRAMATIC SCENE VERY SIM
 # Display generated images in a grid
 if st.session_state.generated_images:
     st.subheader("Select Images to Process")
-
+    print(st.session_state.generated_images.items())
     for topic, images,lang in st.session_state.generated_images.items():
         st.write(f"### {topic}")
         cols = st.columns(len(images))
