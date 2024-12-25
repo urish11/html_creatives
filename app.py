@@ -12,8 +12,26 @@ import time
 from playwright.sync_api import sync_playwright
 import base64
 from tempfile import NamedTemporaryFile
-
+import subprocess
+import os
 import logging
+
+
+def install_playwright_browsers():
+    try:
+        os.system('playwright install-deps')
+        os.system('playwright install chromium')
+        return True
+    except Exception as e:
+        st.error(f"Failed to install Playwright browsers: {str(e)}")
+        return False
+
+# Run installation at startup
+if 'playwright_installed' not in st.session_state:
+    st.session_state.playwright_installed = install_playwright_browsers()
+
+
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -37,29 +55,41 @@ FLUX_API_KEY = st.secrets["FLUX_API_KEY"]
 # --------------------------------------------
 
 def capture_html_screenshot_playwright(html_content):
-    with sync_playwright() as p:
-        browser = p.chromium.launch()
-        page = browser.new_page(viewport={'width': 1000, 'height': 1000})
+    if not st.session_state.playwright_installed:
+        st.error("Playwright browsers not installed properly")
+        return None
+        
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(
+                headless=True,
+                args=['--no-sandbox', '--disable-dev-shm-usage']
+            )
+            page = browser.new_page(viewport={'width': 1000, 'height': 1000})
+            
+            # Create a temporary HTML file
+            with NamedTemporaryFile(delete=False, suffix='.html', mode='w') as f:
+                f.write(html_content)
+                temp_html_path = f.name
+            
+            # Navigate to the HTML file
+            page.goto(f'file://{temp_html_path}')
+            
+            # Wait for any animations/loading
+            page.wait_for_timeout(1000)
+            
+            # Capture screenshot
+            screenshot_bytes = page.screenshot()
+            
+            # Clean up
+            browser.close()
+            os.unlink(temp_html_path)
+            
+            return Image.open(BytesIO(screenshot_bytes))
+    except Exception as e:
+        st.error(f"Screenshot capture error: {str(e)}")
+        return None
 
-        # Create a temporary HTML file
-        with NamedTemporaryFile(delete=False, suffix='.html', mode='w') as f:
-            f.write(html_content)
-            temp_html_path = f.name
-
-        # Navigate to the HTML file
-        page.goto(f'file://{temp_html_path}')
-
-        # Wait for any animations/loading
-        page.wait_for_timeout(1000)
-
-        # Capture screenshot
-        screenshot_bytes = page.screenshot()
-
-        # Clean up
-        browser.close()
-        os.unlink(temp_html_path)
-
-        return Image.open(BytesIO(screenshot_bytes))
 
 
 def upload_pil_image_to_s3(image, bucket_name, aws_access_key_id, aws_secret_access_key, object_name='',
