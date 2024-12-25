@@ -17,6 +17,7 @@ from tempfile import NamedTemporaryFile
 # --------------------------------------------
 st.set_page_config(layout="wide")
 
+
 def install_playwright_browsers():
     try:
         os.system('playwright install-deps')
@@ -25,6 +26,7 @@ def install_playwright_browsers():
     except Exception as e:
         st.error(f"Failed to install Playwright browsers: {str(e)}")
         return False
+
 
 if 'playwright_installed' not in st.session_state:
     st.session_state.playwright_installed = install_playwright_browsers()
@@ -39,10 +41,12 @@ AWS_REGION = st.secrets.get("AWS_REGION", "us-east-1")
 GPT_API_KEY = st.secrets["GPT_API_KEY"]
 FLUX_API_KEY = st.secrets["FLUX_API_KEY"]
 
+
 # --------------------------------------------
 # Utility Functions
 # --------------------------------------------
-def upload_pil_image_to_s3(image, bucket_name, aws_access_key_id, aws_secret_access_key, object_name='', region_name='us-east-1', image_format='PNG'):
+def upload_pil_image_to_s3(image, bucket_name, aws_access_key_id, aws_secret_access_key, object_name='',
+                           region_name='us-east-1', image_format='PNG'):
     try:
         s3_client = boto3.client(
             's3',
@@ -64,13 +68,14 @@ def upload_pil_image_to_s3(image, bucket_name, aws_access_key_id, aws_secret_acc
             Body=img_byte_arr,
             ContentType=f'image/{image_format.lower()}'
         )
-        
+
         url = f"https://{bucket_name}.s3.{region_name}.amazonaws.com/{object_name}"
         return url
 
     except Exception as e:
         st.error(f"Error in S3 upload: {str(e)}")
         return None
+
 
 def chatGPT(prompt, model="gpt-4o", temperature=1.0):
     st.write("Generating image description...")
@@ -86,6 +91,7 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0):
     content = response.json()['choices'][0]['message']['content'].strip()
     return content
 
+
 def gen_flux_img(prompt):
     while True:
         try:
@@ -95,8 +101,8 @@ def gen_flux_img(prompt):
                 "model": "black-forest-labs/FLUX.1-schnell-Free",
                 "steps": 4,
                 "n": 1,
-                "height": 480*2,
-                "width": 480*2,
+                "height": 480 * 2,
+                "width": 480 * 2,
             }
             headers = {
                 "accept": "application/json",
@@ -111,11 +117,12 @@ def gen_flux_img(prompt):
                 return None
             time.sleep(2)
 
+
 def capture_html_screenshot_playwright(html_content):
     if not st.session_state.playwright_installed:
         st.error("Playwright browsers not installed properly")
         return None
-        
+
     try:
         with sync_playwright() as p:
             browser = p.chromium.launch(
@@ -123,22 +130,23 @@ def capture_html_screenshot_playwright(html_content):
                 args=['--no-sandbox', '--disable-dev-shm-usage']
             )
             page = browser.new_page(viewport={'width': 1000, 'height': 1000})
-            
+
             with NamedTemporaryFile(delete=False, suffix='.html', mode='w') as f:
                 f.write(html_content)
                 temp_html_path = f.name
-            
+
             page.goto(f'file://{temp_html_path}')
             page.wait_for_timeout(1000)
             screenshot_bytes = page.screenshot()
-            
+
             browser.close()
             os.unlink(temp_html_path)
-            
+
             return Image.open(BytesIO(screenshot_bytes))
     except Exception as e:
         st.error(f"Screenshot capture error: {str(e)}")
         return None
+
 
 def save_html(headline, main_text, image_url, cta_text, output_file="advertisement.html"):
     html_template = f"""
@@ -210,6 +218,7 @@ def save_html(headline, main_text, image_url, cta_text, output_file="advertiseme
     """
     return html_template
 
+
 # --------------------------------------------
 # Streamlit UI
 # --------------------------------------------
@@ -230,63 +239,67 @@ df = st.data_editor(
 # Step 1: Generate Images
 if st.button("Generate Images"):
     st.session_state.generated_images = {}
-    
+
     for _, row in df.iterrows():
         topic = row['topic']
         count = int(row['count'])
-        
+
         st.subheader(f"Generating images for: {topic}")
         topic_images = []
-        
+
         for i in range(count):
             with st.spinner(f"Generating image {i + 1} for '{topic}'..."):
                 image_prompt = chatGPT(f"""Generate a  visual image description  15 words MAX for  {topic}  . Be   creative and intriguing,think of and show the value of the offer like (examples, use whatever is relevant if relevant, or others in the same vibe, must be relevant to the offer): saving money, time, be healthier, more educated etc.. show a SENSATIONAL AND DRAMATIC SCENE  ,  don't include text in the image. make sure the offer is conveyed clearly. output is 5 words MAX, use a person in image, 
-write what is seen like a camera! show a SENSATIONAL AND DRAMATIC SCENE VERY SIMPLISTIC SCENE, SHOW TOPIC EXPLICITLY  """,model = 'gpt-4',temperature= 1.15)
-                image_url = gen_flux_img(f" {random.choice(['cartoony clipart of ','cartoony clipart of ',''])}  {image_prompt}   ")
-                
+write what is seen like a camera! show a SENSATIONAL AND DRAMATIC SCENE VERY SIMPLISTIC SCENE, SHOW TOPIC EXPLICITLY  """,
+                                       model='gpt-4', temperature=1.15)
+                image_url = gen_flux_img(
+                    f" {random.choice(['cartoony clipart of ', 'cartoony clipart of ', ''])}  {image_prompt}   ")
+
                 if image_url:
                     topic_images.append({
                         'url': image_url,
                         'selected': False  # Add selection state
                     })
-        
+
         st.session_state.generated_images[topic] = topic_images
 
 # Display generated images in a grid
 if st.session_state.generated_images:
     st.subheader("Select Images to Process")
-    
+
     for topic, images in st.session_state.generated_images.items():
         st.write(f"### {topic}")
         cols = st.columns(len(images))
-        
+
         for idx, (col, img) in enumerate(zip(cols, images)):
             with col:
-                st.image(img['url'], use_container_width =True)
+                st.image(img['url'], use_container_width=True)
                 images[idx]['selected'] = st.checkbox(f"Select {topic} image {idx + 1}", key=f"{topic}_{idx}")
 
     # Step 2: Process Selected Images
     if st.button("Process Selected Images"):
         final_results = []
-        
+
         for topic, images in st.session_state.generated_images.items():
+            res = {
+                'Topic': topic,
+            }
             selected_images = [img for img in images if img['selected']]
-            
-            for img in selected_images:
-                # Generate HTML with the selected image
+
+            for idx, img in enumerate(selected_images):                # Generate HTML with the selected image
                 html_content = save_html(
                     headline="Transform Your Experience",
                     main_text="Your Main Text",
                     image_url=img['url'],
                     cta_text="Learn More"
                 )
-                
+
                 # Capture screenshot
                 screenshot_image = capture_html_screenshot_playwright(html_content)
-                
+
                 if screenshot_image:
                     st.image(screenshot_image, caption=f"Generated Advertisement for {topic}")
-                    
+
                     # Upload to S3
                     s3_url = upload_pil_image_to_s3(
                         image=screenshot_image,
@@ -295,19 +308,19 @@ if st.session_state.generated_images:
                         aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
                         region_name=AWS_REGION
                     )
-                    
+
                     if s3_url:
-                        final_results.append({
-                            'Topic': topic,
-                            'Image URL': s3_url
-                        })
-        
+                        res[f'Image_{idx + 1}'] = s3_url
+
+            final_results.append(res)
+
+
         # Display Final Results
         if final_results:
             output_df = pd.DataFrame(final_results)
             st.subheader("Final Results")
             st.dataframe(output_df)
-            
+
             # Download CSV
             csv = output_df.to_csv(index=False).encode('utf-8')
             st.download_button(
