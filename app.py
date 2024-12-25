@@ -269,24 +269,37 @@ write what is seen like a camera! show a SENSATIONAL AND DRAMATIC SCENE VERY SIM
             st.session_state.generated_images.append({"topic": topic, "lang": lang, "images": topic_images})
 
 # Display generated images in a grid
+# Display generated images in a grid
 if st.session_state.generated_images:
     st.subheader("Select Images to Process")
+    
+    # Create a dictionary to track unique topic-language combinations
+    seen_combinations = {}
+    
     for topic_idx, entry in enumerate(st.session_state.generated_images):
         topic = entry["topic"]
         lang = entry["lang"]
+        
+        # Create a unique identifier for this topic-language combination
+        combo_key = f"{topic}_{lang}"
+        
+        # Skip if we've already seen this combination
+        if combo_key in seen_combinations:
+            continue
+            
+        seen_combinations[combo_key] = True
         images = entry["images"]
 
-        st.write(f"### {topic}")
+        st.write(f"### {topic} ({lang})")
         cols = st.columns(len(images))
 
         for idx, (col, img) in enumerate(zip(cols, images)):
             with col:
                 st.image(img['url'], use_container_width=True)
-                # Create a unique key using topic_idx and image idx
-                checkbox_key = f"checkbox_{topic_idx}_{idx}_{topic}_{lang}"
+                unique_key = f"checkbox_{topic_idx}_{idx}_{topic}_{lang}"
                 images[idx]['selected'] = st.checkbox(
-                    f"Select {topic} {lang} image {idx + 1}", 
-                    key=checkbox_key
+                    f"Select image {idx + 1}", 
+                    key=unique_key
                 )
 
 
