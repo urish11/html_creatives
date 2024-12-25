@@ -4,3 +4,4 @@ requests
 pillow
 boto3
 botocore
+playwright
