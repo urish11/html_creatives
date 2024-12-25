@@ -10,6 +10,15 @@ import requests
 import os
 import time
 
+
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Then use logger.info() throughout your code
+logger.info("Starting image generation...")
+
 # --------------------------------------------
 # Load Secrets
 # --------------------------------------------
