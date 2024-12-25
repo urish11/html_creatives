@@ -303,7 +303,7 @@ if st.session_state.generated_images:
                         '"', ''),
 
                     image_url=img['url'],
-                    cta_text=chatGPT(f"return EXACTLY the cta 'Learn More' in the following language {lang} even if it is English")).replace(
+                    cta_text=chatGPT(f"return EXACTLY JUST THE TEXT the text 'Learn More' in the following language {lang} even if it is English")).replace(
                     '"', '')
 
                 # Capture screenshot
