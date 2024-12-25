@@ -13,7 +13,6 @@ from playwright.sync_api import sync_playwright
 import base64
 from tempfile import NamedTemporaryFile
 
-
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -41,31 +40,30 @@ def capture_html_screenshot_playwright(html_content):
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page(viewport={'width': 1000, 'height': 1000})
-        
+
         # Create a temporary HTML file
         with NamedTemporaryFile(delete=False, suffix='.html', mode='w') as f:
             f.write(html_content)
             temp_html_path = f.name
-        
+
         # Navigate to the HTML file
         page.goto(f'file://{temp_html_path}')
-        
+
         # Wait for any animations/loading
         page.wait_for_timeout(1000)
-        
+
         # Capture screenshot
         screenshot_bytes = page.screenshot()
-        
+
         # Clean up
         browser.close()
         os.unlink(temp_html_path)
-        
+
         return Image.open(BytesIO(screenshot_bytes))
 
 
-
-
-def upload_pil_image_to_s3(image, bucket_name, aws_access_key_id, aws_secret_access_key, object_name='', region_name='us-east-1', image_format='PNG'):
+def upload_pil_image_to_s3(image, bucket_name, aws_access_key_id, aws_secret_access_key, object_name='',
+                           region_name='us-east-1', image_format='PNG'):
     try:
         # Create S3 client
         s3_client = boto3.client(
@@ -92,7 +90,7 @@ def upload_pil_image_to_s3(image, bucket_name, aws_access_key_id, aws_secret_acc
                 Body=img_byte_arr,
                 ContentType=f'image/{image_format.lower()}'
             )
-            
+
             # Generate the URL
             url = f"https://{bucket_name}.s3.{region_name}.amazonaws.com/{object_name}"
             print(f"Successfully uploaded image to: {url}")
@@ -108,8 +106,6 @@ def upload_pil_image_to_s3(image, bucket_name, aws_access_key_id, aws_secret_acc
     except Exception as e:
         print(f"Error creating S3 client: {str(e)}")
         return None
-
-
 
 
 def chatGPT(prompt, model="gpt-4o", temperature=1.0):
@@ -133,14 +129,13 @@ def gen_flux_img(prompt):
         try:
             url = "https://api.together.xyz/v1/images/generations"
 
-
             payload = {
-                "prompt": f"{prompt}" ,
+                "prompt": f"{prompt}",
                 "model": "black-forest-labs/FLUX.1-schnell-Free",
                 "steps": 4,
                 "n": 1,
-                "height": 480*2,
-                "width": 480*2,
+                "height": 480 * 2,
+                "width": 480 * 2,
                 # "seed": 0
             }
             headers = {
@@ -163,7 +158,7 @@ def test_background_remover(image_url, output_path="output_image.png"):
     response = requests.get(image_url)
     if response.status_code != 200:
         raise ValueError(f"Failed to fetch image from {image_url}")
-    
+
     temp_input_path = "temp_input_image.png"
     with open(temp_input_path, "wb") as f:
         f.write(response.content)
@@ -176,7 +171,7 @@ def test_background_remover(image_url, output_path="output_image.png"):
 
 def save_html(headline, main_text, image_url, cta_text, output_file="advertisement.html"):
     html_template = f"""
-    
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -243,7 +238,7 @@ def save_html(headline, main_text, image_url, cta_text, output_file="advertiseme
 </body>
 </html>
 
-    
+
     """
     with open(output_file, "w") as f:
         f.write(html_template)
@@ -266,79 +261,79 @@ df = st.data_editor(
 )
 
 if st.button("Generate Images and Upload"):
-	try:
+    try:
 
-	    if df.empty:
-	        st.warning("Please fill in the table before proceeding.")
-	    else:
-	        final_results = []
+        if df.empty:
+            st.warning("Please fill in the table before proceeding.")
+        else:
+            final_results = []
 
-	        for _, row in df.iterrows():
-	            topic = row['topic']
-	            count = int(row['count'])
-	            lang = row['lang']
+            for _, row in df.iterrows():
+                topic = row['topic']
+                count = int(row['count'])
+                lang = row['lang']
 
-	            st.subheader(f"Processing: {topic}")
-	            for i in range(count):
-	                st.write(f"Generating image {i + 1} for '{topic}'...")
+                st.subheader(f"Processing: {topic}")
+                for i in range(count):
+                    st.write(f"Generating image {i + 1} for '{topic}'...")
 
-	                # Step 1: Get Image Description
-	                image_prompt = chatGPT(f"Generate a visual description for {topic}")
-	                
-	                # Step 2: Generate Image
-	                image_url = gen_flux_img(image_prompt)
-	                
-	                if image_url:
-                        # Generate HTML with the Flux image
-                        html_content = save_html(
-                            headline="Transform Your Experience",
-                            main_text="Your Main Text",
-                            image_url=image_url,
-                            cta_text="Learn More"
+                    # Step 1: Get Image Description
+                    image_prompt = chatGPT(f"Generate a visual description for {topic}")
+
+                    # Step 2: Generate Image
+                    image_url = gen_flux_img(image_prompt)
+
+                    if image_url:
+                    # Generate HTML with the Flux image
+                    html_content = save_html(
+                        headline="Transform Your Experience",
+                        main_text="Your Main Text",
+                        image_url=image_url,
+                        cta_text="Learn More"
+                    )
+
+                    try:
+                        # Capture screenshot of the HTML
+                        screenshot_image = capture_html_screenshot_playwright(html_content)
+
+                        # Display the screenshot in Streamlit
+                        st.image(screenshot_image, caption="Generated Advertisement")
+
+                        # Upload screenshot to S3
+                        s3_url = upload_pil_image_to_s3(
+                            image=screenshot_image,
+                            bucket_name=S3_BUCKET_NAME,
+                            aws_access_key_id=AWS_ACCESS_KEY_ID,
+                            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+                            region_name=AWS_REGION
                         )
-                        
-                        try:
-                            # Capture screenshot of the HTML
-                            screenshot_image = capture_html_screenshot_playwright(html_content)
-                            
-                            # Display the screenshot in Streamlit
-                            st.image(screenshot_image, caption="Generated Advertisement")
-                            
-                            # Upload screenshot to S3
-                            s3_url = upload_pil_image_to_s3(
-                                image=screenshot_image,
-                                bucket_name=S3_BUCKET_NAME,
-                                aws_access_key_id=AWS_ACCESS_KEY_ID,
-                                aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-                                region_name=AWS_REGION
-                            )
 
-                            if s3_url:
-                                final_results.append({
-                                    'Topic': topic,
-                                    'Count': count,
-                                    'Language': lang,
-                                    'Image URL': s3_url
-                                })
-                        
-                        except Exception as e:
-                            st.error(f"Error capturing screenshot: {str(e)}")
+                        if s3_url:
+                            final_results.append({
+                                'Topic': topic,
+                                'Count': count,
+                                'Language': lang,
+                                'Image URL': s3_url
+                            })
 
-            # Display Final Results
-            if final_results:
-                output_df = pd.DataFrame(final_results)
-                st.subheader("Final Results")
-                st.dataframe(output_df)
+                    except Exception as e:
+                        st.error(f"Error capturing screenshot: {str(e)}")
 
-                # Download CSV
-                csv = output_df.to_csv(index=False).encode('utf-8')
-                st.download_button(
-                    label="Download Results as CSV",
-                    data=csv,
-                    file_name='final_results.csv',
-                    mime='text/csv',
-                )
-    except Exception as e:
-        st.error(f'Error: {str(e)}')
+        # Display Final Results
+        if final_results:
+            output_df = pd.DataFrame(final_results)
+            st.subheader("Final Results")
+            st.dataframe(output_df)
 
-       
+            # Download CSV
+            csv = output_df.to_csv(index=False).encode('utf-8')
+            st.download_button(
+                label="Download Results as CSV",
+                data=csv,
+                file_name='final_results.csv',
+                mime='text/csv',
+            )
+except Exception as e:
+st.error(f'Error: {str(e)}')
+
+
