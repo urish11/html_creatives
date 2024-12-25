@@ -212,7 +212,7 @@ if st.button("Generate Images and Upload"):
 	                
 	                if image_url:
 	                    image = Image.open(requests.get(image_url, stream=True).raw)
-	                    st.image(image, caption=f"Generated Image for '{topic}'")
+	                   # st.image(image, caption=f"Generated Image for '{topic}'")
 
 	                    # Step 3: Upload to S3
 	                    s3_url = upload_pil_image_to_s3(
