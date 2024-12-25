@@ -291,14 +291,14 @@ if st.button("Generate Images and Upload"):
                             image_url=image_url,
                             cta_text="Learn More"
                         )
-    
+
                         try:
                             # Capture screenshot of the HTML
                             screenshot_image = capture_html_screenshot_playwright(html_content)
-    
+
                             # Display the screenshot in Streamlit
                             st.image(screenshot_image, caption="Generated Advertisement")
-    
+
                             # Upload screenshot to S3
                             s3_url = upload_pil_image_to_s3(
                                 image=screenshot_image,
@@ -307,7 +307,7 @@ if st.button("Generate Images and Upload"):
                                 aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
                                 region_name=AWS_REGION
                             )
-    
+
                             if s3_url:
                                 final_results.append({
                                     'Topic': topic,
@@ -315,25 +315,25 @@ if st.button("Generate Images and Upload"):
                                     'Language': lang,
                                     'Image URL': s3_url
                                 })
-    
+
                         except Exception as e:
                             st.error(f"Error capturing screenshot: {str(e)}")
-    
-            # Display Final Results
-            if final_results:
-                output_df = pd.DataFrame(final_results)
-                st.subheader("Final Results")
-                st.dataframe(output_df)
-    
-                # Download CSV
-                csv = output_df.to_csv(index=False).encode('utf-8')
-                st.download_button(
-                    label="Download Results as CSV",
-                    data=csv,
-                    file_name='final_results.csv',
-                    mime='text/csv',
-                )
-except Exception as e:
-st.error(f'Error: {str(e)}')
+
+        # Display Final Results
+        if final_results:
+            output_df = pd.DataFrame(final_results)
+            st.subheader("Final Results")
+            st.dataframe(output_df)
+
+            # Download CSV
+            csv = output_df.to_csv(index=False).encode('utf-8')
+            st.download_button(
+                label="Download Results as CSV",
+                data=csv,
+                file_name='final_results.csv',
+                mime='text/csv',
+            )
+    except Exception as e:
+        st.error(f'Error: {str(e)}')
 
 
