@@ -242,7 +242,7 @@ df = st.data_editor(
 
 # Step 1: Generate Images
 if st.button("Generate Images"):
-    st.session_state.generated_images = {}
+    st.session_state.generated_images = []
 
     for _, row in df.iterrows():
         topic = row['topic']
