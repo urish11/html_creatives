@@ -271,7 +271,7 @@ write what is seen like a camera! show a SENSATIONAL AND DRAMATIC SCENE VERY SIM
 # Display generated images in a grid
 if st.session_state.generated_images:
     st.subheader("Select Images to Process")
-    for entry in st.session_state.generated_images:
+    for topic_idx, entry in enumerate(st.session_state.generated_images):
         topic = entry["topic"]
         lang = entry["lang"]
         images = entry["images"]
@@ -282,11 +282,14 @@ if st.session_state.generated_images:
         for idx, (col, img) in enumerate(zip(cols, images)):
             with col:
                 st.image(img['url'], use_container_width=True)
-                # Use a more explicit key by combining topic, lang, idx
+                # Create a unique key using topic_idx and image idx
+                checkbox_key = f"checkbox_{topic_idx}_{idx}_{topic}_{lang}"
                 images[idx]['selected'] = st.checkbox(
-                    f"Select {topic} {lang} image {idx + 1}",
-                    key=f"{topic}_{lang}_{idx}"
+                    f"Select {topic} {lang} image {idx + 1}", 
+                    key=checkbox_key
                 )
+
+
     # Step 2: Process Selected Images
     if st.button("Process Selected Images"):
         final_results = []
