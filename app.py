@@ -145,19 +145,74 @@ def test_background_remover(image_url, output_path="output_image.png"):
 
 def save_html(headline, main_text, image_url, cta_text, output_file="advertisement.html"):
     html_template = f"""
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Ad</title>
-    </head>
-    <body>
-        <h1>{headline}</h1>
-        <img src="{image_url}" alt="Generated Image" width="500">
-        <p>{main_text}</p>
-        <button>{cta_text}</button>
-    </body>
-    </html>
+    
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ad Template</title>
+    <style>
+        body {{
+            font-family: 'Gisha', sans-serif;
+            font-weight: 450;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: url('{image_url}') no-repeat center center/cover;
+        }}
+        .ad-container {{
+            width: 1000px;
+            height: 1000px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 30px;
+        }}
+        .ad-title {{
+            font-size: 3em;
+            margin-top: 20px;
+            color: #333;
+            background-color:white;
+            padding: 20px 40px;
+            border-radius: 20px;
+        }}
+        .cta-button {{
+            font-weight: 400;
+            display: inline-block;
+            padding: 40px 60px;
+            font-size: 3em;
+            color: white;
+            background-color: #FF5722;
+            border: none;
+            border-radius: 10px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-bottom: 20px;
+        }}
+        .cta-button:hover {{
+            background-color: #E64A19;
+        }}
+    </style>
+</head>
+<body>
+    <div class="ad-container">
+        <div class="ad-title">Transform Your Experience</div>
+        <a href="#" class="cta-button">learn more</a>
+    </div>
+</body>
+</html>
+
+    
     """
     with open(output_file, "w") as f:
         f.write(html_template)
