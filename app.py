@@ -9,6 +9,9 @@ import string
 import requests
 import os
 import time
+from playwright.sync_api import sync_playwright
+import base64
+from tempfile import NamedTemporaryFile
 
 
 import logging
@@ -33,6 +36,34 @@ FLUX_API_KEY = st.secrets["FLUX_API_KEY"]
 # --------------------------------------------
 # Utility Functions
 # --------------------------------------------
+
+def capture_html_screenshot_playwright(html_content):
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(viewport={'width': 1000, 'height': 1000})
+        
+        # Create a temporary HTML file
+        with NamedTemporaryFile(delete=False, suffix='.html', mode='w') as f:
+            f.write(html_content)
+            temp_html_path = f.name
+        
+        # Navigate to the HTML file
+        page.goto(f'file://{temp_html_path}')
+        
+        # Wait for any animations/loading
+        page.wait_for_timeout(1000)
+        
+        # Capture screenshot
+        screenshot_bytes = page.screenshot()
+        
+        # Clean up
+        browser.close()
+        os.unlink(temp_html_path)
+        
+        return Image.open(BytesIO(screenshot_bytes))
+
+
+
 
 def upload_pil_image_to_s3(image, bucket_name, aws_access_key_id, aws_secret_access_key, object_name='', region_name='us-east-1', image_format='PNG'):
     try:
@@ -258,39 +289,56 @@ if st.button("Generate Images and Upload"):
 	                image_url = gen_flux_img(image_prompt)
 	                
 	                if image_url:
-	                    image = Image.open(requests.get(image_url, stream=True).raw)
-	                   # st.image(image, caption=f"Generated Image for '{topic}'")
+                        # Generate HTML with the Flux image
+                        html_content = save_html(
+                            headline="Transform Your Experience",
+                            main_text="Your Main Text",
+                            image_url=image_url,
+                            cta_text="Learn More"
+                        )
+                        
+                        try:
+                            # Capture screenshot of the HTML
+                            screenshot_image = capture_html_screenshot_playwright(html_content)
+                            
+                            # Display the screenshot in Streamlit
+                            st.image(screenshot_image, caption="Generated Advertisement")
+                            
+                            # Upload screenshot to S3
+                            s3_url = upload_pil_image_to_s3(
+                                image=screenshot_image,
+                                bucket_name=S3_BUCKET_NAME,
+                                aws_access_key_id=AWS_ACCESS_KEY_ID,
+                                aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+                                region_name=AWS_REGION
+                            )
 
-	                    # Step 3: Upload to S3
-	                    s3_url = upload_pil_image_to_s3(
-	                        image=image,
-	                        bucket_name=S3_BUCKET_NAME,
-	                        aws_access_key_id=AWS_ACCESS_KEY_ID,
-	                        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-	                        region_name=AWS_REGION
-	                    )
+                            if s3_url:
+                                final_results.append({
+                                    'Topic': topic,
+                                    'Count': count,
+                                    'Language': lang,
+                                    'Image URL': s3_url
+                                })
+                        
+                        except Exception as e:
+                            st.error(f"Error capturing screenshot: {str(e)}")
 
-	                    if s3_url:
-	                        final_results.append({
-	                            'Topic': topic,
-	                            'Count': count,
-	                            'Language': lang,
-	                            'Image URL': s3_url
-	                        })
+            # Display Final Results
+            if final_results:
+                output_df = pd.DataFrame(final_results)
+                st.subheader("Final Results")
+                st.dataframe(output_df)
 
-	        # Display Final Results
-	        if final_results:
-	            output_df = pd.DataFrame(final_results)
-	            st.subheader("Final Results")
-	            st.dataframe(output_df)
+                # Download CSV
+                csv = output_df.to_csv(index=False).encode('utf-8')
+                st.download_button(
+                    label="Download Results as CSV",
+                    data=csv,
+                    file_name='final_results.csv',
+                    mime='text/csv',
+                )
+    except Exception as e:
+        st.error(f'Error: {str(e)}')
 
-	            # Download CSV
-	            csv = output_df.to_csv(index=False).encode('utf-8')
-	            st.download_button(
-	                label="Download Results as CSV",
-	                data=csv,
-	                file_name='final_results.csv',
-	                mime='text/csv',
-	            )
-	except Exception as e:
-		print(f'error try {e}')            
+       
