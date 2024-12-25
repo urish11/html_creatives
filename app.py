@@ -235,7 +235,7 @@ if 'generated_images' not in st.session_state:
 # Table Input for Topics
 st.subheader("Enter Topics for Image Generation")
 df = st.data_editor(
-    pd.DataFrame({"topic": ["example_topic"], "count": [1], "lang": ["en"]}),
+    pd.DataFrame({"topic": ["example_topic"], "count": [1], "lang": ["english"]}),
     num_rows="dynamic",
     key="table_input"
 )
@@ -247,6 +247,7 @@ if st.button("Generate Images"):
     for _, row in df.iterrows():
         topic = row['topic']
         count = int(row['count'])
+        lang - row['lang']
 
         st.subheader(f"Generating images for: {topic}")
         topic_images = []
@@ -262,16 +263,18 @@ write what is seen like a camera! show a SENSATIONAL AND DRAMATIC SCENE VERY SIM
                 if image_url:
                     topic_images.append({
                         'url': image_url,
+                        
                         'selected': False  # Add selection state
                     })
 
         st.session_state.generated_images[topic] = topic_images
+        st.session_state.generated_images[lang] = lang
 
 # Display generated images in a grid
 if st.session_state.generated_images:
     st.subheader("Select Images to Process")
 
-    for topic, images in st.session_state.generated_images.items():
+    for topic, images,lang in st.session_state.generated_images.items():
         st.write(f"### {topic}")
         cols = st.columns(len(images))
 
@@ -284,7 +287,7 @@ if st.session_state.generated_images:
     if st.button("Process Selected Images"):
         final_results = []
 
-        for topic, images in st.session_state.generated_images.items():
+        for topic, images,lang in st.session_state.generated_images.items():
             res = {
                 'Topic': topic,
             }
@@ -292,10 +295,10 @@ if st.session_state.generated_images:
 
             for idx, img in enumerate(selected_images):                # Generate HTML with the selected image
                 html_content = save_html(
-                    headline=chatGPT(f"write a short text (up to 20 words) for a creative to promote an article containing information about {topic} in language , your goal is to be concise but convenience users to enter the article").replace('"',''),
+                    headline=chatGPT(f"write a short text (up to 20 words) for a creative to promote an article containing information about {topic} in language{lang} , your goal is to be concise but convenience users to enter the article").replace('"',''),
                     
                     image_url=img['url'],
-                    cta_text=chatGPT(f"return EXACTLY the cta 'Learn More' in the following language (english)")).replace('"','')
+                    cta_text=chatGPT(f"return EXACTLY the cta 'Learn More' in the following language {lang}")).replace('"','')
                 
 
                 # Capture screenshot
