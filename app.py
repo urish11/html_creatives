@@ -181,7 +181,7 @@ def save_html(headline, image_url, cta_text, output_file="advertisement.html"):
             justify-content: space-between;
             align-items: center;
             padding: 30px;
-            background: url('https://i.ibb.co/B3Ft2MD/Solar-Systems-Panels-1.png') no-repeat center center/cover;
+            background: url('{image_url}') no-repeat center center/cover;
             background-size: contain;
             text-align: center;
         }}
@@ -292,10 +292,10 @@ if st.session_state.generated_images:
 
             for idx, img in enumerate(selected_images):                # Generate HTML with the selected image
                 html_content = save_html(
-                    headline=chatGPT(f"write a short text (up to 20 words) for a creative to promote an article containing information about {topic} in language , your goal is to be concise but convenience users to enter the article"),
+                    headline=chatGPT(f"write a short text (up to 20 words) for a creative to promote an article containing information about {topic} in language , your goal is to be concise but convenience users to enter the article").replace('"',''),
                     
                     image_url=img['url'],
-                    cta_text=chatGPT(f"return the cta 'Learn More' in the following language (insert)"))
+                    cta_text=chatGPT(f"return the cta 'Learn More' in the following language (english)"))
                 
 
                 # Capture screenshot
