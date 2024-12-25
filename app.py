@@ -188,58 +188,62 @@ df = st.data_editor(
 )
 
 if st.button("Generate Images and Upload"):
-    if df.empty:
-        st.warning("Please fill in the table before proceeding.")
-    else:
-        final_results = []
+	try:
 
-        for _, row in df.iterrows():
-            topic = row['topic']
-            count = int(row['count'])
-            lang = row['lang']
+	    if df.empty:
+	        st.warning("Please fill in the table before proceeding.")
+	    else:
+	        final_results = []
 
-            st.subheader(f"Processing: {topic}")
-            for i in range(count):
-                st.write(f"Generating image {i + 1} for '{topic}'...")
+	        for _, row in df.iterrows():
+	            topic = row['topic']
+	            count = int(row['count'])
+	            lang = row['lang']
 
-                # Step 1: Get Image Description
-                image_prompt = chatGPT(f"Generate a visual description for {topic}")
-                
-                # Step 2: Generate Image
-                image_url = gen_flux_img(image_prompt)
-                
-                if image_url:
-                    image = Image.open(requests.get(image_url, stream=True).raw)
-                    st.image(image, caption=f"Generated Image for '{topic}'")
+	            st.subheader(f"Processing: {topic}")
+	            for i in range(count):
+	                st.write(f"Generating image {i + 1} for '{topic}'...")
 
-                    # Step 3: Upload to S3
-                    s3_url = upload_pil_image_to_s3(
-                        image=image,
-                        bucket_name=S3_BUCKET_NAME,
-                        aws_access_key_id=AWS_ACCESS_KEY_ID,
-                        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-                        region_name=AWS_REGION
-                    )
+	                # Step 1: Get Image Description
+	                image_prompt = chatGPT(f"Generate a visual description for {topic}")
+	                
+	                # Step 2: Generate Image
+	                image_url = gen_flux_img(image_prompt)
+	                
+	                if image_url:
+	                    image = Image.open(requests.get(image_url, stream=True).raw)
+	                    st.image(image, caption=f"Generated Image for '{topic}'")
 
-                    if s3_url:
-                        final_results.append({
-                            'Topic': topic,
-                            'Count': count,
-                            'Language': lang,
-                            'Image URL': s3_url
-                        })
+	                    # Step 3: Upload to S3
+	                    s3_url = upload_pil_image_to_s3(
+	                        image=image,
+	                        bucket_name=S3_BUCKET_NAME,
+	                        aws_access_key_id=AWS_ACCESS_KEY_ID,
+	                        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+	                        region_name=AWS_REGION
+	                    )
 
-        # Display Final Results
-        if final_results:
-            output_df = pd.DataFrame(final_results)
-            st.subheader("Final Results")
-            st.dataframe(output_df)
+	                    if s3_url:
+	                        final_results.append({
+	                            'Topic': topic,
+	                            'Count': count,
+	                            'Language': lang,
+	                            'Image URL': s3_url
+	                        })
 
-            # Download CSV
-            csv = output_df.to_csv(index=False).encode('utf-8')
-            st.download_button(
-                label="Download Results as CSV",
-                data=csv,
-                file_name='final_results.csv',
-                mime='text/csv',
-            )
+	        # Display Final Results
+	        if final_results:
+	            output_df = pd.DataFrame(final_results)
+	            st.subheader("Final Results")
+	            st.dataframe(output_df)
+
+	            # Download CSV
+	            csv = output_df.to_csv(index=False).encode('utf-8')
+	            st.download_button(
+	                label="Download Results as CSV",
+	                data=csv,
+	                file_name='final_results.csv',
+	                mime='text/csv',
+	            )
+	except Exception as e:
+		print(f'error try {e}')            
