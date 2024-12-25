@@ -26,12 +26,10 @@ def install_playwright_browsers():
         st.error(f"Failed to install Playwright browsers: {str(e)}")
         return False
 
+
 # Run installation at startup
 if 'playwright_installed' not in st.session_state:
     st.session_state.playwright_installed = install_playwright_browsers()
-
-
-
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -58,7 +56,7 @@ def capture_html_screenshot_playwright(html_content):
     if not st.session_state.playwright_installed:
         st.error("Playwright browsers not installed properly")
         return None
-        
+
     try:
         with sync_playwright() as p:
             browser = p.chromium.launch(
@@ -66,30 +64,29 @@ def capture_html_screenshot_playwright(html_content):
                 args=['--no-sandbox', '--disable-dev-shm-usage']
             )
             page = browser.new_page(viewport={'width': 1000, 'height': 1000})
-            
+
             # Create a temporary HTML file
             with NamedTemporaryFile(delete=False, suffix='.html', mode='w') as f:
                 f.write(html_content)
                 temp_html_path = f.name
-            
+
             # Navigate to the HTML file
             page.goto(f'file://{temp_html_path}')
-            
+
             # Wait for any animations/loading
             page.wait_for_timeout(1000)
-            
+
             # Capture screenshot
             screenshot_bytes = page.screenshot()
-            
+
             # Clean up
             browser.close()
             os.unlink(temp_html_path)
-            
+
             return Image.open(BytesIO(screenshot_bytes))
     except Exception as e:
         st.error(f"Screenshot capture error: {str(e)}")
         return None
-
 
 
 def upload_pil_image_to_s3(image, bucket_name, aws_access_key_id, aws_secret_access_key, object_name='',
@@ -353,7 +350,24 @@ if st.button("Generate Images and Upload"):
         if final_results:
             output_df = pd.DataFrame(final_results)
             st.subheader("Final Results")
-            st.dataframe(output_df)
+
+            # Create columns for the layout
+            cols = st.columns([2, 1])
+
+            with cols[0]:
+                # Display regular dataframe
+                st.dataframe(output_df)
+
+            with cols[1]:
+                # Display image previews
+                st.subheader("Image Previews")
+                for idx, row in output_df.iterrows():
+                    try:
+                        st.write(f"Topic: {row['Topic']}")
+                        st.image(row['Image URL'], width=300)
+                        st.divider()
+                    except Exception as e:
+                        st.error(f"Failed to load image {idx + 1}: {str(e)}")
 
             # Download CSV
             csv = output_df.to_csv(index=False).encode('utf-8')
@@ -363,6 +377,7 @@ if st.button("Generate Images and Upload"):
                 file_name='final_results.csv',
                 mime='text/csv',
             )
+
     except Exception as e:
         st.error(f'Error: {str(e)}')
 
