@@ -101,7 +101,7 @@ def gen_flux_img(prompt):
                 "model": "black-forest-labs/FLUX.1-schnell-Free",
                 "steps": 4,
                 "n": 1,
-                "height": 480 * 2,
+                "height": 592 * 2,
                 "width": 480 * 2,
             }
             headers = {
