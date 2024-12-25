@@ -18,6 +18,7 @@ AWS_SECRET_ACCESS_KEY = st.secrets["AWS_SECRET_ACCESS_KEY"]
 S3_BUCKET_NAME = st.secrets["S3_BUCKET_NAME"]
 AWS_REGION = st.secrets.get("AWS_REGION", "us-east-1")
 GPT_API_KEY = st.secrets["GPT_API_KEY"]
+FLUX_API_KEY = st.secrets["FLUX_API_KEY"]
 
 
 # --------------------------------------------
@@ -78,7 +79,7 @@ def gen_flux_img(prompt):
     headers = {
         "accept": "application/json",
         "content-type": "application/json",
-        "authorization": f"Bearer {IMGBB_API_KEY}"
+        "authorization": f"Bearer {FLUX_API_KEY}"
     }
     response = requests.post(url, json=payload, headers=headers)
     if response.status_code == 200:
