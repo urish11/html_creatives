@@ -13,11 +13,11 @@ import os
 # --------------------------------------------
 # Load Secrets
 # --------------------------------------------
-IMGBB_API_KEY = st.secrets["IMGBB_API_KEY"]
 AWS_ACCESS_KEY_ID = st.secrets["AWS_ACCESS_KEY_ID"]
 AWS_SECRET_ACCESS_KEY = st.secrets["AWS_SECRET_ACCESS_KEY"]
 S3_BUCKET_NAME = st.secrets["S3_BUCKET_NAME"]
 AWS_REGION = st.secrets.get("AWS_REGION", "us-east-1")
+GPT_API_KEY = st.secrets.["GPT_API_KEY"]
 
 
 # --------------------------------------------
@@ -53,7 +53,7 @@ def upload_pil_image_to_s3(image, bucket_name=S3_BUCKET_NAME, aws_access_key_id=
 def chatGPT(prompt, model="gpt-4o", temperature=1.0):
     st.write("Generating image description...")
     headers = {
-        'Authorization': f'Bearer {IMGBB_API_KEY}',
+        'Authorization': f'Bearer {GPT_API_KEY}',
         'Content-Type': 'application/json'
     }
     data = {
