@@ -262,7 +262,7 @@ if st.session_state.generated_images:
         
         for idx, (col, img) in enumerate(zip(cols, images)):
             with col:
-                st.image(img['url'], use_column_width=True)
+                st.image(img['url'], use_container_width =True)
                 images[idx]['selected'] = st.checkbox(f"Select {topic} image {idx + 1}", key=f"{topic}_{idx}")
 
     # Step 2: Process Selected Images
