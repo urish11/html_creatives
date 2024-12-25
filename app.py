@@ -148,7 +148,7 @@ def capture_html_screenshot_playwright(html_content):
         return None
 
 
-def save_html(headline, main_text, image_url, cta_text, output_file="advertisement.html"):
+def save_html(headline, image_url, cta_text, output_file="advertisement.html"):
     html_template = f"""
 
     
@@ -181,12 +181,13 @@ def save_html(headline, main_text, image_url, cta_text, output_file="advertiseme
             justify-content: space-between;
             align-items: center;
             padding: 30px;
-            background: url('{image_url}') no-repeat center center/cover;
+            background: url('https://i.ibb.co/B3Ft2MD/Solar-Systems-Panels-1.png') no-repeat center center/cover;
             background-size: contain;
+            text-align: center;
         }}
         .ad-title {{
-            font-size: 3.5em;
-            margin-top: 20px;
+            font-size: 3.2em;
+            margin-top: 10px;
             color: #333;
             background-color:white;
             padding: 20px 40px;
@@ -200,7 +201,7 @@ def save_html(headline, main_text, image_url, cta_text, output_file="advertiseme
             color: white;
             background-color: #FF5722;
             border: none;
-            border-radius: 10px;
+            border-radius: 20px;
             text-decoration: none;
             cursor: pointer;
             transition: background-color 0.3s ease;
@@ -213,8 +214,8 @@ def save_html(headline, main_text, image_url, cta_text, output_file="advertiseme
 </head>
 <body>
     <div class="ad-container">
-        <div class="ad-title">Transform Your Experience</div>
-        <a href="#" class="cta-button">learn more</a>
+        <div class="ad-title">{headline}!</div>
+        <a href="#" class="cta-button">{cta_text}</a>
     </div>
 </body>
 </html>
@@ -291,11 +292,11 @@ if st.session_state.generated_images:
 
             for idx, img in enumerate(selected_images):                # Generate HTML with the selected image
                 html_content = save_html(
-                    headline="Transform Your Experience",
-                    main_text="Your Main Text",
+                    headline=chatGPT(f"write a short text (up to 20 words) for a creative to promote an article containing information about {topic} in language , your goal is to be concise but convenience users to enter the article"),
+                    
                     image_url=img['url'],
-                    cta_text="Learn More"
-                )
+                    cta_text=chatGPT(f"return the cta "Learn More" in the following language (insert)")
+                
 
                 # Capture screenshot
                 screenshot_image = capture_html_screenshot_playwright(html_content)
