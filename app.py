@@ -34,68 +34,51 @@ FLUX_API_KEY = st.secrets["FLUX_API_KEY"]
 # Utility Functions
 # --------------------------------------------
 
-def upload_pil_image_to_s3(image, bucket_name="image-script", aws_access_key_id=AWS_ACCESS_KEY_ID,
-                           aws_secret_access_key=AWS_SECRET_ACCESS_KEY, object_name='',
-                           region_name='us-east-1', image_format='PNG'):
-    """
-    Upload an in-memory PIL image to an S3 bucket.
-
-    :param image: PIL Image object or URL to upload
-    :param bucket_name: Bucket to upload to
-    :param aws_access_key_id: AWS access key ID
-    :param aws_secret_access_key: AWS secret access key
-    :param object_name: S3 object name (path in the bucket)
-    :param region_name: AWS region where the bucket is located (default is 'us-east-1')
-    :param image_format: Format to save the image as before uploading (default is 'JPEG')
-    :return: URL of the uploaded image if successful, else None
-    """
-    # Generate a random object name if not provided
-    if not object_name:
-        object_name = "".join(random.choices(string.ascii_letters + string.digits, k=8)) + ".jpg"
-
-    # Check if input is a URL, file path, or PIL Image
-    if isinstance(image, str):
-        if os.path.isfile(image):  # Local file path
-            img = Image.open(image)
-        elif image.startswith('http://') or image.startswith('https://'):  # URL
-            image_down = requests.get(image, allow_redirects=True)
-            img = Image.open(BytesIO(image_down.content))
-        else:
-            raise ValueError("Invalid image input. Must be a URL, file path, or PIL Image object.")
-    elif isinstance(image, Image.Image):  # PIL Image
-        img = image
-    else:
-        raise ValueError("Invalid image input. Must be a URL, file path, or PIL Image object.")
-
-
-    # Convert the image to a bytes object
-    output_byte_arr = BytesIO()
-    img.save(output_byte_arr, format=image_format)
-    output_byte_arr.seek(0)
-
-    # Create an S3 client with the provided credentials
-    s3_client = boto3.client(
-        's3',
-        aws_access_key_id=aws_access_key_id,
-        aws_secret_access_key=aws_secret_access_key,
-        region_name=region_name
-    )
-
-    # Upload the image
+def upload_pil_image_to_s3(image, bucket_name, aws_access_key_id, aws_secret_access_key, object_name='', region_name='us-east-1', image_format='PNG'):
     try:
-        s3_client.put_object(Bucket=bucket_name, Key=object_name, Body=output_byte_arr,
-                             ContentType=f'image/{image_format.lower()}')
-    except NoCredentialsError:
-        print("Credentials not available")
-        return None
+        # Create S3 client
+        s3_client = boto3.client(
+            's3',
+            aws_access_key_id=aws_access_key_id.strip(),  # Remove any potential whitespace
+            aws_secret_access_key=aws_secret_access_key.strip(),  # Remove any potential whitespace
+            region_name=region_name.strip()  # Remove any potential whitespace
+        )
+
+        # Generate random object name if not provided
+        if not object_name:
+            object_name = f"image_{int(time.time())}_{random.randint(1000, 9999)}.{image_format.lower()}"
+
+        # Convert image to bytes
+        img_byte_arr = BytesIO()
+        image.save(img_byte_arr, format=image_format)
+        img_byte_arr.seek(0)
+
+        # Upload to S3
+        try:
+            s3_client.put_object(
+                Bucket=bucket_name.strip(),  # Remove any potential whitespace
+                Key=object_name,
+                Body=img_byte_arr,
+                ContentType=f'image/{image_format.lower()}'
+            )
+            
+            # Generate the URL
+            url = f"https://{bucket_name}.s3.{region_name}.amazonaws.com/{object_name}"
+            print(f"Successfully uploaded image to: {url}")
+            return url
+
+        except Exception as e:
+            print(f"Error during S3 upload: {str(e)}")
+            print(f"Bucket: {bucket_name}")
+            print(f"Region: {region_name}")
+            print(f"Object name: {object_name}")
+            return None
+
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"Error creating S3 client: {str(e)}")
         return None
 
-    # Return the URL of the uploaded image
-    url = f"https://{bucket_name}.s3.{region_name}.amazonaws.com/{object_name}"
-    print(f"Uploaded Image URL: {url}")
-    return url
+
 
 
 def chatGPT(prompt, model="gpt-4o", temperature=1.0):
