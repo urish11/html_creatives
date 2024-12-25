@@ -214,7 +214,6 @@ def save_html(headline, main_text, image_url, cta_text, output_file="advertiseme
 # Streamlit UI
 # --------------------------------------------
 st.title("AI Image Generation and Upload App")
-st.sidebar.header("Configuration")
 
 # Initialize session state for storing generated images
 if 'generated_images' not in st.session_state:
