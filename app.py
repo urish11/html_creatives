@@ -270,24 +270,32 @@ write what is seen like a camera! show a SENSATIONAL AND DRAMATIC SCENE VERY SIM
 
 # Display generated images in a grid
 # Display generated images in a grid
+# Display generated images in a grid
 if st.session_state.generated_images:
     st.subheader("Select Images to Process")
-    
-    # Create a dictionary to track unique topic-language combinations
-    seen_combinations = {}
-    
-    for topic_idx, entry in enumerate(st.session_state.generated_images):
+
+    # Create a dictionary to group images by topic and language
+    grouped_entries = {}
+
+    for entry in st.session_state.generated_images:
         topic = entry["topic"]
         lang = entry["lang"]
-        
-        # Create a unique identifier for this topic-language combination
-        combo_key = f"{topic}_{lang}"
-        
-        # Skip if we've already seen this combination
-        if combo_key in seen_combinations:
-            continue
-            
-        seen_combinations[combo_key] = True
+        key = f"{topic}_{lang}"
+
+        if key not in grouped_entries:
+            grouped_entries[key] = {
+                "topic": topic,
+                "lang": lang,
+                "images": entry["images"]
+            }
+        else:
+            # Append new images to existing entry
+            grouped_entries[key]["images"].extend(entry["images"])
+
+    # Display grouped images
+    for key, entry in grouped_entries.items():
+        topic = entry["topic"]
+        lang = entry["lang"]
         images = entry["images"]
 
         st.write(f"### {topic} ({lang})")
@@ -296,12 +304,11 @@ if st.session_state.generated_images:
         for idx, (col, img) in enumerate(zip(cols, images)):
             with col:
                 st.image(img['url'], use_container_width=True)
-                unique_key = f"checkbox_{topic_idx}_{idx}_{topic}_{lang}"
-                images[idx]['selected'] = st.checkbox(
-                    f"Select image {idx + 1}", 
+                unique_key = f"checkbox_{topic}_{lang}_{idx}"
+                img['selected'] = st.checkbox(
+                    f"Select image {idx + 1}",
                     key=unique_key
                 )
-
 
     # Step 2: Process Selected Images
     if st.button("Process Selected Images"):
@@ -322,7 +329,8 @@ if st.session_state.generated_images:
                         '"', ''),
 
                     image_url=img['url'],
-                    cta_text=chatGPT(f"return EXACTLY JUST THE TEXT the text 'Learn More' in the following language {lang} even if it is English")).replace(
+                    cta_text=chatGPT(
+                        f"return EXACTLY JUST THE TEXT the text 'Learn More' in the following language {lang} even if it is English")).replace(
                     '"', '')
 
                 # Capture screenshot
