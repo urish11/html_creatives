@@ -361,7 +361,7 @@ if st.button("Generate Images"):
                     template = int(template_str)
 
                 with st.spinner(f"Generating image {i + 1} for '{topic}'..."):
-                    chatGPT(
+                   image_prompt =  chatGPT(
                         f"""Generate a  visual image description  15 words MAX for  {topic}  . Be   creative and intriguing,think of and show the value of the offer like (examples, use whatever is relevant if relevant, or others in the same vibe, must be relevant to the offer): saving money, time, be healthier, more educated etc.. show a SENSATIONAL AND DRAMATIC SCENE  ,  don't include text in the image. make sure the offer is conveyed clearly. output is 5 words MAX, use a person in image, write what is seen like a camera! show a SENSATIONAL AND DRAMATIC SCENE VERY SIMPLISTIC SCENE, SHOW TOPIC EXPLICITLY  """,
                         model='gpt-4', temperature=1.15)  # Your existing prompt
                     image_url = gen_flux_img(
