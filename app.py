@@ -241,59 +241,48 @@ df = st.data_editor(
 )
 
 # Step 1: Generate Images
+# Step 1: Generate Images
 if st.button("Generate Images"):
-    st.session_state.generated_images = []
+    st.session_state.generated_images = []  # Clear previous images
+
+    # Create a set to track unique topic-lang combinations
+    processed_combinations = set()
 
     for _, row in df.iterrows():
         topic = row['topic']
         count = int(row['count'])
         lang = row['lang']
+        combo = f"{topic}_{lang}"
 
-        st.subheader(f"Generating images for: {topic}")
-        topic_images = []
+        if combo not in processed_combinations:
+            processed_combinations.add(combo)
 
-        for i in range(count):
-            with st.spinner(f"Generating image {i + 1} for '{topic}'..."):
-                image_prompt = chatGPT(f"""Generate a  visual image description  15 words MAX for  {topic}  . Be   creative and intriguing,think of and show the value of the offer like (examples, use whatever is relevant if relevant, or others in the same vibe, must be relevant to the offer): saving money, time, be healthier, more educated etc.. show a SENSATIONAL AND DRAMATIC SCENE  ,  don't include text in the image. make sure the offer is conveyed clearly. output is 5 words MAX, use a person in image, 
-write what is seen like a camera! show a SENSATIONAL AND DRAMATIC SCENE VERY SIMPLISTIC SCENE, SHOW TOPIC EXPLICITLY  """,
-                                       model='gpt-4', temperature=1.15)
-                image_url = gen_flux_img(
-                    f" {random.choice(['cartoony clipart of ', 'cartoony clipart of ', ''])}  {image_prompt}   ")
+            st.subheader(f"Generating images for: {topic}")
+            topic_images = []
 
-                if image_url:
-                    topic_images.append({
-                        'url': image_url,
+            for i in range(count):
+                with st.spinner(f"Generating image {i + 1} for '{topic}'..."):
+                    image_prompt = chatGPT(f"""Generate a visual image description...""")  # Your existing prompt
+                    image_url = gen_flux_img(
+                        f"{random.choice(['cartoony clipart of ', 'cartoony clipart of ', ''])}  {image_prompt}")
 
-                        'selected': False  # Add selection state
-                    })
-            st.session_state.generated_images.append({"topic": topic, "lang": lang, "images": topic_images})
+                    if image_url:
+                        topic_images.append({
+                            'url': image_url,
+                            'selected': False
+                        })
 
-# Display generated images in a grid
-# Display generated images in a grid
+            st.session_state.generated_images.append({
+                "topic": topic,
+                "lang": lang,
+                "images": topic_images
+            })
+
 # Display generated images in a grid
 if st.session_state.generated_images:
     st.subheader("Select Images to Process")
 
-    # Create a dictionary to group images by topic and language
-    grouped_entries = {}
-
     for entry in st.session_state.generated_images:
-        topic = entry["topic"]
-        lang = entry["lang"]
-        key = f"{topic}_{lang}"
-
-        if key not in grouped_entries:
-            grouped_entries[key] = {
-                "topic": topic,
-                "lang": lang,
-                "images": entry["images"]
-            }
-        else:
-            # Append new images to existing entry
-            grouped_entries[key]["images"].extend(entry["images"])
-
-    # Display grouped images
-    for key, entry in grouped_entries.items():
         topic = entry["topic"]
         lang = entry["lang"]
         images = entry["images"]
