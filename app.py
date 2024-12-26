@@ -266,7 +266,7 @@ def save_html(headline, image_url, cta_text, template, output_file="advertisemen
         .ad-image {{
             flex: 1 1 80%;
             background: url('{image_url}') no-repeat center center/cover;
-            background-size: cover;
+            background-size: fill;
             position: relative;
         }}
         .cta-button {{
