@@ -148,11 +148,84 @@ def capture_html_screenshot_playwright(html_content):
         return None
 
 
-def save_html(headline, image_url, cta_text, output_file="advertisement.html"):
-    html_template = f"""
+def save_html(headline, image_url, cta_text, template, output_file="advertisement.html"):
+    if template == 1:
+        html_template = f"""
 
 
-   <!DOCTYPE html>
+       <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Ad Template</title>
+        <style>
+            body {{
+                font-family: 'Gisha', sans-serif;
+                font-weight: 550;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+
+            }}
+            .ad-container {{
+                width: 1000px;
+                height: 1000px;
+                border: 1px solid #ddd;
+                border-radius: 20px;
+                box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                align-items: center;
+                padding: 30px;
+                background: url('{image_url}') no-repeat center center/cover;
+                background-size: contain;
+                text-align: center;
+            }}
+            .ad-title {{
+                font-size: 3.2em;
+                margin-top: 10px;
+                color: #333;
+                background-color:white;
+                padding: 20px 40px;
+                border-radius: 20px;
+            }}
+            .cta-button {{
+                font-weight: 400;
+                display: inline-block;
+                padding: 40px 60px;
+                font-size: 3em;
+                color: white;
+                background-color: #FF5722;
+                border: none;
+                border-radius: 20px;
+                text-decoration: none;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+                margin-bottom: 20px;
+            }}
+            .cta-button:hover {{
+                background-color: #E64A19;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="ad-container">
+            <div class="ad-title">{headline}!</div>
+            <a href="#" class="cta-button">{cta_text}</a>
+        </div>
+    </body>
+    </html>
+        """
+
+    if template == 2 :
+        html_template= f"""
+        
+        <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -168,36 +241,39 @@ def save_html(headline, image_url, cta_text, output_file="advertisement.html"):
             justify-content: center;
             align-items: center;
             height: 100vh;
-
         }}
         .ad-container {{
             width: 1000px;
             height: 1000px;
-            border: 1px solid #ddd;
-            border-radius: 20px;
+            border: 2px solid black;
             box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            padding: 30px;
-            background: url('{image_url}') no-repeat center center/cover;
-            background-size: contain;
-            text-align: center;
+            overflow: hidden;
+            position: relative;
         }}
         .ad-title {{
             font-size: 3.2em;
-            margin-top: 10px;
             color: #333;
-            background-color:white;
-            padding: 20px 40px;
-            border-radius: 20px;
+            background-color: white;
+            padding: 20px;
+            text-align: center;
+            flex: 0 0 20%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }}
+        .ad-image {{
+            flex: 1 1 80%;
+            background: url('{image_url}') no-repeat center center/cover;
+            background-size: cover;
+            position: relative;
         }}
         .cta-button {{
             font-weight: 400;
             display: inline-block;
-            padding: 40px 60px;
-            font-size: 3em;
+            padding: 20px 40px;
+            font-size: 3.2em;
             color: white;
             background-color: #FF5722;
             border: none;
@@ -205,21 +281,39 @@ def save_html(headline, image_url, cta_text, output_file="advertisement.html"):
             text-decoration: none;
             cursor: pointer;
             transition: background-color 0.3s ease;
-            margin-bottom: 20px;
+            position: absolute;
+            bottom: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
         }}
-        .cta-button:hover {{
-            background-color: #E64A19;
-        }}
+       
     </style>
 </head>
 <body>
     <div class="ad-container">
-        <div class="ad-title">{headline}!</div>
-        <a href="#" class="cta-button">{cta_text}</a>
+        <div class="ad-title">{headline}</div>
+        <div class="ad-image">
+            <a href="#" class="cta-button">{cta_text}</a>
+        </div>
     </div>
 </body>
 </html>
-    """
+
+
+
+
+
+
+
+"""
+        
+    else:
+        
+        print('template not found')
+        
+
+
     return html_template
 
 
@@ -235,7 +329,7 @@ if 'generated_images' not in st.session_state:
 # Table Input for Topics
 st.subheader("Enter Topics for Image Generation")
 df = st.data_editor(
-    pd.DataFrame({"topic": ["example_topic"], "count": [1], "lang": ["english"],"template":["use , for multi"]}),
+    pd.DataFrame({"topic": ["example_topic"], "count": [1], "lang": ["english"], "template": ["use , for multi"]}),
     num_rows="dynamic",
     key="table_input"
 )
@@ -253,6 +347,7 @@ if st.button("Generate Images"):
         count = int(row['count'])
         lang = row['lang']
         combo = f"{topic}_{lang}"
+        template_str = row["template"]
 
         if combo not in processed_combinations:
             processed_combinations.add(combo)
@@ -261,6 +356,12 @@ if st.button("Generate Images"):
             topic_images = []
 
             for i in range(count):
+
+                if "," in template_str:
+                    template = random.choice([int(x) for x in template_str.split(",")])
+                else:
+                    template = int(template_str)
+
                 with st.spinner(f"Generating image {i + 1} for '{topic}'..."):
                     image_prompt = chatGPT(f"""Generate a visual image description...""")  # Your existing prompt
                     image_url = gen_flux_img(
@@ -269,7 +370,9 @@ if st.button("Generate Images"):
                     if image_url:
                         topic_images.append({
                             'url': image_url,
-                            'selected': False
+                            'selected': False,
+                            'template': template
+
                         })
 
             st.session_state.generated_images.append({
@@ -319,8 +422,10 @@ if st.session_state.generated_images:
 
                     image_url=img['url'],
                     cta_text=chatGPT(
-                        f"return EXACTLY JUST THE TEXT the text 'Learn More' in the following language {lang} even if it is English")).replace(
-                    '"', '')
+                        f"return EXACTLY JUST THE TEXT the text 'Learn More' in the following language {lang} even if it is English").replace(
+                        '"', ''),
+                    template=img['template']
+                )
 
                 # Capture screenshot
                 screenshot_image = capture_html_screenshot_playwright(html_content)
