@@ -335,7 +335,7 @@ def save_html(headline, image_url, cta_text, template, output_file="advertisemen
                     padding: 0;
                     overflow: hidden;
                     box-shadow: 0 0 20px rgba(0,0,0,0.2);
-                    border-radius: 10px;
+                    //border-radius: 10px;
                 }}
 
                 .image {{
