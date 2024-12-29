@@ -541,10 +541,10 @@ if st.session_state.generated_images:
             for idx, img in enumerate(selected_images):  # Generate HTML with the selected image
                 template = img['template']
 
-                if template is 1 or template is 2:
+                if template == 1 or template == 2:
                     headline_prompt = f"write a short text (up to 20 words) for a creative to promote an article containing information about {topic} in language{lang} , your goal is to be concise but convenience users to enter the article"
                     
-                elif template is 3 : 
+                elif template == 3 : 
                     headline_prompt = f"write  statement SAME LENGTH, no quotation marks, for {topic} in {lang} like 'Surprising Medicare Benefits You Might Be Missing'"
 
                 html_content = save_html(
