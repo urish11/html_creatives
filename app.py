@@ -13,7 +13,7 @@ from playwright.sync_api import sync_playwright
 from tempfile import NamedTemporaryFile
 
 # --------------------------------------------
-# Setup and Installation
+# Setup and Installation 
 # --------------------------------------------
 st.set_page_config(layout="wide")
 
