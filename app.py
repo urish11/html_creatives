@@ -545,7 +545,7 @@ if st.session_state.generated_images:
                     headline_prompt = f"write a short text (up to 20 words) for a creative to promote an article containing information about {topic} in language{lang} , your goal is to be concise but convenience users to enter the article"
                     
                 elif template is 3 : 
-                    headline_prompt = f"write  statement SAME LENGTH, no quotation marks, for {t} in {lang} like 'Surprising Medicare Benefits You Might Be Missing'"
+                    headline_prompt = f"write  statement SAME LENGTH, no quotation marks, for {topic} in {lang} like 'Surprising Medicare Benefits You Might Be Missing'"
 
                 html_content = save_html(
                     headline=chatGPT(headline_prompt).replace('"', ''),
