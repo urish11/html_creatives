@@ -372,7 +372,7 @@ def save_html(headline, image_url, cta_text, template, output_file="advertisemen
                     color: #FFFFFF;
                     font-size: 4em;
                     text-align: center;
-                    text-shadow: 2.5px 2.5px 2px #000000;
+                    //text-shadow: 2.5px 2.5px 2px #000000;
                     letter-spacing: 2px;
                     font-family: 'Boogaloo', 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif;
                     /* Remove any margin that might affect sizing */
