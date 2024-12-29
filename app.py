@@ -12,6 +12,22 @@ import time
 from playwright.sync_api import sync_playwright
 from tempfile import NamedTemporaryFile
 
+
+import logging
+
+# Configure logging
+logging.basicConfig(
+    format='%(asctime)s [%(levelname)s] %(name)s - %(message)s', 
+    level=logging.INFO
+)
+logger = logging.getLogger(__name__)
+
+
+
+
+
+
+
 # --------------------------------------------
 # Setup and Installation 
 # --------------------------------------------
