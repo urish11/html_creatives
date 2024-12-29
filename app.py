@@ -310,123 +310,123 @@ def save_html(headline, image_url, cta_text, template, output_file="advertisemen
 
     if template == 3:
 
-        html_template = """
+        html_template = f"""
 
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        body {{
-            margin: 0;
-            padding: 0;
-            font-family: 'Boogaloo', 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: #f0f0f0;
-        }}
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{
+                    margin: 0;
+                    padding: 0;
+                    font-family: 'Boogaloo', 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    min-height: 100vh;
+                    background: #f0f0f0;
+                }}
 
-        .container {{
-            position: relative;
-            width: 1000px;
-            height: 1000px;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(0,0,0,0.2);
-            border-radius: 10px;
-        }}
+                .container {{
+                    position: relative;
+                    width: 1000px;
+                    height: 1000px;
+                    margin: 0;
+                    padding: 0;
+                    overflow: hidden;
+                    box-shadow: 0 0 20px rgba(0,0,0,0.2);
+                    border-radius: 10px;
+                }}
 
-        .image {{
-            width: 1000px;
-            height: 1000px;
-            object-fit: cover;
-            filter: saturate(130%) contrast(110%);
-            transition: transform 0.3s ease;
-        }}
+                .image {{
+                    width: 1000px;
+                    height: 1000px;
+                    object-fit: cover;
+                    filter: saturate(130%) contrast(110%);
+                    transition: transform 0.3s ease;
+                }}
 
-        .image:hover {{
-            transform: scale(1.05);
-        }}
+                .image:hover {{
+                    transform: scale(1.05);
+                }}
 
-       .overlay {{
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            /* Remove fixed height */
-            min-height: 14%; /* Set minimum height instead */
-            background: red;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            /* Add padding for better text containment */
-            padding: 20px;
-            /* Add box-sizing to include padding in height calculation */
-            box-sizing: border-box;
-        }}
+            .overlay {{
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    /* Remove fixed height */
+                    min-height: 14%; /* Set minimum height instead */
+                    background: red;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                    /* Add padding for better text containment */
+                    padding: 20px;
+                    /* Add box-sizing to include padding in height calculation */
+                    box-sizing: border-box;
+                }}
 
-        .overlay-text {{
-            color: #FFFFFF;
-            font-size: 4em;
-            text-align: center;
-            text-shadow: 3px 3px 0px #FF6B6B;
-            letter-spacing: 2px;
-            font-family: 'Boogaloo', 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif;
-            /* Remove any margin that might affect sizing */
-            margin: 0;
-            /* Add word-wrap for very long text */
-            word-wrap: break-word;
-        }}
+                .overlay-text {{
+                    color: #FFFFFF;
+                    font-size: 4em;
+                    text-align: center;
+                    text-shadow: 3px 3px 0px #FF6B6B;
+                    letter-spacing: 2px;
+                    font-family: 'Boogaloo', 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif;
+                    /* Remove any margin that might affect sizing */
+                    margin: 0;
+                    /* Add word-wrap for very long text */
+                    word-wrap: break-word;
+                }}
 
-        .cta-button {{
-            position: absolute;
-            bottom: 10%;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 20px 40px;
-            background: blue;
-            color: white;
-            border: none;
-            border-radius: 50px;
-            font-size: 3.5em;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Boogaloo', 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            box-shadow: 0 5px 15px rgba(255,107,107,0.4);
-        }}
+                .cta-button {{
+                    position: absolute;
+                    bottom: 10%;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    padding: 20px 40px;
+                    background: blue;
+                    color: white;
+                    border: none;
+                    border-radius: 50px;
+                    font-size: 3.5em;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    font-family: 'Boogaloo', 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif;
+                    text-transform: uppercase;
+                    letter-spacing: 2px;
+                    box-shadow: 0 5px 15px rgba(255,107,107,0.4);
+                }}
 
-        .cta-button:hover {{
-            background: #4ECDC4;
-            transform: translateX(-50%) translateY(-5px);
-            box-shadow: 0 8px 20px rgba(78,205,196,0.6);
-        }}
+                .cta-button:hover {{
+                    background: #4ECDC4;
+                    transform: translateX(-50%) translateY(-5px);
+                    box-shadow: 0 8px 20px rgba(78,205,196,0.6);
+                }}
 
-        @keyframes shine {{
-            0% {{ left: -100%; }}
-            100% {{ left: 200%; }}
-        }}
+                @keyframes shine {{
+                    0% {{ left: -100%; }}
+                    100% {{ left: 200%; }}
+                }}
 
-    </style>
-    <link href="https://fonts.googleapis.com/css2?family=Boogaloo&display=swap" rel="stylesheet">
-</head>
-<body>
-    <div class="container">
-        <img src="{image_url}" class="image" alt="Health Image">
-        <div class="overlay">
-            <h1 class="overlay-text">{headline}</h1>
-        </div>
-        <button class="cta-button">
-            {cta_text}
-            <div class="shine"></div>
-        </button>
-    </div>
-</body>
-</html>
+            </style>
+            <link href="https://fonts.googleapis.com/css2?family=Boogaloo&display=swap" rel="stylesheet">
+        </head>
+        <body>
+            <div class="container">
+                <img src="{image_url}" class="image" alt="Health Image">
+                <div class="overlay">
+                    <h1 class="overlay-text">{headline}</h1>
+                </div>
+                <button class="cta-button">
+                    {cta_text}
+                    <div class="shine"></div>
+                </button>
+            </div>
+        </body>
+        </html>
 
 
 
