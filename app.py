@@ -138,6 +138,7 @@ def gen_flux_img(prompt):
             print(response)
             return response.json()["data"][0]["url"]
         except Exception as e:
+            print(e)
             if "NSFW" in str(e):
                 return None
             time.sleep(2)
