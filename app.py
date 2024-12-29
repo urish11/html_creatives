@@ -133,7 +133,7 @@ def gen_flux_img(prompt):
                 "content-type": "application/json",
                 "authorization": f"Bearer {FLUX_API_KEY}"
             }
-            print("dad")
+            st.write("dad")
             response = requests.post(url, json=payload, headers=headers)
             print(response)
             return response.json()["data"][0]["url"]
