@@ -133,8 +133,9 @@ def gen_flux_img(prompt):
                 "content-type": "application/json",
                 "authorization": f"Bearer {FLUX_API_KEY}"
             }
-
+        
             response = requests.post(url, json=payload, headers=headers)
+            print(response)
             return response.json()["data"][0]["url"]
         except Exception as e:
             if "NSFW" in str(e):
