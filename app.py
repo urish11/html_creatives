@@ -136,7 +136,7 @@ def gen_flux_img(prompt):
             st.write("dad")
             response = requests.post(url, json=payload, headers=headers)
             print(response)
-            st.write(response)
+            st.write(response.content)
             return response.json()["data"][0]["url"]
         except Exception as e:
             st.write(e)
