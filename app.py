@@ -136,7 +136,6 @@ def gen_flux_img(prompt):
             response = requests.post(url, json=payload, headers=headers)
             return response.json()["data"][0]["url"]
         except Exception as e:
-            st.write(e)
             print(e)
             if "NSFW" in str(e):
                 return None
