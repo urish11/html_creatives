@@ -23,6 +23,13 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+def log_function_call(func):
+    def wrapper(*args, **kwargs):
+        logger.info(f"CALL: {func.__name__} - args: {args}, kwargs: {kwargs}")
+        result = func(*args, **kwargs)
+        logger.info(f"RETURN: {func.__name__} -> {result}")
+        return result
+    return wrapper
 
 
 
@@ -33,7 +40,7 @@ logger = logging.getLogger(__name__)
 # --------------------------------------------
 st.set_page_config(layout="wide")
 
-
+@log_function_call
 def install_playwright_browsers():
     try:
         os.system('playwright install-deps')
@@ -61,6 +68,7 @@ FLUX_API_KEY = st.secrets["FLUX_API_KEY"]
 # --------------------------------------------
 # Utility Functions
 # --------------------------------------------
+@log_function_call
 def upload_pil_image_to_s3(image, bucket_name, aws_access_key_id, aws_secret_access_key, object_name='',
                            region_name='us-east-1', image_format='PNG'):
     try:
@@ -92,7 +100,7 @@ def upload_pil_image_to_s3(image, bucket_name, aws_access_key_id, aws_secret_acc
         st.error(f"Error in S3 upload: {str(e)}")
         return None
 
-
+@log_function_call
 def chatGPT(prompt, model="gpt-4o", temperature=1.0):
     st.write("Generating image description...")
     headers = {
@@ -107,7 +115,7 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0):
     content = response.json()['choices'][0]['message']['content'].strip()
     return content
 
-
+@log_function_call
 def gen_flux_img(prompt):
     while True:
         try:
@@ -133,7 +141,7 @@ def gen_flux_img(prompt):
                 return None
             time.sleep(2)
 
-
+@log_function_call
 def capture_html_screenshot_playwright(html_content):
     if not st.session_state.playwright_installed:
         st.error("Playwright browsers not installed properly")
@@ -163,7 +171,7 @@ def capture_html_screenshot_playwright(html_content):
         st.error(f"Screenshot capture error: {str(e)}")
         return None
 
-
+@log_function_call
 def save_html(headline, image_url, cta_text, template, output_file="advertisement.html"):
     if template == 1:
         html_template = f"""
