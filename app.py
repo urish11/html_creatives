@@ -308,6 +308,130 @@ def save_html(headline, image_url, cta_text, template, output_file="advertisemen
 
 """
 
+    if template == 3:
+
+        html_template = """
+
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{
+            margin: 0;
+            padding: 0;
+            font-family: 'Boogaloo', 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #f0f0f0;
+        }}
+
+        .container {{
+            position: relative;
+            width: 1000px;
+            height: 1000px;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            border-radius: 10px;
+        }}
+
+        .image {{
+            width: 1000px;
+            height: 1000px;
+            object-fit: cover;
+            filter: saturate(130%) contrast(110%);
+            transition: transform 0.3s ease;
+        }}
+
+        .image:hover {{
+            transform: scale(1.05);
+        }}
+
+       .overlay {{
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            /* Remove fixed height */
+            min-height: 14%; /* Set minimum height instead */
+            background: red;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            /* Add padding for better text containment */
+            padding: 20px;
+            /* Add box-sizing to include padding in height calculation */
+            box-sizing: border-box;
+        }}
+
+        .overlay-text {{
+            color: #FFFFFF;
+            font-size: 4em;
+            text-align: center;
+            text-shadow: 3px 3px 0px #FF6B6B;
+            letter-spacing: 2px;
+            font-family: 'Boogaloo', 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif;
+            /* Remove any margin that might affect sizing */
+            margin: 0;
+            /* Add word-wrap for very long text */
+            word-wrap: break-word;
+        }}
+
+        .cta-button {{
+            position: absolute;
+            bottom: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 20px 40px;
+            background: blue;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 3.5em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Boogaloo', 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 5px 15px rgba(255,107,107,0.4);
+        }}
+
+        .cta-button:hover {{
+            background: #4ECDC4;
+            transform: translateX(-50%) translateY(-5px);
+            box-shadow: 0 8px 20px rgba(78,205,196,0.6);
+        }}
+
+        @keyframes shine {{
+            0% {{ left: -100%; }}
+            100% {{ left: 200%; }}
+        }}
+
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Boogaloo&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <img src="{image_url}" class="image" alt="Health Image">
+        <div class="overlay">
+            <h1 class="overlay-text">{headline}</h1>
+        </div>
+        <button class="cta-button">
+            {cta_text}
+            <div class="shine"></div>
+        </button>
+    </div>
+</body>
+</html>
+
+
+
+"""
+
     else:
 
         print('template not found')
@@ -327,7 +451,7 @@ if 'generated_images' not in st.session_state:
 # Table Input for Topics
 st.subheader("Enter Topics for Image Generation")
 df = st.data_editor(
-    pd.DataFrame({"topic": ["example_topic"], "count": [1], "lang": ["english"], "template": ["use , for multi"]}),
+    pd.DataFrame({"topic": ["example_topic"], "count": [1], "lang": ["english"], "template": ["1,2,3 use , for multi"]}),
     num_rows="dynamic",
     key="table_input"
 )
@@ -415,16 +539,22 @@ if st.session_state.generated_images:
             selected_images = [img for img in images if img['selected']]
 
             for idx, img in enumerate(selected_images):  # Generate HTML with the selected image
+                template = img['template']
+
+                if template is 1 or template is 2:
+                    headline_prompt = f"write a short text (up to 20 words) for a creative to promote an article containing information about {topic} in language{lang} , your goal is to be concise but convenience users to enter the article"
+                    
+                elif template is 3 : 
+                    headline_prompt = f"write  statement SAME LENGTH, no quotation marks, for {t} in {lang} like 'Surprising Medicare Benefits You Might Be Missing'
+
                 html_content = save_html(
-                    headline=chatGPT(
-                        f"write a short text (up to 20 words) for a creative to promote an article containing information about {topic} in language{lang} , your goal is to be concise but convenience users to enter the article").replace(
-                        '"', ''),
+                    headline=chatGPT(headline_prompt).replace('"', ''),
 
                     image_url=img['url'],
                     cta_text=chatGPT(
                         f"return EXACTLY JUST THE TEXT the text 'Learn More' in the following language {lang} even if it is English").replace(
                         '"', ''),
-                    template=img['template']
+                    template=template
                 )
 
                 # Capture screenshot
