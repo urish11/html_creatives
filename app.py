@@ -11,7 +11,7 @@ import os
 import time
 from playwright.sync_api import sync_playwright
 from tempfile import NamedTemporaryFile
-
+import re
 
 import logging
 
@@ -570,7 +570,7 @@ if st.session_state.generated_images:
                     
                 elif template == 3 : 
                     #headline_prompt = f"write  statement SAME LENGTH, no quotation marks, for {topic} in {lang} like 'Surprising Medicare Benefits You Might Be Missing'"
-                    headline_prompt = f"write 1  statement SAME LENGTH, no quotation marks, for {topic} in {lang} like examples output:\n'Surprising Medicare Benefits You Might Be Missing'\n'Little-Known Medicare Tricks to Save Big'\n'Don’t Miss Out on These Medicare Extras'\n'Why Most Seniors Miss These Medicare Benefits'\n'Medicare Coverage Hacks You’ll Wish You Knew Sooner'\n\n\n dont use Hidden, Unlock \n  "
+                    headline_prompt = f"write 1  statement SAME LENGTH, no quotation marks, for {re.sub("\|.*","",topic)} in {lang} like examples output:\n'Surprising Medicare Benefits You Might Be Missing'\n'Little-Known Medicare Tricks to Save Big'\n'Don’t Miss Out on These Medicare Extras'\n'Why Most Seniors Miss These Medicare Benefits'\n'Medicare Coverage Hacks You’ll Wish You Knew Sooner'\n\n\n dont use Hidden, Unlock \n  "
 
 
                 html_content = save_html(
