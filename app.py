@@ -574,7 +574,7 @@ if st.session_state.generated_images:
 
 
                 html_content = save_html(
-                    headline=chatGPT(headline_prompt).replace('"', ''),
+                    headline=chatGPT(headline_prompt,model = 'gpt-4o-mini').replace('"', '').replace("'", '')
 
                     image_url=img['url'],
                     cta_text=chatGPT(
