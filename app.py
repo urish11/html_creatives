@@ -539,44 +539,16 @@ if st.session_state.generated_images:
         images = entry["images"]
 
         st.write(f"### {topic} ({lang})")
+        cols = st.columns(len(images))
 
-        # Wrap in a scrollable container
-        with st.container():
-            scrollable_container = st.container()
-            with scrollable_container:
-                st.markdown(
-                    """
-                    <style>
-                    .scrollable-container {
-                        height: 600px;
-                        overflow-y: auto;
-                        display: flex;
-                        flex-wrap: wrap;
-                        gap: 10px;
-                    }
-                    .scrollable-container img {
-                        max-width: 400px;
-                        height: auto;
-                    }
-                    </style>
-                    """,
-                    unsafe_allow_html=True
+        for idx, (col, img) in enumerate(zip(cols, images)):
+            with col:
+                st.image(img['url'], use_column_width=True
+                unique_key = f"checkbox_{topic}_{lang}_{idx}"
+                img['selected'] = st.checkbox(
+                    f"Select image {idx + 1}",
+                    key=unique_key
                 )
-                st.markdown('<div class="scrollable-container">', unsafe_allow_html=True)
-
-                cols = st.columns(3)  # Adjust columns to control how many per row
-
-                for idx, (col, img) in enumerate(zip(cols * ((len(images) // len(cols)) + 1), images)):
-                    with col:
-                        st.image(img['url'], width=400)
-                        unique_key = f"checkbox_{topic}_{lang}_{idx}"
-                        img['selected'] = st.checkbox(
-                            f"Select image {idx + 1}",
-                            key=unique_key
-                        )
-
-                st.markdown('</div>', unsafe_allow_html=True)
-
 
     # Step 2: Process Selected Images
     if st.button("Process Selected Images"):
