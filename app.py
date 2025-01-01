@@ -594,7 +594,7 @@ if st.session_state.generated_images:
                 screenshot_image = capture_html_screenshot_playwright(html_content)
 
                 if screenshot_image:
-                    st.image(screenshot_image, caption=f"Generated Advertisement for {topic}", width=500)
+                    st.image(screenshot_image, caption=f"Generated Advertisement for {topic}", width=600)
 
                     # Upload to S3
                     s3_url = upload_pil_image_to_s3(
