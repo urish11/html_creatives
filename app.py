@@ -577,7 +577,7 @@ if st.session_state.generated_images:
                 if lang in cta_texts:
                     cta_text = cta_texts[lang]
                 else:
-                   cta_text[lang]  = chatGPT(
+                   cta_texts[lang]  = chatGPT(
                         f"return EXACTLY JUST THE TEXT the text 'Learn More' in the following language {lang} even if it is English").replace(
                         '"', '')
                    cta_text = cta_texts[lang]
