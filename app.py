@@ -101,7 +101,7 @@ def upload_pil_image_to_s3(image, bucket_name, aws_access_key_id, aws_secret_acc
         return None
 
 @log_function_call
-def chatGPT(prompt, model="gpt-4o", temperature=1.0):
+def chatGPT(prompt, model="gpt-4o", temperature=1.0) :
     st.write("Generating image description...")
     headers = {
         'Authorization': f'Bearer {GPT_API_KEY}',
@@ -113,7 +113,7 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0):
     }
     response = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=data)
     content = response.json()['choices'][0]['message']['content'].strip()
-    return content
+    return  content
 
 @log_function_call
 def gen_flux_img(prompt):
@@ -594,7 +594,7 @@ if st.session_state.generated_images:
                 screenshot_image = capture_html_screenshot_playwright(html_content)
 
                 if screenshot_image:
-                    st.image(screenshot_image, caption=f"Generated Advertisement for {topic}")
+                    st.image(screenshot_image, caption=f"Generated Advertisement for {topic}", width=500)
 
                     # Upload to S3
                     s3_url = upload_pil_image_to_s3(
