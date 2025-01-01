@@ -562,6 +562,8 @@ if st.session_state.generated_images:
             res = {'Topic': topic, 'Language': lang}
             selected_images = [img for img in images if img['selected']]
 
+            cta_texts = {}
+
             for idx, img in enumerate(selected_images):  # Generate HTML with the selected image
                 template = img['template']
 
@@ -572,14 +574,19 @@ if st.session_state.generated_images:
                     #headline_prompt = f"write  statement SAME LENGTH, no quotation marks, for {topic} in {lang} like 'Surprising Medicare Benefits You Might Be Missing'"
                     headline_prompt = f"write 1  statement SAME LENGTH, no quotation marks, for {re.sub('\|.*','',topic)} in {lang} like examples output:\n'Surprising Travel Perks You Might Be Missing'\n'Little-Known Tax Tricks to Save Big'\n'Dont Miss Out on These Credit Card Extras'\n'Why Most Shoppers Miss These Loyalty Rewards'\n'Home Improvement Hacks Youll Wish You Knew Sooner' \n\n\n dont use Hidden, Unlock \n  "
 
+                if lang in cta_texts:
+                    cta_text = cta_texts[lang]
+                else:
+                   cta_text[lang]  = chatGPT(
+                        f"return EXACTLY JUST THE TEXT the text 'Learn More' in the following language {lang} even if it is English").replace(
+                        '"', '')
+                   cta_text = cta_texts[lang]
 
                 html_content = save_html(
                     headline = chatGPT(prompt = headline_prompt, model='gpt-4').strip('"').strip("'"),
 
                     image_url=img['url'],
-                    cta_text=chatGPT(
-                        f"return EXACTLY JUST THE TEXT the text 'Learn More' in the following language {lang} even if it is English").replace(
-                        '"', ''),
+                    cta_text=cta_text,
                     template=template
                 )
 
