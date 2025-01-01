@@ -543,7 +543,7 @@ if st.session_state.generated_images:
 
         for idx, (col, img) in enumerate(zip(cols, images)):
             with col:
-                st.image(img['url'] )
+                st.image(img['url'], width= 400 )
                 unique_key = f"checkbox_{topic}_{lang}_{idx}"
                 img['selected'] = st.checkbox(
                     f"Select image {idx + 1}",
