@@ -508,8 +508,7 @@ if st.button("Generate Images"):
 
                 elif "*" in template_str:
                     new_prompt = True
-                    template_str.replace("*","")
-                    st.subheader(template_str)
+                    template_str = template_str.replace("*","")
                     template = int(template_str)
                 else:
                     template = int(template_str)
