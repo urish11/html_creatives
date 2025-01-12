@@ -524,7 +524,7 @@ if st.button("Generate Images"):
                     if new_prompt : 
 
                         image_prompt = chatGPT(
-                                f"""Generate a  visual image description  15 words MAX for  {topic}  . think of a visually very enticing way of prompting the topic!! i want very high CTR """,
+                                f"""Generate a  visual image description  15 words MAX for  {topic}  . think of a visually very enticing way of prompting the topic!! i want very high CTR. use very aggrevating engaging ideas """,
                                 model='gpt-3.5-turbo')
 
 
