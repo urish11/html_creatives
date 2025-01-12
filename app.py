@@ -508,7 +508,8 @@ if st.button("Generate Images"):
                     template = random.choice([int(x) for x in template_str.split(",")])
 
                 elif "*" in template_str:
-                    new_prompt = True
+                    new_prompt= random.choice([True,False])
+                    # new_prompt = True
                     template_str = template_str.replace("*","")
                     template = int(template_str)
                 else:
