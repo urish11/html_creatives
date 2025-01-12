@@ -502,6 +502,7 @@ if st.button("Generate Images"):
             topic_images = []
 
             for i in range(count):
+                new_prompt = False
 
                 if "," in template_str:
                     template = random.choice([int(x) for x in template_str.split(",")])
