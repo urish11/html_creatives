@@ -505,13 +505,29 @@ if st.button("Generate Images"):
 
                 if "," in template_str:
                     template = random.choice([int(x) for x in template_str.split(",")])
+
+                elif "*" in template_str:
+                    new_prompt = True
+                    template_str.replace("*","")
                 else:
                     template = int(template_str)
 
+
                 with st.spinner(f"Generating image {i + 1} for '{topic}'..."):
-                    image_prompt = chatGPT(
-                        f"""Generate a  visual image description  15 words MAX for  {topic}  . Be   creative and intriguing,think of and show the value of the offer like (examples, use whatever is relevant if relevant, or others in the same vibe, must be relevant to the offer): saving money, time, be healthier, more educated etc.. show a SENSATIONAL AND DRAMATIC SCENE  ,  don't include text in the image. make sure the offer is conveyed clearly. output is 5 words MAX, use a person in image, write what is seen like a camera! show a SENSATIONAL AND DRAMATIC SCENE VERY SIMPLISTIC SCENE, SHOW TOPIC EXPLICITLY  """,
-                        model='gpt-4', temperature=1.15)  # Your existing prompt
+
+                    if not new_prompt:
+                        image_prompt = chatGPT(
+                            f"""Generate a  visual image description  15 words MAX for  {topic}  . Be   creative and intriguing,think of and show the value of the offer like (examples, use whatever is relevant if relevant, or others in the same vibe, must be relevant to the offer): saving money, time, be healthier, more educated etc.. show a SENSATIONAL AND DRAMATIC SCENE  ,  don't include text in the image. make sure the offer is conveyed clearly. output is 5 words MAX, use a person in image, write what is seen like a camera! show a SENSATIONAL AND DRAMATIC SCENE VERY SIMPLISTIC SCENE, SHOW TOPIC EXPLICITLY  """,
+                            model='gpt-4', temperature=1.15)  # Your existing prompt
+
+                    if new_prompt : 
+
+                        image_prompt = chatGPT(
+                                f"""Generate a  visual image description  15 words MAX for  {topic}  . think of a visually very enticing way of prompting the topic!! i want very high CTR """,
+                                model='o1')
+
+
+
                     image_url = gen_flux_img(
                         f"{random.choice(['cartoony clipart of ', 'cartoony clipart of ', ''])}  {image_prompt}")
 
