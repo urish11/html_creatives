@@ -502,6 +502,12 @@ if st.button("Generate Images"):
             topic_images = []
 
             for i in range(count):
+
+
+                if '^' in topic:
+                    topic = random.choice(topic.split("^"))
+
+
                 new_prompt = False
 
                 if "," in template_str:
@@ -532,7 +538,7 @@ if st.button("Generate Images"):
 
 
                     image_url = gen_flux_img(
-                        f"{random.choice(['cartoony clipart of ', 'cartoony clipart of ', ''])}  {image_prompt}")
+                        f"{random.choice(['cartoony clipart of ', 'cartoony clipart of ', '',''])}  {image_prompt}")
 
                     if image_url:
                         topic_images.append({
