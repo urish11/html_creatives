@@ -500,8 +500,10 @@ if st.button("Generate Images"):
 
             st.subheader(f"Generating images for: {topic}")
             topic_images = []
+            temp_topic = topic
 
             for i in range(count):
+                topic = temp_topic
 
 
                 if '^' in topic:
