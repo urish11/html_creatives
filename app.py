@@ -532,7 +532,7 @@ if st.button("Generate Images"):
 
 
                     image_url = gen_flux_img(
-                        f"{random.choice(['cartoony clipart of ', 'cartoony clipart of ', '',''])}  {image_prompt}")
+                        f"{random.choice(['cartoony clipart of ', 'cartoony clipart of ', ''])}  {image_prompt}")
 
                     if image_url:
                         topic_images.append({
