@@ -456,6 +456,84 @@ def save_html(headline, image_url, cta_text, template, output_file="advertisemen
 
 """
 
+    if template == 4:
+
+        html_template=    f"""
+        <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nursing Careers in the UK</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@700&display=swap'); /* Import Bebas Neue and Montserrat Bold fonts */
+        @font-face {{
+            font-family: 'Calibre';
+            src: url('path-to-calibre-font.woff2') format('woff2'); /* Replace with Calibre font path */
+        }}
+        body {{
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #F4F4F4;
+        }}
+        .container {{
+            position: relative;
+            width: 1000px;
+            height: 1000px;
+            background-image: url('{image_url}');
+            background-size: cover;
+            background-position: center;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }}
+        .text-overlay {{
+            position: absolute;
+            width: 95%; /* Almost full width */
+            background-color: rgba(255, 255, 255, 1); /* Transparent white background */
+            padding: 30px; /* Reduced padding */
+            border-radius: 10px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }}
+        .small-text {{
+            font-size: 36px; /* Bigger "Read more about" text */
+            font-weight: bold; /* Bold styling for "Read more about" */
+            color: #333;
+            margin-bottom: 10px; /* Reduced margin */
+            font-family: 'Calibre', Arial, sans-serif; /* Fallback to Arial */
+        }}
+        .primary-text {{
+            font-size: 60px; /* Much larger font for primary text */
+            font-weight: bold; /* Bold weight */
+            color: #FF8C00; /* Orange color */
+            font-family: 'Montserrat', sans-serif; /* Using Montserrat Bold */
+            line-height: 1.2; /* Tighter line spacing */
+            text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000; /* Black outline */
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="text-overlay">
+            <div class="small-text">{cta_text}</div>
+            <div class="primary-text">{headline}</div>
+        </div>
+    </div>
+</body>
+</html>
+        
+        
+        
+        
+        
+        """
     else:
 
         print('template not found')
@@ -600,7 +678,7 @@ if st.session_state.generated_images:
                 elif template == 3 : 
                     #headline_prompt = f"write  statement SAME LENGTH, no quotation marks, for {topic} in {lang} like 'Surprising Medicare Benefits You Might Be Missing'"
                     headline_prompt = f"write 1  statement SAME LENGTH, no quotation marks, for {re.sub('\|.*','',topic)} in {lang} like examples output:\n'Surprising Travel Perks You Might Be Missing'\n'Little-Known Tax Tricks to Save Big'\n'Dont Miss Out on These Credit Card Extras'\n'Why Most Shoppers Miss These Loyalty Rewards'\n'Home Improvement Hacks Youll Wish You Knew Sooner' \n\n\n dont use Hidden, Unlock \n  "
-
+                    
                 if lang in cta_texts:
                     cta_text = cta_texts[lang]
                 else:
@@ -608,9 +686,16 @@ if st.session_state.generated_images:
                         f"return EXACTLY JUST THE TEXT the text 'Learn More' in the following language {lang} even if it is English").replace(
                         '"', '')
                    cta_text = cta_texts[lang]
+                if template == 4:
+
+                    headline_text = topic
+                    cta_text = chatGPT(f"Retrun JUST 'Read more about' in {lang} JUST THE TEXT NO INTROS ")
+                else:
+
+                    headline_text = chatGPT(prompt = headline_prompt, model='gpt-4').strip('"').strip("'")
 
                 html_content = save_html(
-                    headline = chatGPT(prompt = headline_prompt, model='gpt-4').strip('"').strip("'"),
+                    headline = headline_text ,
 
                     image_url=img['url'],
                     cta_text=cta_text,
