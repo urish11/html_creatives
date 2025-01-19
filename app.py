@@ -689,7 +689,7 @@ if st.session_state.generated_images:
                 if template == 4:
 
                     headline_text = topic
-                    cta_text = chatGPT(f"Retrun JUST 'Read more about' in {lang} JUST THE TEXT NO INTROS ")
+                    cta_text = chatGPT(f"Retrun JUST 'Read more about' in {lang} JUST THE TEXT NO INTROS ").replace('"','')
                 else:
 
                     headline_text = chatGPT(prompt = headline_prompt, model='gpt-4').strip('"').strip("'")
