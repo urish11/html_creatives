@@ -690,7 +690,7 @@ if 'generated_images' not in st.session_state:
 # Table Input for Topics
 st.subheader("Enter Topics for Image Generation")
 df = st.data_editor(
-    pd.DataFrame({"topic": ["example_topic"], "count": [1], "lang": ["english"], "template": ["1,2,3,4 use , for multi"]}),
+    pd.DataFrame({"topic": ["example_topic"], "count": [1], "lang": ["english"], "template": ["1,2,3,4,5 use , for multi"]}),
     num_rows="dynamic",
     key="table_input"
 )
@@ -760,7 +760,7 @@ Avoid surreal or abstract elements; instead, focus on relatable yet RANDOM high-
 Do not include any text in the image.
 Your final output should be 8-13 words, written as if describing a snapshot from a camera.
 Make sure the offer’s value is unmistakably clear and visually intriguing"""
-                        image_prompt = chatGPT(rand_prompt,model='gpt-4', temperature=1.05)
+                        image_prompt = chatGPT(rand_prompt,model='gpt-4o', temperature=1.05)
                         st.markdown(image_prompt)
 
 
