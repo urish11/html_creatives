@@ -573,7 +573,7 @@ def save_html(headline, image_url, cta_text, template,tag_line = '', output_file
             height: 60%;
             background-color: #f0f0f0;
             display: flex;
-            object-fit: fill;
+            object-fit: cover;
             align-items: center;
             justify-content: center;
         }}
