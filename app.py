@@ -565,6 +565,8 @@ def save_html(headline, image_url, cta_text, template,tag_line = '', output_file
             display: flex;
             flex-direction: column;
             position: relative;
+            object-fit: fill;
+
         }}
         .image-container {{
             width: 100%;
