@@ -751,7 +751,7 @@ if st.button("Generate Images"):
                         image_prompt = chatGPT(
                                 f"""Generate a  visual image description  15 words MAX for  {topic}  . think of a visually very enticing way of prompting the topic!! i want very high CTR. use very  engaging ideas. dont do the obvious  descriptions """,
                                 model='o1-mini')
-
+                    st.markdown(image_prompt)
                     if template ==5:
                         image_url = gen_flux_img(
                         f"{random.choice(['cartoony clipart of ', 'cartoony clipart of ', '',''])}  {image_prompt}",width=688,height=416)
