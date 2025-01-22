@@ -595,10 +595,12 @@ def save_html(headline, image_url, cta_text, template,tag_line = '', output_file
             background-color: #ff0000;
             color: white;
             padding: 1rem 2rem;
-            font-size: 1.5rem;
+            font-size: 2.5rem;
             font-weight: 700;
+            
             font-family: 'Outfit', sans-serif;
             border: none;
+            font-style :italic;
             border-radius: 8px;
             cursor: pointer;
             transition: background-color 0.3s ease;
@@ -639,7 +641,7 @@ def save_html(headline, image_url, cta_text, template,tag_line = '', output_file
             <p class="rectangle-text">⛔{tag_line}⛔</p>
         </div>
         <div class="content-container">
-            <h1 class="main-text">{headline}</h1>
+            <h1 class="main-text">{headline.upper()}</h1>
             <button class="cta-button">{cta_text}</button>
         </div>
     </div>
