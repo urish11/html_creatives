@@ -753,14 +753,14 @@ if st.button("Generate Images"):
 
                         #rand_prompt = random.choice([f"""Generate a  visual image description  15 words MAX for  {topic}  . Be   creative and intriguing,think of and show the value of the offer like (examples, use whatever is relevant if relevant, or others in the same vibe, must be relevant to the offer): saving money, time, be healthier, more educated etc.. show a SENSATIONAL AND DRAMATIC SCENE  ,  don't include text in the image. make sure the offer is conveyed clearly. output is 5 words MAX, use a person in image, write what is seen like a camera! show a SENSATIONAL AND DRAMATIC SCENE VERY SIMPLISTIC SCENE, SHOW TOPIC EXPLICITLY  """,f"""Generate a visual image description (15 words MAX) for {topic}.  \nBe extremely creative, curious , and unhinged—push the limits of imagination!!!!!!!!!!!!! \nShow the value of the offer (e.g., saving money, time, improving health, or education) in a sensational, dramatic, yet very simplistic scene. The image should take 3 secs to understand what's going on while captivating the viewer \nInclude one person in the image, and clearly depict the topic. \nDo not include any text in the image. \nYour final output must be exactly 10 words, written like a camera snapshot. \nEnsure the offer is unmistakably conveyed.\n Dont descrobe surreal scenes, rather simple yet eye catching dramatic high energy everyday scene, BUT MUST BE VERY RANDOM SCENE!!"""])
                         rand_prompt = f"""Generate a concise visual image description (15 words MAX) for {topic}.
-Be wildly creative, curious, and push the limits of imagination—while staying grounded in real-life scenarios!
-Depict an everyday, highly relatable yet dramatically eye-catching scene that sparks immediate curiosity within 3 seconds.
-Ensure the image conveys the value of early detection (e.g., saving money, time, improving health, or education) in a sensational but simple way.
-The scene must feature one person, clearly illustrating the topic without confusion.
-Avoid surreal or abstract elements; instead, focus on relatable yet RANDOM high-energy moments from daily life.
-Do not include any text in the image.
-Your final output should be 8-13 words, written as if describing a snapshot from a camera.
-Make sure the offer’s value is unmistakably clear and visually intriguing"""
+                        Be wildly creative, curious, and push the limits of imagination—while staying grounded in real-life scenarios!
+                        Depict an everyday, highly relatable yet dramatically eye-catching scene that sparks immediate curiosity within 3 seconds.
+                        Ensure the image conveys the value of early detection (e.g., saving money, time, improving health, or education) in a sensational but simple way.
+                        The scene must feature one person, clearly illustrating the topic without confusion.
+                        Avoid surreal or abstract elements; instead, focus on relatable yet RANDOM high-energy moments from daily life.
+                        Do not include any text in the image.
+                        Your final output should be 8-13 words, written as if describing a snapshot from a camera.
+                        Make sure the offer’s value is unmistakably clear and visually intriguing"""
                         image_prompt = chatGPT(rand_prompt,model='gpt-4', temperature=1.2)
                         st.markdown(image_prompt)
 
@@ -853,14 +853,14 @@ if st.session_state.generated_images:
                 if template == 4:
 
                     headline_text = topic
-                    cta_text = chatGPT(f"Retrun JUST 'Read more about' in {lang} JUST THE TEXT NO INTROS ").replace('"','')
+                    cta_text = chatGPT(f"Retrun JUST 'Read more about' in {re.sub('\|.*','',topic)} JUST THE TEXT NO INTROS ").replace('"','')
                 else:
 
                     headline_text = chatGPT(prompt = headline_prompt, model='gpt-4').strip('"').strip("'")
 
 
                 if template == 5 :
-                    tag_line = chatGPT(f'write a tag line for {topic} in language {lang}, short and consice, to drive action. For example "⛔ Never Ignore These ⛔"\ndont mention the topic explicitly, rather drive action').strip('"').strip("'").strip("!")
+                    tag_line = chatGPT(f'write a tag line for {re.sub('\|.*','',topic)} in language {lang}, short and consice, to drive action. For example "⛔ Never Ignore These ⛔"\ndont mention the topic explicitly, rather drive action').strip('"').strip("'").strip("!")
                 else : tag_line = ''
 
                 html_content = save_html(
