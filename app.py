@@ -605,7 +605,7 @@ def save_html(headline, image_url, cta_text, template,tag_line = '', output_file
             background-color: #ff0000;
             color: white;
             padding: 1rem 2rem;
-            font-size: 3.5rem;
+            font-size: 3rem;
             font-weight: 700;
             
             font-family: 'Outfit', sans-serif;
