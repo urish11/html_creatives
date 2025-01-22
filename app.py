@@ -568,7 +568,7 @@ def save_html(headline, image_url, cta_text, template,tag_line = '', output_file
             object-fit: fill;
 
         }}
-        .image-container {{
+        .image-container img {{
             width: 100%;
             height: 60%;
             background-color: #f0f0f0;
