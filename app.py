@@ -891,7 +891,7 @@ if st.session_state.generated_images:
                         )
 
                         if s3_url:
-                            res[f'Image_{idx + 1}'] = s3_url
+                            res[f'Image_{idx + 1}__{i + 1}'] = s3_url
 
                 final_results.append(res)
 
