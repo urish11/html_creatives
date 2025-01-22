@@ -116,7 +116,7 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0) :
     return  content
 
 @log_function_call
-def gen_flux_img(prompt):
+def gen_flux_img(prompt,height = 784 , width =960 ):
     while True:
         try:
             url = "https://api.together.xyz/v1/images/generations"
@@ -125,8 +125,8 @@ def gen_flux_img(prompt):
                 "model": "black-forest-labs/FLUX.1-schnell-Free",
                 "steps": 4,
                 "n": 1,
-                "height":  784,
-                "width": 960,
+                "height":  height,
+                "width": width,
             }
             headers = {
                 "accept": "application/json",
@@ -172,7 +172,7 @@ def capture_html_screenshot_playwright(html_content):
         return None
 
 @log_function_call
-def save_html(headline, image_url, cta_text, template, output_file="advertisement.html"):
+def save_html(headline, image_url, cta_text, template,tag_line = '', output_file="advertisement.html"):
     if template == 1:
         html_template = f"""
 
@@ -458,6 +458,8 @@ def save_html(headline, image_url, cta_text, template, output_file="advertisemen
 
     if template == 4:
 
+    
+
         html_template=    f"""
         <!DOCTYPE html>
 <html lang="en">
@@ -534,6 +536,127 @@ def save_html(headline, image_url, cta_text, template, output_file="advertisemen
         
         
         """
+    
+    if template == 5 :
+
+        html_template=f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Landing Page Template</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+        body {{
+            width: 1000px;
+            height: 1000px;
+            margin: 0 auto;
+            font-family: 'Outfit', sans-serif;
+        }}
+        .container {{
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }}
+        .image-container {{
+            width: 100%;
+            height: 60%;
+            background-color: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }}
+        .content-container {{
+            width: 100%;
+            height: 40%;
+            background-color: #121421;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            gap: 2rem;
+        }}
+        .main-text {{
+            color: white;
+            font-size: 3rem;
+            font-weight: 700;
+            text-align: center;
+        }}
+        .cta-button {{
+            background-color: #ff0000;
+            color: white;
+            padding: 1rem 2rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }}
+        .cta-button:hover {{
+            background-color: #cc0000;
+        }}
+        .intersection-rectangle {{
+            position: absolute;
+            max-width: 70%;
+            min-width: max-content;
+            height: 80px;
+            background-color: #121421;
+            left: 50%;
+            transform: translateX(-50%);
+            top: calc(60% - 40px);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 40px;
+        }}
+        .rectangle-text {{
+            color: yellow;
+            font-weight: 700;
+            text-align: center;
+            font-size: 39px;
+            white-space: nowrap;
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="image-container">
+            <img src="{image_url}" alt="Placeholder image">
+        </div>
+        <div class="intersection-rectangle">
+            <p class="rectangle-text">⛔{tag_line}⛔</p>
+        </div>
+        <div class="content-container">
+            <h1 class="main-text">{headline}</h1>
+            <button class="cta-button">{cta_text}</button>
+        </div>
+    </div>
+</body>
+</html>
+        
+
+
+
+
+
+
+
+
+
+"""
+    
     else:
 
         print('template not found')
@@ -588,6 +711,9 @@ if st.button("Generate Images"):
                     topic = random.choice(topic.split("^"))
 
 
+
+
+
                 new_prompt = False
 
                 if "," in template_str:
@@ -602,22 +728,35 @@ if st.button("Generate Images"):
                     template = int(template_str)
 
 
+
+
+                    
+
                 with st.spinner(f"Generating image {i + 1} for '{topic}'..."):
 
-                    if not new_prompt:
+                    if template== 5 :
+
+                        rand_prompt = random.choice(["""Generate a  visual image description  15 words MAX for  {topic}  . Be   creative and intriguing,think of and show the value of the offer like (examples, use whatever is relevant if relevant, or others in the same vibe, must be relevant to the offer): saving money, time, be healthier, more educated etc.. show a SENSATIONAL AND DRAMATIC SCENE  ,  don't include text in the image. make sure the offer is conveyed clearly. output is 5 words MAX, use a person in image, write what is seen like a camera! show a SENSATIONAL AND DRAMATIC SCENE VERY SIMPLISTIC SCENE, SHOW TOPIC EXPLICITLY  ""","""Generate a visual image description (15 words MAX) for {topic}. \nBe bold, creative, and intriguing—think outside the box but ensure the topic remains clear. \nIllustrate the value of the offer (e.g., saving money, time, improving health, or education) in a sensational and dramatic yet simple scene. \nInclude one person in the image, and clearly depict the topic. \nDo not include any text in the image. \nYour final output must be exactly 8 words, written as if describing a camera shot. \nThe scene should be unusual enough to grab attention but still instantly relatable to the topic."""])
+                        image_prompt = chatGPT(rand_prompt,model='gpt-4o', temperature=1.15)
+
+
+
+                    elif not new_prompt:
                         image_prompt = chatGPT(
                             f"""Generate a  visual image description  15 words MAX for  {topic}  . Be   creative and intriguing,think of and show the value of the offer like (examples, use whatever is relevant if relevant, or others in the same vibe, must be relevant to the offer): saving money, time, be healthier, more educated etc.. show a SENSATIONAL AND DRAMATIC SCENE  ,  don't include text in the image. make sure the offer is conveyed clearly. output is 5 words MAX, use a person in image, write what is seen like a camera! show a SENSATIONAL AND DRAMATIC SCENE VERY SIMPLISTIC SCENE, SHOW TOPIC EXPLICITLY  """,
                             model='gpt-4', temperature=1.15)  # Your existing prompt
 
-                    if new_prompt : 
+                    elif new_prompt : 
 
                         image_prompt = chatGPT(
                                 f"""Generate a  visual image description  15 words MAX for  {topic}  . think of a visually very enticing way of prompting the topic!! i want very high CTR. use very  engaging ideas. dont do the obvious  descriptions """,
                                 model='o1-mini')
 
-
-
-                    image_url = gen_flux_img(
+                    if template ==5:
+                        image_url = gen_flux_img(
+                        f"{random.choice(['cartoony clipart of ', 'cartoony clipart of ', '',''])}  {image_prompt}",width=688,height=416)
+                    else:
+                        image_url = gen_flux_img(
                         f"{random.choice(['cartoony clipart of ', 'cartoony clipart of ', '',''])}  {image_prompt}")
 
                     if image_url:
@@ -675,7 +814,7 @@ if st.session_state.generated_images:
                 if template == 1 or template == 2:
                     headline_prompt = f"write a short text (up to 20 words) for a creative to promote an article containing information about {topic} in language{lang} , your goal is to be concise but convenience users to enter the article"
                     
-                elif template == 3 : 
+                elif template in [3,5]  : 
                     #headline_prompt = f"write  statement SAME LENGTH, no quotation marks, for {topic} in {lang} like 'Surprising Medicare Benefits You Might Be Missing'"
                     headline_prompt = f"write 1  statement SAME LENGTH, no quotation marks, for {re.sub('\|.*','',topic)} in {lang} like examples output:\n'Surprising Travel Perks You Might Be Missing'\n'Little-Known Tax Tricks to Save Big'\n'Dont Miss Out on These Credit Card Extras'\n'Why Most Shoppers Miss These Loyalty Rewards'\n'Home Improvement Hacks Youll Wish You Knew Sooner' \n\n\n dont use Hidden, Unlock \n  "
                     
@@ -694,12 +833,18 @@ if st.session_state.generated_images:
 
                     headline_text = chatGPT(prompt = headline_prompt, model='gpt-4').strip('"').strip("'")
 
+
+                if template == 5 :
+                    tag_line = chatGPT(f'write a tag line for {topic} in language {eng}, short and consice, to drive action. For example "⛔ Never Ignore These ⛔"\ndont mention the topic explicitly, rather drive action')
+                else : tag_line = ''
+
                 html_content = save_html(
                     headline = headline_text ,
 
                     image_url=img['url'],
                     cta_text=cta_text,
-                    template=template
+                    template=template,
+                    tag_line=tag_line
                 )
 
                 # Capture screenshot
