@@ -582,7 +582,7 @@ def save_html(headline, image_url, cta_text, template,tag_line = '', output_file
     object-fit: cover;}}
 
 
-    
+
         .content-container {{
             width: 100%;
             height: 40%;
@@ -847,7 +847,7 @@ if st.session_state.generated_images:
 
 
                 if template == 5 :
-                    tag_line = chatGPT(f'write a tag line for {topic} in language {lang}, short and consice, to drive action. For example "⛔ Never Ignore These ⛔"\ndont mention the topic explicitly, rather drive action')
+                    tag_line = chatGPT(f'write a tag line for {topic} in language {lang}, short and consice, to drive action. For example "⛔ Never Ignore These ⛔"\ndont mention the topic explicitly, rather drive action').strip('"').strip("'")
                 else : tag_line = ''
 
                 html_content = save_html(
