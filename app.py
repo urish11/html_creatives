@@ -812,12 +812,13 @@ if st.session_state.generated_images:
 
         for idx, (col, img) in enumerate(zip(cols, images)):
             with col:
-                st.image(img['url'], use_container_width =True)
-                unique_key = f"checkbox_{topic}_{lang}_{idx}"
-                img['selected'] = st.checkbox(
-                    f"Select image {idx + 1}",
-                    key=unique_key
+                st.image(img['url'], use_container_width=True)
+                unique_key = f"num_select_{topic}_{lang}_{idx}"
+                img['selected_count'] = st.number_input(
+                    f"How many final images?", 
+                    min_value=0, max_value=10, value=0, key=unique_key
                 )
+
 
     # Step 2: Process Selected Images
     if st.button("Process Selected Images"):
@@ -829,68 +830,70 @@ if st.session_state.generated_images:
             images = entry["images"]
 
             res = {'Topic': topic, 'Language': lang}
-            selected_images = [img for img in images if img['selected']]
+            selected_images = [img for img in images if img['selected_count'] > 0]
 
             cta_texts = {}
 
             for idx, img in enumerate(selected_images):  # Generate HTML with the selected image
-                template = img['template']
+                for i in range(img['selected_count']):  # Generate multiple times based on user input
 
-                if template == 1 or template == 2:
-                    headline_prompt = f"write a short text (up to 20 words) for a creative to promote an article containing information about {topic} in language{lang} , your goal is to be concise but convenience users to enter the article"
-                    
-                elif template in [3,5]  : 
-                    #headline_prompt = f"write  statement SAME LENGTH, no quotation marks, for {topic} in {lang} like 'Surprising Medicare Benefits You Might Be Missing'"
-                    headline_prompt = f"write 1  statement SAME LENGTH, no quotation marks, for {re.sub('\|.*','',topic)} in {lang} like examples output:\n'Surprising Travel Perks You Might Be Missing'\n'Little-Known Tax Tricks to Save Big'\n'Dont Miss Out on These Credit Card Extras'\n'Why Most Shoppers Miss These Loyalty Rewards'\n'Home Improvement Hacks Youll Wish You Knew Sooner' \n\n\n dont use Hidden, Unlock \n  "
-                    
-                if lang in cta_texts:
+                    template = img['template']
+
+                    if template == 1 or template == 2:
+                        headline_prompt = f"write a short text (up to 20 words) for a creative to promote an article containing information about {topic} in language{lang} , your goal is to be concise but convenience users to enter the article"
+                        
+                    elif template in [3,5]  : 
+                        #headline_prompt = f"write  statement SAME LENGTH, no quotation marks, for {topic} in {lang} like 'Surprising Medicare Benefits You Might Be Missing'"
+                        headline_prompt = f"write 1  statement SAME LENGTH, no quotation marks, for {re.sub('\|.*','',topic)} in {lang} like examples output:\n'Surprising Travel Perks You Might Be Missing'\n'Little-Known Tax Tricks to Save Big'\n'Dont Miss Out on These Credit Card Extras'\n'Why Most Shoppers Miss These Loyalty Rewards'\n'Home Improvement Hacks Youll Wish You Knew Sooner' \n\n\n dont use Hidden, Unlock \n  "
+                        
+                    if lang in cta_texts:
+                        cta_text = cta_texts[lang]
+                    else:
+                        cta_texts[lang]  = chatGPT(
+                            f"return EXACTLY JUST THE TEXT the text 'Learn More' in the following language {lang} even if it is English").replace(
+                            '"', '')
                     cta_text = cta_texts[lang]
-                else:
-                   cta_texts[lang]  = chatGPT(
-                        f"return EXACTLY JUST THE TEXT the text 'Learn More' in the following language {lang} even if it is English").replace(
-                        '"', '')
-                   cta_text = cta_texts[lang]
-                if template == 4:
+                    if template == 4:
 
-                    headline_text = topic
-                    cta_text = chatGPT(f"Retrun JUST 'Read more about' in {re.sub('\|.*','',topic)} JUST THE TEXT NO INTROS ").replace('"','')
-                else:
+                        headline_text = topic
+                        cta_text = chatGPT(f"Retrun JUST 'Read more about' in {re.sub('\|.*','',topic)} JUST THE TEXT NO INTROS ").replace('"','')
+                    else:
 
-                    headline_text = chatGPT(prompt = headline_prompt, model='gpt-4').strip('"').strip("'")
+                        headline_text = chatGPT(prompt = headline_prompt, model='gpt-4').strip('"').strip("'")
 
 
-                if template == 5 :
-                    tag_line = chatGPT(f'write a tag line for {re.sub('\|.*','',topic)} in language {lang}, short and consice, to drive action. For example "⛔ Never Ignore These ⛔"\ndont mention the topic explicitly, rather drive action').strip('"').strip("'").strip("!")
-                else : tag_line = ''
+                    if template == 5 :
+                        tag_line = chatGPT(f'write a tag line for {re.sub('\|.*','',topic)} in language {lang}, short and consice, to drive action. For example "⛔ Never Ignore These ⛔"\ndont mention the topic explicitly, rather drive action').strip('"').strip("'").strip("!")
+                    else : tag_line = ''
 
-                html_content = save_html(
-                    headline = headline_text ,
+                    html_content = save_html(
+                        headline = headline_text ,
 
-                    image_url=img['url'],
-                    cta_text=cta_text,
-                    template=template,
-                    tag_line=tag_line
-                )
-
-                # Capture screenshot
-                screenshot_image = capture_html_screenshot_playwright(html_content)
-
-                if screenshot_image:
-                    st.image(screenshot_image, caption=f"Generated Advertisement for {topic}", width=600)
-
-                    # Upload to S3
-                    s3_url = upload_pil_image_to_s3(
-                        image=screenshot_image,
-                        bucket_name=S3_BUCKET_NAME,
-                        aws_access_key_id=AWS_ACCESS_KEY_ID,
-                        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-                        region_name=AWS_REGION
+                        image_url=img['url'],
+                        cta_text=cta_text,
+                        template=template,
+                        tag_line=tag_line
                     )
 
-                    if s3_url:
-                        res[f'Image_{idx + 1}'] = s3_url
+                    # Capture screenshot
+                    screenshot_image = capture_html_screenshot_playwright(html_content)
 
-            final_results.append(res)
+                    if screenshot_image:
+                        st.image(screenshot_image, caption=f"Generated Advertisement for {topic}", width=600)
+
+                        # Upload to S3
+                        s3_url = upload_pil_image_to_s3(
+                            image=screenshot_image,
+                            bucket_name=S3_BUCKET_NAME,
+                            aws_access_key_id=AWS_ACCESS_KEY_ID,
+                            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+                            region_name=AWS_REGION
+                        )
+
+                        if s3_url:
+                            res[f'Image_{idx + 1}'] = s3_url
+
+                final_results.append(res)
 
         # Display Final Results
         if final_results:
