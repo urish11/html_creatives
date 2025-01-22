@@ -568,15 +568,21 @@ def save_html(headline, image_url, cta_text, template,tag_line = '', output_file
             object-fit: fill;
 
         }}
-        .image-container img {{
-            width: 100%;
-            height: 60%;
-            background-color: #f0f0f0;
-            display: flex;
-            object-fit: cover;
-            align-items: center;
-            justify-content: center;
-        }}
+ .image-container {{
+    width: 100%;
+    height: 60%;
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}}
+.image-container img {{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;}}
+
+
+    
         .content-container {{
             width: 100%;
             height: 40%;
