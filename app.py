@@ -109,6 +109,7 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0) :
     }
     data = {
         'model': model,
+        'temperature': temperature,
         'messages': [{'role': 'user', 'content': prompt}]
     }
     response = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=data)
