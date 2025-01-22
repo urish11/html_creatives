@@ -836,7 +836,7 @@ if st.session_state.generated_images:
 
 
                 if template == 5 :
-                    tag_line = chatGPT(f'write a tag line for {topic} in language {eng}, short and consice, to drive action. For example "⛔ Never Ignore These ⛔"\ndont mention the topic explicitly, rather drive action')
+                    tag_line = chatGPT(f'write a tag line for {topic} in language {lang}, short and consice, to drive action. For example "⛔ Never Ignore These ⛔"\ndont mention the topic explicitly, rather drive action')
                 else : tag_line = ''
 
                 html_content = save_html(
