@@ -651,7 +651,7 @@ def save_html(headline, image_url, cta_text, template,tag_line = '', output_file
             <img src="{image_url}" alt="Placeholder image">
         </div>
         <div class="intersection-rectangle">
-            <p class="rectangle-text">⛔{tag_line.upper()}⛔</p>
+            <p class="rectangle-text">{tag_line.upper()}</p>
         </div>
         <div class="content-container">
             <h1 class="main-text">{headline.upper()}</h1>
