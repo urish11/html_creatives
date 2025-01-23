@@ -863,7 +863,7 @@ if st.session_state.generated_images:
 
 
                     if template == 5 :
-                        tag_line = chatGPT(f'write a tag line for {re.sub('\|.*','',topic)} in language {lang}, short and consice, to drive action. For example "⛔ Never Ignore These ⛔" with appropriate emojis, not necessarily the No Entry ⛔ emoji!! only if it fits  \ndont mention the topic explicitly, rather drive action, max 25 chars').strip('"').strip("'").strip("!")
+                        tag_line = chatGPT(f'write a tag line for {re.sub('\|.*','',topic)} in language {lang}, short and consice, to drive action. For example "⛔ Never Ignore These ⛔" with appropriate emojis, not necessarily the No Entry ⛔ emoji!! only if it fits the text!!! \ndont mention the topic explicitly, rather drive action, max 25 chars').strip('"').strip("'").strip("!")
                     else : tag_line = ''
 
                     html_content = save_html(
