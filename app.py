@@ -680,7 +680,7 @@ def save_html(headline, image_url, cta_text, template,tag_line = '', output_file
     else:
 
         print('template not found')
-
+    st.markdown(html_template)
     return html_template
 
 
