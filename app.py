@@ -539,8 +539,9 @@ def save_html(headline, image_url, cta_text, template,tag_line = '', output_file
         """
     
     if template == 5 :
-
+        st.markdown(headline)
         headline = headline.replace("""</span>""","""</span> """)
+        st.markdown(headline)
 
         html_template=f"""
 <!DOCTYPE html>
