@@ -539,9 +539,7 @@ def save_html(headline, image_url, cta_text, template,tag_line = '', output_file
         """
     
     if template == 5 :
-        st.markdown(headline)
-        headline = str(headline).replace("""/span>""","""/span> """)
-        st.markdown(headline)
+    
 
         html_template=f"""
 <!DOCTYPE html>
@@ -880,8 +878,13 @@ if st.session_state.generated_images:
 
                     if template == 5 :
                         tag_line = chatGPT(f"write a tag line for {re.sub('\|.*','',topic)} in language {lang}, short and consice, to drive action. For example '⛔ Never Ignore These ⛔' with appropriate emojis, not necessarily the No Entry ⛔ emoji!! only if it fits the text!!! \ndont mention the topic explicitly, rather drive action, max 25 chars, ALL CAPS, ").strip('"').strip("'").strip("!")
+
+                        headline_text = headline_text.replace("</span>","</span> ")
+
+
                     else : tag_line = ''
 
+                    
                     html_content = save_html(
                         headline = headline_text ,
 
