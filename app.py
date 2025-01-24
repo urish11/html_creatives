@@ -869,6 +869,7 @@ if st.session_state.generated_images:
                     else:
 
                         headline_text = chatGPT(prompt = headline_prompt, model='gpt-4').strip('"').strip("'")
+                        st.markdown(headline_text)
 
 
                     if template == 5 :
