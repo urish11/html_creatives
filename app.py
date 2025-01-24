@@ -647,6 +647,7 @@ def save_html(headline, image_url, cta_text, template,tag_line = '', output_file
         .highlight {{
         color: white;
             font-size: 3.5rem;
+            font-style :italic;
             font-weight: 1000;
             text-align: center;
     /color: #66FF00; /* Yellow color */
@@ -683,7 +684,6 @@ def save_html(headline, image_url, cta_text, template,tag_line = '', output_file
     else:
 
         print('template not found')
-    st.markdown(html_template)
     return html_template
 
 
