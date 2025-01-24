@@ -659,7 +659,7 @@ def save_html(headline, image_url, cta_text, template,tag_line = '', output_file
             <p class="rectangle-text">{tag_line.upper()}</p>
         </div>
         <div class="content-container">
-            <h1 class="main-text">{headline.upper()}</h1>
+            <h1 class="main-text">{headline}</h1>
             <button class="cta-button">{cta_text}</button>
         </div>
     </div>
@@ -853,7 +853,7 @@ if st.session_state.generated_images:
 
                     elif template in [5]  : 
                         #headline_prompt = f"write  statement SAME LENGTH, no quotation marks, for {topic} in {lang} like 'Surprising Medicare Benefits You Might Be Missing'"
-                        headline_prompt = f"write 1  statement SAME LENGTH, no quotation marks, for {re.sub('\|.*','',topic)} in {lang} like examples output:\n'Surprising Travel Perks You Might Be Missing'\n'Little-Known Tax Tricks to Save Big'\n'Dont Miss Out on These Credit Card Extras'\n'Why Most Shoppers Miss These Loyalty Rewards'\n'Home Improvement Hacks Youll Wish You Knew Sooner' \n\n\n dont use Hidden, Unlock \n wrap the most important word with <span class='highlight'>Demintia</span>  "
+                        headline_prompt = f"write 1  statement SAME LENGTH, no quotation marks, for {re.sub('\|.*','',topic)} in {lang} like examples output:\n'Surprising Travel Perks You Might Be Missing'\n'Little-Known Tax Tricks to Save Big'\n'Dont Miss Out on These Credit Card Extras'\n'Why Most Shoppers Miss These Loyalty Rewards'\n'Home Improvement Hacks Youll Wish You Knew Sooner' \n\n\n dont use Hidden, Unlock\nALL IN TEXT IN CAPS \n wrap the most important word with <span class='highlight'>Demintia</span>  "
                         
                     if lang in cta_texts:
                         cta_text = cta_texts[lang]
