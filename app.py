@@ -663,7 +663,7 @@ def save_html(headline, image_url, cta_text, template,tag_line = '', output_file
             <p class="rectangle-text">{tag_line.upper()}</p>
         </div>
         <div class="content-container">
-            <h1 class="main-text">{headline.replace("""</span>","</span> """)}</h1>
+            <h1 class="main-text">{headline.replace("""</span>""","""</span> """)}</h1>
             <button class="cta-button">{cta_text}</button>
         </div>
     </div>
