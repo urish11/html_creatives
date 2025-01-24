@@ -646,7 +646,7 @@ def save_html(headline, image_url, cta_text, template,tag_line = '', output_file
 
         .highlight {{
         color: white;
-            font-size: 4rem;
+            font-size: 3.5rem;
             font-weight: 1000;
             text-align: center;
     /color: #66FF00; /* Yellow color */
