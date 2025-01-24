@@ -603,7 +603,7 @@ def save_html(headline, image_url, cta_text, template,tag_line = '', output_file
             text-align: center;
         }}
         .cta-button {{
-            background-color: #ff0000;
+            background-color: red;
             color: white;
             padding: 1rem 2rem;
             font-size: 3.5rem;
