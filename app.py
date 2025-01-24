@@ -637,7 +637,7 @@ def save_html(headline, image_url, cta_text, template,tag_line = '', output_file
         .rectangle-text {{
         font-family: 'Noto Color Emoji', sans-serif;
 
-            color: red;
+            color: yellow;
             font-weight: 700;
             text-align: center;
             font-size: 45px;
