@@ -847,9 +847,13 @@ if st.session_state.generated_images:
                     if template == 1 or template == 2:
                         headline_prompt = f"write a short text (up to 20 words) for a creative to promote an article containing information about {topic} in language{lang} , your goal is to be concise but convenience users to enter the article"
                         
-                    elif template in [3,5]  : 
+                    elif template in [3]  : 
                         #headline_prompt = f"write  statement SAME LENGTH, no quotation marks, for {topic} in {lang} like 'Surprising Medicare Benefits You Might Be Missing'"
                         headline_prompt = f"write 1  statement SAME LENGTH, no quotation marks, for {re.sub('\|.*','',topic)} in {lang} like examples output:\n'Surprising Travel Perks You Might Be Missing'\n'Little-Known Tax Tricks to Save Big'\n'Dont Miss Out on These Credit Card Extras'\n'Why Most Shoppers Miss These Loyalty Rewards'\n'Home Improvement Hacks Youll Wish You Knew Sooner' \n\n\n dont use Hidden, Unlock \n  "
+
+                    elif template in [5]  : 
+                        #headline_prompt = f"write  statement SAME LENGTH, no quotation marks, for {topic} in {lang} like 'Surprising Medicare Benefits You Might Be Missing'"
+                        headline_prompt = f"write 1  statement SAME LENGTH, no quotation marks, for {re.sub('\|.*','',topic)} in {lang} like examples output:\n'Surprising Travel Perks You Might Be Missing'\n'Little-Known Tax Tricks to Save Big'\n'Dont Miss Out on These Credit Card Extras'\n'Why Most Shoppers Miss These Loyalty Rewards'\n'Home Improvement Hacks Youll Wish You Knew Sooner' \n\n\n dont use Hidden, Unlock \n wrap the most important word with <span class='highlight'>Demintia</span>  "
                         
                     if lang in cta_texts:
                         cta_text = cta_texts[lang]
@@ -868,7 +872,7 @@ if st.session_state.generated_images:
 
 
                     if template == 5 :
-                        tag_line = chatGPT(f"write a tag line for {re.sub('\|.*','',topic)} in language {lang}, short and consice, to drive action. For example '⛔ Never Ignore These ⛔' with appropriate emojis, not necessarily the No Entry ⛔ emoji!! only if it fits the text!!! \ndont mention the topic explicitly, rather drive action, max 25 chars, ALL CAPS, wrap the most important word with "<span class='highlight'>Demintia</span> ").strip('"').strip("'").strip("!")
+                        tag_line = chatGPT(f"write a tag line for {re.sub('\|.*','',topic)} in language {lang}, short and consice, to drive action. For example '⛔ Never Ignore These ⛔' with appropriate emojis, not necessarily the No Entry ⛔ emoji!! only if it fits the text!!! \ndont mention the topic explicitly, rather drive action, max 25 chars, ALL CAPS, ").strip('"').strip("'").strip("!")
                     else : tag_line = ''
 
                     html_content = save_html(
