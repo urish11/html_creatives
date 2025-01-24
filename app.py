@@ -603,7 +603,7 @@ def save_html(headline, image_url, cta_text, template,tag_line = '', output_file
             text-align: center;
         }}
         .cta-button {{
-            background-color: red;
+            background-color: #ff0000;
             color: white;
             padding: 1rem 2rem;
             font-size: 3.5rem;
@@ -637,7 +637,7 @@ def save_html(headline, image_url, cta_text, template,tag_line = '', output_file
         .rectangle-text {{
         font-family: 'Noto Color Emoji', sans-serif;
 
-            color: yellow;
+            color: red;
             font-weight: 700;
             text-align: center;
             font-size: 45px;
