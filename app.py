@@ -710,7 +710,7 @@ def save_html(headline, image_url, cta_text, template,tag_line = '', output_file
             position: relative;
             width: 1000px;
             height: 1000px;
-            background-image: url('https://i.ibb.co/ScyVxmS/03950daff6d7fe18e184d490f6d1c51a5cdf7cad9b62f933fc0a4dae5aa981c2.jpg');
+            background-image: url('{image_url}');
             background-size: cover;
             background-position: center;
             border-radius: 10px;
@@ -791,7 +791,7 @@ def save_html(headline, image_url, cta_text, template,tag_line = '', output_file
             position: relative;
             width: 1000px;
             height: 1000px;
-            background-image: url('https://i.ibb.co/ScyVxmS/03950daff6d7fe18e184d490f6d1c51a5cdf7cad9b62f933fc0a4dae5aa981c2.jpg');
+            background-image: url('{image_url}');
             background-size: cover;
             background-position: center;
             border-radius: 10px;
