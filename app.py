@@ -682,6 +682,168 @@ def save_html(headline, image_url, cta_text, template,tag_line = '', output_file
 
 """
     
+    if template == 41:
+        html_template = f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nursing Careers in the UK</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@700&display=swap'); /* Import Bebas Neue and Montserrat Bold fonts */
+        @font-face {{
+            font-family: 'Calibre';
+            src: url('path-to-calibre-font.woff2') format('woff2'); /* Replace with Calibre font path */
+        }}
+        body {{
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #F4F4F4;
+        }}
+        .container {{
+            position: relative;
+            width: 1000px;
+            height: 1000px;
+            background-image: url('https://i.ibb.co/ScyVxmS/03950daff6d7fe18e184d490f6d1c51a5cdf7cad9b62f933fc0a4dae5aa981c2.jpg');
+            background-size: cover;
+            background-position: center;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }}
+        .text-overlay {{
+            position: absolute;
+            width: 95%; /* Almost full width */
+            background-color: rgba(255, 255, 255, 1); /* Transparent white background */
+            padding: 30px; /* Reduced padding */
+            border-radius: 10px;
+            top: 15%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }}
+        .small-text {{
+            font-size: 36px; /* Bigger "Read more about" text */
+            font-weight: bold; /* Bold styling for "Read more about" */
+            color: #333;
+            margin-bottom: 10px; /* Reduced margin */
+            font-family: 'Calibre', Arial, sans-serif; /* Fallback to Arial */
+        }}
+        .primary-text {{
+            font-size: 60px; /* Much larger font for primary text */
+            font-weight: bold; /* Bold weight */
+            color: #FF8C00; /* Orange color */
+            font-family: 'Montserrat', sans-serif; /* Using Montserrat Bold */
+            line-height: 1.2; /* Tighter line spacing */
+            text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000; /* Black outline */
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="text-overlay">
+            <div class="small-text">{cta_text}</div>
+            <div class="primary-text">{headline}</div>
+        </div>
+    </div>
+</body>
+</html>
+
+
+
+
+
+        """
+
+
+    if template == 42:
+
+
+        html_template = f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nursing Careers in the UK</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@700&display=swap'); /* Import Bebas Neue and Montserrat Bold fonts */
+        @font-face {{
+            font-family: 'Calibre';
+            src: url('path-to-calibre-font.woff2') format('woff2'); /* Replace with Calibre font path */
+        }}
+        body {{
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #F4F4F4;
+        }}
+        .container {{
+            position: relative;
+            width: 1000px;
+            height: 1000px;
+            background-image: url('https://i.ibb.co/ScyVxmS/03950daff6d7fe18e184d490f6d1c51a5cdf7cad9b62f933fc0a4dae5aa981c2.jpg');
+            background-size: cover;
+            background-position: center;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }}
+        .text-overlay {{
+            position: absolute;
+            width: 95%; /* Almost full width */
+            background-color: rgba(255, 255, 255, 1); /* Transparent white background */
+            padding: 30px; /* Reduced padding */
+            border-radius: 10px;
+            top: 90%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }}
+        .small-text {{
+            font-size: 36px; /* Bigger "Read more about" text */
+            font-weight: bold; /* Bold styling for "Read more about" */
+            color: #333;
+            margin-bottom: 10px; /* Reduced margin */
+            font-family: 'Calibre', Arial, sans-serif; /* Fallback to Arial */
+        }}
+        .primary-text {{
+            font-size: 60px; /* Much larger font for primary text */
+            font-weight: bold; /* Bold weight */
+            color: #FF8C00; /* Orange color */
+            font-family: 'Montserrat', sans-serif; /* Using Montserrat Bold */
+            line-height: 1.2; /* Tighter line spacing */
+            text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000; /* Black outline */
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="text-overlay">
+            <div class="small-text">{cta_text}</div>
+            <div class="primary-text">{headline}</div>
+        </div>
+    </div>
+</body>
+</html>
+        
+        
+        
+
+
+
+
+"""
+
+
     else:
 
         print('template not found')
