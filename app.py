@@ -862,7 +862,7 @@ if 'generated_images' not in st.session_state:
 # Table Input for Topics
 st.subheader("Enter Topics for Image Generation")
 df = st.data_editor(
-    pd.DataFrame({"topic": ["example_topic"], "count": [1], "lang": ["english"], "template": ["1,2,3,4,5 use , for multi"]}),
+    pd.DataFrame({"topic": ["example_topic"], "count": [1], "lang": ["english"], "template": ["1,2,3,4,41,42,5 use , for multi"]}),
     num_rows="dynamic",
     key="table_input"
 )
@@ -948,7 +948,7 @@ if st.button("Generate Images"):
                                 f"""Generate a  visual image description  15 words MAX for  {topic}  . think of a visually very enticing way of prompting the topic!! i want very high CTR. use very  engaging ideas. dont do the obvious  descriptions """,
                                 model='o1-mini')
 
-                    if template ==5:
+                    if template == 5:
                         image_url = gen_flux_img(
                         f"{random.choice(['cartoony clipart of ', 'cartoony clipart of ', '',''])}  {image_prompt}",width=688,height=416)
                     else:
@@ -1028,7 +1028,7 @@ if st.session_state.generated_images:
                             f"return EXACTLY JUST THE TEXT the text 'Learn More' in the following language {lang} even if it is English").replace(
                             '"', '')
                     cta_text = cta_texts[lang]
-                    if template == 4:
+                    if template in [4,41,42]:
 
                         headline_text = topic
                         cta_text = chatGPT(f"Retrun JUST 'Read more about' in {lang} JUST THE TEXT NO INTROS ").replace('"','')
