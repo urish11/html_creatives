@@ -1033,7 +1033,7 @@ if st.session_state.generated_images:
             with col:
                 st.image(img['url'], use_container_width=True)
                 unique_key = f"num_select_{topic}_{lang}_{idx}"
-                img['selected_count'] = st.number_input(
+                img['selected_count'] = st.number_input("",
                      
                     min_value=0, max_value=10, value=0, key=unique_key
                 )
