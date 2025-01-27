@@ -5,3 +5,4 @@ pillow
 boto3
 botocore
 playwright
+google_images_search
