@@ -47,11 +47,11 @@ def fetch_google_images(query, num_images=3):
     search_params = {
         'q': query,
         'num': num_images,
-        'safe': 'high',  # SafeSearch level
-        'fileType': 'jpg|png',
-        'imgSize': 'large',  # Options: icon, medium, large, xlarge, xxlarge, huge
-        'imgType': 'photo',
-        'rights': 'cc_publicdomain'  # Public domain images
+        #'safe': 'high',  # SafeSearch level
+        #'fileType': 'jpg|png',
+        #'imgSize': 'large',  # Options: icon, medium, large, xlarge, xxlarge, huge
+        #'imgType': 'photo',
+        #'rights': 'cc_publicdomain'  # Public domain images
     }
 
     try:
