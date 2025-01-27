@@ -923,6 +923,7 @@ if st.button("Generate Images"):
 
 
         if "google" in topic.lower():
+            topic = topic.replace('google','')
             # Fetch images from Google Images
             google_image_urls = fetch_google_images(topic, num_images=int(count))
 
