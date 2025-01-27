@@ -25,6 +25,18 @@ logger = logging.getLogger(__name__)
 
 
 
+
+
+def log_function_call(func):
+    def wrapper(*args, **kwargs):
+        logger.info(f"CALL: {func.__name__} - args: {args}, kwargs: {kwargs}")
+        result = func(*args, **kwargs)
+        logger.info(f"RETURN: {func.__name__} -> {result}")
+        return result
+    return wrapper
+
+
+
 @log_function_call
 def fetch_google_images(query, num_images=3):
     API_KEY = st.secrets["GOOGLE_API_KEY"]
@@ -50,18 +62,6 @@ def fetch_google_images(query, num_images=3):
     except Exception as e:
         st.error(f"Error fetching Google Images for '{query}': {e}")
         return []
-
-
-
-
-def log_function_call(func):
-    def wrapper(*args, **kwargs):
-        logger.info(f"CALL: {func.__name__} - args: {args}, kwargs: {kwargs}")
-        result = func(*args, **kwargs)
-        logger.info(f"RETURN: {func.__name__} -> {result}")
-        return result
-    return wrapper
-
 
 
 
