@@ -39,7 +39,7 @@ def log_function_call(func):
 
 @log_function_call
 def fetch_google_images(query, num_images=3):
-    st.markdown(random.choice( list(st.secrets["GOOGLE_API_KEY"])))
+    st.markdown(random.choice( (list(st.secrets["GOOGLE_API_KEY"]))))
     API_KEY =random.choice( st.secrets["GOOGLE_API_KEY"])
     CX = st.secrets["GOOGLE_CX"]
 
