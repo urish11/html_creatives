@@ -57,7 +57,7 @@ def fetch_google_images(query, num_images=3):
     try:
         gis.search(search_params)
         image_urls = [result.url for result in gis.results()]
-        st.markdown(gis.results())
+        # st.markdown(gis.results())
         return image_urls
 
     except Exception as e:
