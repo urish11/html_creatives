@@ -39,7 +39,7 @@ def log_function_call(func):
 
 @log_function_call
 def fetch_google_images(query, num_images=3):
-    st.markdown(( (st.secrets["GOOGLE_API_KEY"])))
+    
     API_KEY =random.choice( st.secrets["GOOGLE_API_KEY"])
     CX = st.secrets["GOOGLE_CX"]
 
@@ -926,7 +926,12 @@ if st.button("Generate Images"):
         if "google" in topic.lower():
             topic = topic.replace('google',' ')
             # Fetch images from Google Images
-            google_image_urls = fetch_google_images(topic, num_images=int(count))
+            if '|' in topic:
+                topic_for_google = re.sub("^.*\|","",topic)
+            else:
+                topic_for_google = topic
+
+            google_image_urls = fetch_google_images(topic_for_google, num_images=int(count))
 
             for img_url in google_image_urls:
                 topic_images.append({
@@ -1034,7 +1039,7 @@ if st.session_state.generated_images:
                 st.image(img['url'], use_container_width=True)
                 unique_key = f"num_select_{topic}_{lang}_{idx}"
                 img['selected_count'] = st.number_input(
-                    f"?", 
+                    f"How many pics?", 
                     min_value=0, max_value=10, value=0, key=unique_key
                 )
 
