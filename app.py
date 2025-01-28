@@ -1051,29 +1051,7 @@ if st.session_state.generated_images:
                         min_value=0, max_value=10, value=0, key=unique_key
                     )
 
-    for entry in st.session_state.generated_images:
-        topic = entry["topic"]
-        lang = entry["lang"]
-        images = entry["images"]
-
-        st.write(f"### {topic} ({lang})")
-
-        # Create a horizontal scrolling container
-        row_html = '<div class="scrolling-row">'
-        for idx, img in enumerate(images):
-            unique_key = f"num_select_{topic}_{lang}_{idx}"
-            row_html += f"""
-                <div style="display: inline-block; text-align: center;">
-                    <img src="{img['url']}" style="width: {zoom}px;">
-                    <div>
-                        <label>Count:</label>
-                        <input type="number" id="{unique_key}" name="{unique_key}" min="0" max="10" value="{img.get('selected_count', 0)}" style="width: 50px;">
-                    </div>
-                </div>
-            """
-        row_html += '</div>'
-        st.markdown(row_html, unsafe_allow_html=True)
-
+   
     # Step 2: Process Selected Images
     if st.button("Process Selected Images"):
         final_results = []
