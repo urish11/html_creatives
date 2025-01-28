@@ -928,6 +928,7 @@ if st.button("Generate Images"):
             # Fetch images from Google Images
             if '|' in topic:
                 topic_for_google = re.sub("^.*\|","",topic)
+                st.markdown(topic_for_google)
             else:
                 topic_for_google = topic
 
