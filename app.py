@@ -1029,21 +1029,27 @@ if st.session_state.generated_images:
     # Add a zoom slider to control image size
     zoom = st.slider("Zoom Level", min_value=50, max_value=500, value=200, step=50)
 
-    # Add custom CSS for horizontal scrolling
-    st.markdown("""
-        <style>
-        .scrolling-row {
-            display: flex;
-            overflow-x: auto;
-            white-space: nowrap;
-            padding: 10px 0;
-        }
-        .scrolling-row img {
-            margin-right: 10px;
-            border-radius: 5px;
-        }
-        </style>
-    """, unsafe_allow_html=True)
+    for entry in st.session_state.generated_images:
+        topic = entry["topic"]
+        lang = entry["lang"]
+        images = entry["images"]
+
+        st.write(f"### {topic} ({lang})")
+
+        # Display images with horizontal scrolling
+        num_columns = 5  # Adjust the number of images per row
+        rows = (len(images) + num_columns - 1) // num_columns  # Calculate the number of rows
+
+        for row in range(rows):
+            cols = st.columns(num_columns)  # Create columns dynamically
+            for col, img in zip(cols, images[row * num_columns:(row + 1) * num_columns]):
+                with col:
+                    st.image(img['url'], width=zoom)  # Adjust image width based on zoom slider
+                    unique_key = f"num_select_{topic}_{lang}_{img['url']}"
+                    img['selected_count'] = st.number_input(
+                        f"Count for {img['url'][-5:]}",  # Show a part of the URL as a unique label
+                        min_value=0, max_value=10, value=0, key=unique_key
+                    )
 
     for entry in st.session_state.generated_images:
         topic = entry["topic"]
