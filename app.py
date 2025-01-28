@@ -1037,7 +1037,7 @@ if st.session_state.generated_images:
         st.write(f"### {topic} ({lang})")
 
         # Display images with horizontal scrolling
-        num_columns = 5  # Adjust the number of images per row
+        num_columns = 6  # Adjust the number of images per row
         rows = (len(images) + num_columns - 1) // num_columns  # Calculate the number of rows
 
         for row in range(rows):
