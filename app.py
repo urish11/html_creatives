@@ -1026,22 +1026,30 @@ if st.button("Generate Images"):
 if st.session_state.generated_images:
     st.subheader("Select Images to Process")
 
+    # Add a zoom slider to control image size
+    zoom = st.slider("Zoom Level", min_value=50, max_value=500, value=200, step=50)
+
     for entry in st.session_state.generated_images:
         topic = entry["topic"]
         lang = entry["lang"]
         images = entry["images"]
 
         st.write(f"### {topic} ({lang})")
-        cols = st.columns(len(images))
 
-        for idx, (col, img) in enumerate(zip(cols, images)):
-            with col:
-                st.image(img['url'], use_container_width=True)
-                unique_key = f"num_select_{topic}_{lang}_{idx}"
-                img['selected_count'] = st.number_input(
-                    f"", 
-                    min_value=0, max_value=10, value=0, key=unique_key
-                )
+        # Display images with horizontal scrolling
+        num_columns = 5  # Adjust the number of images per row
+        rows = (len(images) + num_columns - 1) // num_columns  # Calculate the number of rows
+
+        for row in range(rows):
+            cols = st.columns(num_columns)  # Create columns dynamically
+            for col, img in zip(cols, images[row * num_columns:(row + 1) * num_columns]):
+                with col:
+                    st.image(img['url'], width=zoom)  # Adjust image width based on zoom slider
+                    unique_key = f"num_select_{topic}_{lang}_{img['url']}"
+                    img['selected_count'] = st.number_input(
+                        f"Count for {img['url'][-5:]}",  # Show a part of the URL as a unique label
+                        min_value=0, max_value=10, value=0, key=unique_key
+                    )
 
 
     # Step 2: Process Selected Images
