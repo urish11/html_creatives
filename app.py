@@ -1027,7 +1027,7 @@ if st.session_state.generated_images:
     st.subheader("Select Images to Process")
 
     # Add a zoom slider to control image size
-    zoom = st.slider("Zoom Level", min_value=50, max_value=500, value=200, step=50)
+    zoom = st.slider("Zoom Level", min_value=50, max_value=500, value=300, step=50)
 
     for entry in st.session_state.generated_images:
         topic = entry["topic"]
