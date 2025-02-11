@@ -913,16 +913,7 @@ def save_html(headline, image_url, cta_text, template,tag_line = '', output_file
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }}
-        .text-overlay {{
-            position: absolute;
-            width: 95%; /* Almost full width */
-            background-color: rgba(255, 255, 255, 1); /* Transparent white background */
-            padding: 30px; /* Reduced padding */
-            border-radius: 10px;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
+     
         }}
         .small-text {{
             font-size: 36px; /* Bigger "Read more about" text */
