@@ -1148,7 +1148,6 @@ if st.session_state.generated_images:
                     template = img['template']
 
 
-                    if template == 4:
                         
 
                     if template == 1 or template == 2:
