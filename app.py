@@ -876,7 +876,82 @@ def save_html(headline, image_url, cta_text, template,tag_line = '', output_file
 
 """
 
+    if template == 6:
 
+        
+
+        html_template=    f"""
+        <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nursing Careers in the UK</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@700&display=swap'); /* Import Bebas Neue and Montserrat Bold fonts */
+        @font-face {{
+            font-family: 'Calibre';
+            src: url('path-to-calibre-font.woff2') format('woff2'); /* Replace with Calibre font path */
+        }}
+        body {{
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #F4F4F4;
+        }}
+        .container {{
+            position: relative;
+            width: 1000px;
+            height: 1000px;
+            background-image: url('{image_url}');
+            background-size: cover;
+            background-position: center;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }}
+        .text-overlay {{
+            position: absolute;
+            width: 95%; /* Almost full width */
+            background-color: rgba(255, 255, 255, 1); /* Transparent white background */
+            padding: 30px; /* Reduced padding */
+            border-radius: 10px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }}
+        .small-text {{
+            font-size: 36px; /* Bigger "Read more about" text */
+            font-weight: bold; /* Bold styling for "Read more about" */
+            color: #333;
+            margin-bottom: 10px; /* Reduced margin */
+            font-family: 'Calibre', Arial, sans-serif; /* Fallback to Arial */
+        }}
+        .primary-text {{
+            font-size: 60px; /* Much larger font for primary text */
+            font-weight: bold; /* Bold weight */
+            color: #FF8C00; /* Orange color */
+            font-family: 'Montserrat', sans-serif; /* Using Montserrat Bold */
+            line-height: 1.2; /* Tighter line spacing */
+            text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000; /* Black outline */
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="text-overlay">
+        </div>
+    </div>
+</body>
+</html>
+
+
+
+        """
     else:
 
         print('template not found')
@@ -1074,7 +1149,7 @@ if st.session_state.generated_images:
 
 
                     if template == 4:
-                        template = 3
+                        
 
                     if template == 1 or template == 2:
                         headline_prompt = f"write a short text (up to 20 words) for a creative to promote an article containing information about {topic} in language{lang} , your goal is to be concise but convenience users to enter the article"
@@ -1098,6 +1173,9 @@ if st.session_state.generated_images:
 
                         headline_text = topic
                         cta_text = chatGPT(f"Retrun JUST 'Read more about' in {lang} JUST THE TEXT NO INTROS ").replace('"','')
+
+
+
                     else:
 
                         headline_text = chatGPT(prompt = headline_prompt, model='gpt-4').strip('"').strip("'")
