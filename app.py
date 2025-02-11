@@ -1173,7 +1173,8 @@ if st.session_state.generated_images:
                         headline_text = topic
                         cta_text = chatGPT(f"Retrun JUST 'Read more about' in {lang} JUST THE TEXT NO INTROS ").replace('"','')
 
-
+                    if template == 6 :
+                        headline_text = ''
 
                     else:
 
