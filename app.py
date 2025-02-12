@@ -24,7 +24,10 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-
+def shift_left_and_pad(row):
+    valid_values = [x for x in row if pd.notna(x)]  # Filter non-null values
+    padded_values = valid_values + [''] * (len(image_cols) - len(valid_values))  # Pad with empty strings
+    return pd.Series(padded_values[:len(image_cols)])  # Ensure correct length
 
 
 def log_function_call(func):
@@ -1219,7 +1222,8 @@ if st.session_state.generated_images:
             image_cols = [col for col in output_df.columns if "Image_" in col]
 
             # Shift non-empty values left (fill gaps)
-            output_df[image_cols] = output_df[image_cols].apply(lambda row: [x for x in row if pd.notna(x)] + [''] * (len(image_cols) - sum(pd.notna(row))), axis=1)
+            output_df[image_cols] = output_df[image_cols].apply(shift_left_and_pad, axis=1)
+
 
             st.subheader("Final Results")
             st.dataframe(output_df)
