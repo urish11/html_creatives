@@ -1223,6 +1223,7 @@ if st.session_state.generated_images:
 
             # Shift non-empty values left (fill gaps)
             output_df[image_cols] = output_df[image_cols].apply(shift_left_and_pad, axis=1)
+            output_df = output_df.drop_duplicates()
 
 
             st.subheader("Final Results")
