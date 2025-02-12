@@ -1212,7 +1212,7 @@ if st.session_state.generated_images:
                 final_results.append(res)
 
         # Display Final Results
-         if final_results:
+        if final_results:
             output_df = pd.DataFrame(final_results)
 
             # Reorganize Image Links: Flatten Empty Cells
