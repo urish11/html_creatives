@@ -1214,6 +1214,13 @@ if st.session_state.generated_images:
         # Display Final Results
         if final_results:
             output_df = pd.DataFrame(final_results)
+
+            # Reorganize Image Links: Flatten Empty Cells
+            image_cols = [col for col in output_df.columns if "Image_" in col]
+
+            # Shift non-empty values left (fill gaps)
+            output_df[image_cols] = output_df[image_cols].apply(lambda row: [x for x in row if pd.notna(x)] + [''] * (len(image_cols) - sum(pd.notna(row))), axis=1)
+
             st.subheader("Final Results")
             st.dataframe(output_df)
 
