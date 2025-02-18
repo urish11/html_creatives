@@ -76,6 +76,8 @@ def fetch_google_images(query, num_images=3):
         except Exception as e:
             st.error(f"Error fetching Google Images for '{query}': {e}")
             res_urls.append( []) 
+
+    st.text(res_urls)
     return res_urls
 
 
