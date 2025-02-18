@@ -42,31 +42,41 @@ def log_function_call(func):
 
 @log_function_call
 def fetch_google_images(query, num_images=3):
-    
-    API_KEY =random.choice( st.secrets["GOOGLE_API_KEY"])
-    CX = st.secrets["GOOGLE_CX"]
 
-    gis = GoogleImagesSearch(API_KEY, CX)
+    terms_list = query.split('~')
 
-    search_params = {
-        'q': query,
-        'num': num_images,
-        #'safe': 'high',  # SafeSearch level
-        #'fileType': 'jpg|png',
-        #'imgSize': 'large',  # Options: icon, medium, large, xlarge, xxlarge, huge
-        #'imgType': 'photo',
-        #'rights': 'cc_publicdomain'  # Public domain images
-    }
+    res_urls=[]
 
-    try:
-        gis.search(search_params)
-        image_urls = [result.url for result in gis.results()]
-        # st.markdown(gis.results())
-        return image_urls
+    for term in terms_list:
 
-    except Exception as e:
-        st.error(f"Error fetching Google Images for '{query}': {e}")
-        return []
+
+        
+        
+        API_KEY =random.choice( st.secrets["GOOGLE_API_KEY"])
+        CX = st.secrets["GOOGLE_CX"]
+
+        gis = GoogleImagesSearch(API_KEY, CX)
+
+        search_params = {
+            'q': term,
+            'num': num_images,
+            #'safe': 'high',  # SafeSearch level
+            #'fileType': 'jpg|png',
+            #'imgSize': 'large',  # Options: icon, medium, large, xlarge, xxlarge, huge
+            #'imgType': 'photo',
+            #'rights': 'cc_publicdomain'  # Public domain images
+        }
+
+        try:
+            gis.search(search_params)
+            image_urls = [result.url for result in gis.results()]
+            # st.markdown(gis.results())
+            res_urls.append( image_urls)
+
+        except Exception as e:
+            st.error(f"Error fetching Google Images for '{query}': {e}")
+            res_urls.append( []) 
+    return res_urls
 
 
 
@@ -1223,6 +1233,9 @@ if st.session_state.generated_images:
 
             # Shift non-empty values left (fill gaps)
             output_df[image_cols] = output_df[image_cols].apply(shift_left_and_pad, axis=1)
+            
+            st.dataframe(output_df)
+
             output_df = output_df.drop_duplicates()
 
 
