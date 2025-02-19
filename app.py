@@ -889,7 +889,10 @@ def create_dalle_variation(image_url,count):
     then creates a DALL-E variation via OpenAI, returning the new image URL.
     """ 
     try:
-        resp = requests.get(image_url)
+        headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+}
+        resp = requests.get(image_url,headers=headers)
         resp.raise_for_status()
         img = Image.open(BytesIO(resp.content))
 
@@ -910,7 +913,6 @@ def create_dalle_variation(image_url,count):
             n=count,
             size="512x512"
         )
-        print(response)
         return response.data
     except Exception as e:
         st.error(f"Error generating DALL-E variation: {e}")
