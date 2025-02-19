@@ -1074,14 +1074,13 @@ if st.session_state.generated_images:
                         if st.button("Get DALL-E Variation", key=f"dalle_button_{topic}_{img['url']}"):
                             dalle_url = create_dalle_variation(img['url'],img.get("selected_count"))
                             if dalle_url:
-                                for img in dalle_url:
-                                    img = img.url
+                                for dalle_img in dalle_url:
                                         
                                     st.success("DALL-E variation generated!")
                                     img["dalle_generated"] = True
                                     # Append the new DALL-E image
                                     entry["images"].append({
-                                        "url": dalle_url,
+                                        "url": dalle_img.url,
                                         "selected": False,
                                         "template": img["template"],
                                         "source": "dalle",
