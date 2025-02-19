@@ -15,7 +15,7 @@ import re
 from google_images_search import GoogleImagesSearch
 import openai  # NEW: For DALL-E variations
 import logging
-
+from openai import OpenAI
 # Configure logging
 logging.basicConfig(
     format='%(asctime)s [%(levelname)s] %(name)s - %(message)s', 
