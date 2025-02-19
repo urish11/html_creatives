@@ -57,6 +57,7 @@ def fetch_google_images(query, num_images=3):
 
 @log_function_call
 def create_dalle_variation(image_url):
+    client = OpenAI()
     """Create a variation of a Google Image using DALL-E."""
     try:
         response = requests.get(image_url)
@@ -75,7 +76,7 @@ def create_dalle_variation(image_url):
             png_buffer.seek(0)
 
         # Call OpenAI API
-        response = openai.Image.create_variation(image=png_buffer, n=1, size="512x512")
+        response = client.images.create_variation(image=png_buffer, n=1, size="512x512")
         return response["data"][0]["url"]
     except Exception as e:
         st.error(f"Error generating DALL-E variation: {e}")
