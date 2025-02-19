@@ -10,7 +10,6 @@ import time
 from playwright.sync_api import sync_playwright
 import re
 from google_images_search import GoogleImagesSearch
-import openai
 import logging
 from openai import OpenAI
 
