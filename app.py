@@ -1084,7 +1084,7 @@ if st.session_state.generated_images:
                                     "source": "dalle",
                                     "dalle_generated": True
                                 })
-                                st.experimental_rerun()
+                                # st.experimental_rerun()
 
 # Step 3: Process selected images -> generate HTML, screenshot, upload to S3
 if st.button("Process Selected Images"):
