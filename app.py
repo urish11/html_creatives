@@ -26,6 +26,8 @@ AWS_SECRET_ACCESS_KEY = st.secrets["AWS_SECRET_ACCESS_KEY"]
 S3_BUCKET_NAME = st.secrets["S3_BUCKET_NAME"]
 AWS_REGION = st.secrets.get("AWS_REGION", "us-east-1")
 
+client = OpenAI()
+
 # Function to log calls
 def log_function_call(func):
     def wrapper(*args, **kwargs):
@@ -57,7 +59,6 @@ def fetch_google_images(query, num_images=3):
 
 @log_function_call
 def create_dalle_variation(image_url):
-    client = OpenAI()
     """Create a variation of a Google Image using DALL-E."""
     try:
         response = requests.get(image_url)
