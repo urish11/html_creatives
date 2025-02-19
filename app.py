@@ -910,7 +910,7 @@ def create_dalle_variation(image_url):
             n=1,
             size="512x512"
         )
-        return response["data"][0]["url"]
+        return response.data[0].url
     except Exception as e:
         st.error(f"Error generating DALL-E variation: {e}")
         return None
