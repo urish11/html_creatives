@@ -25,8 +25,11 @@ AWS_ACCESS_KEY_ID = st.secrets["AWS_ACCESS_KEY_ID"]
 AWS_SECRET_ACCESS_KEY = st.secrets["AWS_SECRET_ACCESS_KEY"]
 S3_BUCKET_NAME = st.secrets["S3_BUCKET_NAME"]
 AWS_REGION = st.secrets.get("AWS_REGION", "us-east-1")
+try:
+    client = OpenAI()
 
-client = OpenAI()
+except Exception as e:
+    st.text(e)
 
 # Function to log calls
 def log_function_call(func):
