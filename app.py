@@ -1072,7 +1072,7 @@ if st.session_state.generated_images:
                     # DALL-E Variation button for Google images
                     if img.get("source") == "google" and not img.get("dalle_generated", False):
                         if st.button("Get DALL-E Variation", key=f"dalle_button_{topic}_{img['url']}"):
-                            dalle_url = create_dalle_variation(img['url',img.get("selected_count")])
+                            dalle_url = create_dalle_variation(img['url'],img.get("selected_count"))
                             if dalle_url:
                                 st.success("DALL-E variation generated!")
                                 img["dalle_generated"] = True
