@@ -883,7 +883,7 @@ def save_html(headline, image_url, cta_text, template, tag_line='', output_file=
 
 # NEW: Create DALLE Variation
 @log_function_call
-def create_dalle_variation(image_url):
+def create_dalle_variation(image_url,count):
     """
     Downloads a Google image, converts it to PNG (resizing if needed to keep it under 4MB),
     then creates a DALL-E variation via OpenAI, returning the new image URL.
@@ -907,7 +907,7 @@ def create_dalle_variation(image_url):
 
         response = client.images.create_variation(
             image=png_buffer,
-            n=1,
+            n=count,
             size="512x512"
         )
         return response.data[0].url
@@ -1072,7 +1072,7 @@ if st.session_state.generated_images:
                     # DALL-E Variation button for Google images
                     if img.get("source") == "google" and not img.get("dalle_generated", False):
                         if st.button("Get DALL-E Variation", key=f"dalle_button_{topic}_{img['url']}"):
-                            dalle_url = create_dalle_variation(img['url'])
+                            dalle_url = create_dalle_variation(img['url',img.get("selected_count")])
                             if dalle_url:
                                 st.success("DALL-E variation generated!")
                                 img["dalle_generated"] = True
