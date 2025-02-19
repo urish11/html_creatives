@@ -887,7 +887,7 @@ def create_dalle_variation(image_url):
     """
     Downloads a Google image, converts it to PNG (resizing if needed to keep it under 4MB),
     then creates a DALL-E variation via OpenAI, returning the new image URL.
-    """
+    """ 
     try:
         resp = requests.get(image_url)
         resp.raise_for_status()
