@@ -910,7 +910,7 @@ def create_dalle_variation(image_url,count):
             n=count,
             size="512x512"
         )
-        return response.data[0].url
+        return response.data
     except Exception as e:
         st.error(f"Error generating DALL-E variation: {e}")
         return None
@@ -1074,17 +1074,20 @@ if st.session_state.generated_images:
                         if st.button("Get DALL-E Variation", key=f"dalle_button_{topic}_{img['url']}"):
                             dalle_url = create_dalle_variation(img['url'],img.get("selected_count"))
                             if dalle_url:
-                                st.success("DALL-E variation generated!")
-                                img["dalle_generated"] = True
-                                # Append the new DALL-E image
-                                entry["images"].append({
-                                    "url": dalle_url,
-                                    "selected": False,
-                                    "template": img["template"],
-                                    "source": "dalle",
-                                    "dalle_generated": True
-                                })
-                                # st.experimental_rerun()
+                                for img in dalle_url:
+                                    img = img.url
+                                        
+                                    st.success("DALL-E variation generated!")
+                                    img["dalle_generated"] = True
+                                    # Append the new DALL-E image
+                                    entry["images"].append({
+                                        "url": dalle_url,
+                                        "selected": False,
+                                        "template": img["template"],
+                                        "source": "dalle",
+                                        "dalle_generated": True
+                                    })
+                                    # st.experimental_rerun()
 
 # Step 3: Process selected images -> generate HTML, screenshot, upload to S3
 if st.button("Process Selected Images"):
