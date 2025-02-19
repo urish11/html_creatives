@@ -19,7 +19,7 @@ logging.basicConfig(format='%(asctime)s [%(levelname)s] %(name)s - %(message)s',
 logger = logging.getLogger(__name__)
 
 # Set OpenAI API Key
-openai.api_key = st.secrets.get("OPENAI_API_KEY")
+# openai.api_key = st.secrets.get("OPENAI_API_KEY")
 
 # AWS Credentials
 AWS_ACCESS_KEY_ID = st.secrets["AWS_ACCESS_KEY_ID"]
