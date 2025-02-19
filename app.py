@@ -12,6 +12,7 @@ import re
 from google_images_search import GoogleImagesSearch
 import openai
 import logging
+from openai import OpenAI
 
 # Configure logging
 logging.basicConfig(format='%(asctime)s [%(levelname)s] %(name)s - %(message)s', level=logging.DEBUG)
