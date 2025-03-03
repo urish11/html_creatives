@@ -47,32 +47,35 @@ def log_function_call(func):
     return wrapper
 
 @log_function_call
-def fetch_google_images(query, num_images=3):
-    """
-    Fetch images from Google Images using google_images_search.
-    Splits query by '~' to handle multiple search terms if needed.
-    """
-    terms_list = query.split('~')
-    res_urls = []
-    for term in terms_list:
-        API_KEY = random.choice(st.secrets["GOOGLE_API_KEY"])
-        CX = st.secrets["GOOGLE_CX"]
+def fetch_google_images(query, num_images=3, max_retries = 3):
 
-        gis = GoogleImagesSearch(API_KEY, CX)
+    for trial in max_retries:
+        
+        """
+        Fetch images from Google Images using google_images_search.
+        Splits query by '~' to handle multiple search terms if needed.
+        """
+        terms_list = query.split('~')
+        res_urls = []
+        for term in terms_list:
+            API_KEY = random.choice(st.secrets["GOOGLE_API_KEY"])
+            CX = st.secrets["GOOGLE_CX"]
 
-        search_params = {
-            'q': term,
-            'num': num_images,
-        }
+            gis = GoogleImagesSearch(API_KEY, CX)
 
-        try:
-            gis.search(search_params)
-            image_urls = [result.url for result in gis.results()]
-            res_urls.extend(image_urls)
-        except Exception as e:
-            st.error(f"Error fetching Google Images for '{query}': {e}")
-            res_urls.append([])
-    return list(set(res_urls))
+            search_params = {
+                'q': term,
+                'num': num_images,
+            }
+
+            try:
+                gis.search(search_params)
+                image_urls = [result.url for result in gis.results()]
+                res_urls.extend(image_urls)
+            except Exception as e:
+                st.error(f"Error fetching Google Images for '{query}': {e}")
+                res_urls.append([])
+        return list(set(res_urls))
 
 @log_function_call
 def install_playwright_browsers():
