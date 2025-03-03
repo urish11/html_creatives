@@ -59,6 +59,8 @@ def fetch_google_images(query, num_images=3, max_retries = 5 ):
         res_urls = []
         for term in terms_list:
             API_KEY = random.choice(st.secrets["GOOGLE_API_KEY"])
+            API_KEY = 'AIzaSyAmHP-g_EVa_kn8EdyTez3rRAaQA5sxmaw'
+
             CX = st.secrets["GOOGLE_CX"]
 
             gis = GoogleImagesSearch(API_KEY, CX)
