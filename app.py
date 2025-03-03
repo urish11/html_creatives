@@ -47,7 +47,7 @@ def log_function_call(func):
     return wrapper
 
 @log_function_call
-def fetch_google_images(query, num_images=3, max_retries = 3):
+def fetch_google_images(query, num_images=3, max_retries = 5 ):
 
     for trial in range(max_retries):
         
@@ -75,6 +75,7 @@ def fetch_google_images(query, num_images=3, max_retries = 3):
             except Exception as e:
                 st.text(f"Error fetching Google Images for '{query}': {e}")
                 res_urls.append([])
+                time.sleep(5)
         return list(set(res_urls))
 
 @log_function_call
