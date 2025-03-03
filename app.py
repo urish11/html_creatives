@@ -49,7 +49,7 @@ def log_function_call(func):
 @log_function_call
 def fetch_google_images(query, num_images=3, max_retries = 3):
 
-    for trial in max_retries:
+    for trial in range(max_retries):
         
         """
         Fetch images from Google Images using google_images_search.
