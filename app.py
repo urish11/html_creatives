@@ -1066,7 +1066,7 @@ if st.session_state.generated_images:
             for col, img in zip(cols, images[row * num_columns:(row + 1) * num_columns]):
                 with col:
                     st.image(img['url'], width=zoom)
-                    unique_key = f"num_select_{topic}_{lang}_{img['url']}"
+                    unique_key = f"num_select_{topic}_{lang}_{img['url']}_{random.randint(0,99)}"
                     img['selected_count'] = st.number_input(
                         f"Count for {img['url'][-5:]}",
                         min_value=0, max_value=10, value=0, key=unique_key
