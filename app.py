@@ -73,7 +73,7 @@ def fetch_google_images(query, num_images=3, max_retries = 3):
                 image_urls = [result.url for result in gis.results()]
                 res_urls.extend(image_urls)
             except Exception as e:
-                st.error(f"Error fetching Google Images for '{query}': {e}")
+                st.text(f"Error fetching Google Images for '{query}': {e}")
                 res_urls.append([])
         return list(set(res_urls))
 
