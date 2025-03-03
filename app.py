@@ -72,8 +72,7 @@ def fetch_google_images(query, num_images=3):
         except Exception as e:
             st.error(f"Error fetching Google Images for '{query}': {e}")
             res_urls.append([])
-    st.text(res_urls)
-    return res_urls
+    return list(set(res_urls))
 
 @log_function_call
 def install_playwright_browsers():
@@ -1066,7 +1065,7 @@ if st.session_state.generated_images:
             for col, img in zip(cols, images[row * num_columns:(row + 1) * num_columns]):
                 with col:
                     st.image(img['url'], width=zoom)
-                    unique_key = f"num_select_{topic}_{lang}_{img['url']}_{random.randint(0,99)}"
+                    unique_key = f"num_select_{topic}_{lang}_{img['url']}"
                     img['selected_count'] = st.number_input(
                         f"Count for {img['url'][-5:]}",
                         min_value=0, max_value=10, value=0, key=unique_key
@@ -1074,7 +1073,7 @@ if st.session_state.generated_images:
 
                     # DALL-E Variation button for Google images
                     if img.get("source") == "google" and not img.get("dalle_generated", False):
-                        if st.button("Get DALL-E Variation", key=f"dalle_button_{topic}_{img['url']}_{random.randint(0,99)}"):
+                        if st.button("Get DALL-E Variation", key=f"dalle_button_{topic}_{img['url']}"):
                             dalle_url = create_dalle_variation(img['url'],img.get("selected_count"))
                             if dalle_url:
                                 for dalle_img in dalle_url:
