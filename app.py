@@ -1084,7 +1084,7 @@ if st.button("Generate Images"):
                         )
                     if template == 7:
                         image_url = gen_flux_img_lora(
-                            chatGPT(f"Generate a  visual image description  15 words MAX for  {topic} , candid moment unstaged, make it dramatic and visually enticing", 
+                            chatGPT(f"Generate a  visual image description  15 words MAX for  {topic} , candid moment unstaged , taken  in the moment by eye witness, make it dramatic and visually enticing", 
                                     model='gpt-4',
                             temperature=1.15
                             
