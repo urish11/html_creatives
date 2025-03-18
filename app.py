@@ -170,6 +170,7 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0):
     }
     response = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=data)
     content = response.json()['choices'][0]['message']['content'].strip()
+    st.text(content)
     return content
 
 @log_function_call
