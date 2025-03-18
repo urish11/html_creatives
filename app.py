@@ -216,7 +216,7 @@ def gen_flux_img_lora(prompt,height=784, width=960 ,lora_path="https://huggingfa
             }
             data = {
                 "model": "black-forest-labs/FLUX.1-dev-lora",
-                "prompt":"weird perplexing enticing image of : " +  prompt,
+                "prompt":"candid unstaged taken with iphone 8 : " +  prompt,
                 "width": width,
                 "height": height,
                 "steps": 20,
