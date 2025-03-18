@@ -1061,7 +1061,7 @@ if st.button("Generate Images"):
                     if template == 7 :
                         image_prompt = chatGPT(f"Generate a  visual image description  15 words MAX for  {topic} , candid moment unstaged , taken  in the moment by eye witness, make it dramatic and visually enticing", 
                                     model='o1-mini',
-                            temperature=1.15
+                            #temperature=1.15
                             
                         )
                     elif not new_prompt:
