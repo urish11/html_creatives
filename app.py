@@ -201,6 +201,54 @@ def gen_flux_img(prompt, height=784, width=960):
                 return None
             time.sleep(2)
 
+
+def gen_flux_img_lora(prompt,height=784, width=960 ,lora_path="https://huggingface.co/ddh0/FLUX-Amateur-Photography-LoRA/resolve/main/FLUX-Amateur-Photography-LoRA-v2.safetensors?download=true"):
+    retries =0
+    while retries < 10:
+        try:
+           
+
+            url = "https://api.together.xyz/v1/images/generations"
+            headers = {
+                "Authorization": f"Bearer {random.choice(FLUX_API_KEY)}",  # Replace with your actual API key
+                "Content-Type": "application/json"
+            }
+            data = {
+                "model": "black-forest-labs/FLUX.1-dev-lora",
+                "prompt":"weird perplexing enticing image of : " +  prompt,
+                "width": width,
+                "height": height,
+                "steps": 20,
+                "n": 1,
+                "response_format": "url",
+                "image_loras": [
+                    {
+                        "path": "https://huggingface.co/ddh0/FLUX-Amateur-Photography-LoRA/resolve/main/FLUX-Amateur-Photography-LoRA-v2.safetensors?download=true",
+                        "scale": 0.99
+                    }
+                ],
+                "update_at": "2025-03-04T16:25:21.474Z"
+            }
+
+            response = requests.post(url, headers=headers, json=data)
+
+            if response.status_code == 200:
+                # Assuming the response contains the image URL in the data
+                response_data = response.json()
+                image_url = response_data['data'][0]['url']
+                print(f"Image URL: {image_url}")
+                return image_url
+            else:
+                print(f"Request failed with status code {response.status_code}")
+
+    
+        except Exception as e:
+            time.sleep(3)
+            retries +=1
+            st.text(e)
+
+
+
 @log_function_call
 def capture_html_screenshot_playwright(html_content):
     """
@@ -1034,7 +1082,7 @@ if st.button("Generate Images"):
                             height=416
                         )
                     if template == 7:
-                        image_url = gen_flux_img(
+                        image_url = gen_flux_img_lora(
                             f"{image_prompt}",
                             
                         ) 
