@@ -387,7 +387,7 @@ def save_html(headline, image_url, cta_text, template, tag_line='', output_file=
         </html>
         """
     # Template 3
-    elif template == 3:
+    elif template in  [3,7]:
         html_template = f"""
         <!DOCTYPE html>
         <html>
@@ -879,7 +879,11 @@ def save_html(headline, image_url, cta_text, template, tag_line='', output_file=
         </body>
         </html>
         """
+    
+    if template == 7:
+        html_template = html_template.replace('button class="cta-button','button class="c1ta-button')
     else:
+        
         print('template not found')
         html_template = f"<p>Template {template} not found</p>"
 
@@ -1133,6 +1137,10 @@ if st.button("Process Selected Images"):
                         f"ALL IN CAPS. wrap the 1-2 most urgent words in <span class='highlight'>...</span>."
                         f"Make it under 60 chars total, to drive curiosity."
                     )
+                elif template in [7]:
+                    headline_prompt = (f"write short punchy 1 sentence text to   this article: \n casual and sharp and consice\nuse ill-tempered language\n don't address the reader (don't use 'you' and etc)\n informal casual friends texting style and tone\nAvoid dark themes like drugs, death etc..\n MAX 40 CHARS in land {lang} for: {re.sub('\\|.*','',topic)}")
+                        
+
                 else:
                     headline_prompt = f"Write a concise headline for {topic} in {lang}, no quotes."
 
