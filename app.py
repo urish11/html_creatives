@@ -1083,7 +1083,7 @@ if st.button("Generate Images"):
                         )
                     if template == 7:
                         image_url = gen_flux_img(
-                            f"{image_prompt}",
+                            f"{image_prompt}", width=16*22, height=13*16
                             
                         ) 
                     else:
