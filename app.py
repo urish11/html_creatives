@@ -1191,7 +1191,7 @@ if st.button("Process Selected Images"):
                         f"Make it under 60 chars total, to drive curiosity."
                     )
                 elif template in [7]:
-                    headline_prompt = (f"write short punchy 1 sentence text to   this article: \n casual and sharp and consice\nuse ill-tempered language\n don't address the reader (don't use 'you' and etc)\n informal casual friends texting style and tone\nAvoid dark themes like drugs, death etc..\n MAX 70 CHARS, no !, Title Case, in lang {lang} for: {re.sub('\\|.*','',topic)}")
+                    headline_prompt = (f"write short punchy 1 sentence text to   this article: \n casual and sharp and consice\nuse ill-tempered language\n don't address the reader (don't use 'you' and etc)\n  \nAvoid dark themes like drugs, death etc..\n MAX 70 CHARS, no !, Title Case, in lang {lang} for: {re.sub('\\|.*','',topic)}")
                         
 
                 else:
