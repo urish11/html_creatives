@@ -1033,6 +1033,11 @@ if st.button("Generate Images"):
                             width=688,
                             height=416
                         )
+                    if template == 7:
+                        image_url = gen_flux_img(
+                            f"{image_prompt}",
+                            
+                        ) 
                     else:
                         image_url = gen_flux_img(
                             f"{random.choice(['cartoony clipart of ', 'cartoony clipart of ', '', ''])}{image_prompt}"
