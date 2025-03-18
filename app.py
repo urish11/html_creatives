@@ -1083,7 +1083,7 @@ if st.button("Generate Images"):
                         )
                     if template == 7:
                         image_url = gen_flux_img(
-                            f"Generate a  visual image description  15 words MAX for  {topic}, make it dramatic and visually enticing", 
+                            f"Generate a  visual image description  15 words MAX for  {topic} , candid moment unstaged, make it dramatic and visually enticing", 
                             
                         ) 
                     else:
