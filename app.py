@@ -1060,7 +1060,7 @@ if st.button("Generate Images"):
                         st.markdown(image_prompt)
                     if template == 7 :
                         image_prompt = chatGPT(f"Generate a  visual image description  15 words MAX for  {topic} , candid moment unstaged , taken  in the moment by eye witness, make it dramatic and visually enticing", 
-                                    model='gpt-4.5',
+                                    model='o1-mini',
                             temperature=1.15
                             
                         )
