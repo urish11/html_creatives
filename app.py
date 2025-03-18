@@ -1082,7 +1082,7 @@ if st.button("Generate Images"):
                             height=416
                         )
                     if template == 7:
-                        image_url = gen_flux_img_lora(
+                        image_url = gen_flux_img(
                             f"{image_prompt}",
                             
                         ) 
