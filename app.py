@@ -929,13 +929,15 @@ def save_html(headline, image_url, cta_text, template, tag_line='', output_file=
         </html>
         """
     
-    if template == 7:
-        html_template = html_template.replace('button class="cta-button','button class="c1ta-button')
+    
     else:
         
         print('template not found')
         html_template = f"<p>Template {template} not found</p>"
 
+        
+    if template == 7:
+        html_template = html_template.replace('button class="cta-button','button class="c1ta-button')
     return html_template
 
 # NEW: Create DALLE Variation
