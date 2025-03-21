@@ -12,6 +12,7 @@ import time
 from playwright.sync_api import sync_playwright
 from tempfile import NamedTemporaryFile
 import re
+
 from google_images_search import GoogleImagesSearch
 import openai  # NEW: For DALL-E variations
 import logging
@@ -1113,6 +1114,7 @@ if st.button("Generate Images"):
                         })
 
                     percent_complete = int(percent_complete + 1/count*100)+1
+                    percent_complete if percent_complete < 100 else 100
                     
                     my_bar.progress(percent_complete, text=progress_text)
 
