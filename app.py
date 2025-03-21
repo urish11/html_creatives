@@ -997,7 +997,7 @@ df = st.data_editor(
 if st.button("Generate Images"):
     st.session_state.generated_images = []  # Clear previous images
     processed_combinations = set()
-    progress_text =  "Generating images! "
+    progress_text =  "Generating images progress...  "
     percent_complete = 0
     my_bar = st.progress(0, text=progress_text)
 
