@@ -170,7 +170,7 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0):
     }
     response = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=data)
     content = response.json()['choices'][0]['message']['content'].strip()
-    st.text(content)
+    # st.text(content)
     return content
 
 @log_function_call
@@ -997,6 +997,10 @@ df = st.data_editor(
 if st.button("Generate Images"):
     st.session_state.generated_images = []  # Clear previous images
     processed_combinations = set()
+    progress_text =  "Generating images! "
+    percent_complete = 0
+    my_bar = st.progress(0, text=progress_text)
+
 
     for _, row in df.iterrows():
         topic = row['topic']
@@ -1029,7 +1033,8 @@ if st.button("Generate Images"):
                     'source': 'google',       # Mark as Google
                     'dalle_generated': False  # For tracking DALL-E generation
                 })
-
+            percent_complete = percent_complete + 1/len(df)
+            my_bar.progress(percent_complete + 1/len(df), text=progress_text)
         else:
             # Otherwise, use FLUX to generate
             for i in range(count):
@@ -1106,6 +1111,10 @@ if st.button("Generate Images"):
                             'source': 'flux',            # Mark as flux
                             'dalle_generated': False     # Not relevant for flux, but keep structure
                         })
+
+                    percent_complete = percent_complete + 1/len(count)
+                    my_bar.progress(percent_complete, text=progress_text)
+
 
         # Append the images for this topic
         st.session_state.generated_images.append({
