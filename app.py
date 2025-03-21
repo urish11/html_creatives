@@ -1112,7 +1112,7 @@ if st.button("Generate Images"):
                             'dalle_generated': False     # Not relevant for flux, but keep structure
                         })
 
-                    percent_complete = int(percent_complete + 1/count*100)
+                    percent_complete = int(percent_complete + 1/count*100)+1
                     
                     my_bar.progress(percent_complete, text=progress_text)
 
