@@ -7,6 +7,7 @@ from botocore.exceptions import NoCredentialsError
 import random
 import string
 import requests
+import json
 import os
 import time
 from playwright.sync_api import sync_playwright
