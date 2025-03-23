@@ -37,7 +37,7 @@ def shift_left_and_pad(row):
     padded_values = valid_values + [''] * (len(image_cols) - len(valid_values))  # Pad with empty strings
     return pd.Series(padded_values[:len(image_cols)])  # Ensure correct length
 
-def alog_function_call(func):
+def log_function_call(func):
     """
     Decorator to log function calls and return values.
     """
@@ -48,7 +48,7 @@ def alog_function_call(func):
         return result
     return wrapper
 
-@log_function_call
+#@log_function_call
 def fetch_google_images(query, num_images=3, max_retries = 5 ):
 
     for trial in range(max_retries):
@@ -81,7 +81,7 @@ def fetch_google_images(query, num_images=3, max_retries = 5 ):
                 time.sleep(5)
         return list(set(res_urls))
 
-@log_function_call
+#@log_function_call
 def install_playwright_browsers():
     """
     Install Playwright browsers (Chromium) if not installed yet.
@@ -113,7 +113,7 @@ FLUX_API_KEY = st.secrets["FLUX_API_KEY"]
 
 client = OpenAI(api_key=GPT_API_KEY)
 
-@log_function_call
+#@log_function_call
 def upload_pil_image_to_s3(
     image, 
     bucket_name, 
@@ -155,7 +155,7 @@ def upload_pil_image_to_s3(
         st.error(f"Error in S3 upload: {str(e)}")
         return None
 
-@log_function_call
+#@log_function_call
 def chatGPT(prompt, model="gpt-4o", temperature=1.0):
     """
     Call OpenAI's Chat Completion (GPT) to generate text.
@@ -175,7 +175,7 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0):
     # st.text(content)
     return content
 
-@log_function_call
+#@log_function_call
 def gen_flux_img(prompt, height=784, width=960):
     """
     Generate images using FLUX model from the Together.xyz API.
@@ -315,7 +315,7 @@ def gen_flux_img_lora(prompt,height=784, width=960 ,lora_path="https://huggingfa
 
 
 
-@log_function_call
+#@log_function_call
 def capture_html_screenshot_playwright(html_content):
     """
     Use Playwright to capture a screenshot of the given HTML snippet.
@@ -348,7 +348,7 @@ def capture_html_screenshot_playwright(html_content):
         st.error(f"Screenshot capture error: {str(e)}")
         return None
 
-@log_function_call
+#@log_function_call
 def save_html(headline, image_url, cta_text, template, tag_line='', output_file="advertisement.html"):
     """
     Returns an HTML string based on the chosen template ID (1..6, 41, 42, etc.).
@@ -1006,7 +1006,7 @@ def save_html(headline, image_url, cta_text, template, tag_line='', output_file=
     return html_template
 
 # NEW: Create DALLE Variation
-@log_function_call
+#@log_function_call
 def create_dalle_variation(image_url,count):
     """
     Downloads a Google image, converts it to PNG (resizing if needed to keep it under 4MB),
