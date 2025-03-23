@@ -37,7 +37,7 @@ def shift_left_and_pad(row):
     padded_values = valid_values + [''] * (len(image_cols) - len(valid_values))  # Pad with empty strings
     return pd.Series(padded_values[:len(image_cols)])  # Ensure correct length
 
-def log_function_call(func):
+def alog_function_call(func):
     """
     Decorator to log function calls and return values.
     """
