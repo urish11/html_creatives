@@ -8,6 +8,7 @@ import random
 import string
 import requests
 import json
+import base64
 import os
 import time
 from playwright.sync_api import sync_playwright
