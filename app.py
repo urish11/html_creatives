@@ -1280,6 +1280,10 @@ if st.button("Process Selected Images"):
             for i in range(img['selected_count']):
                 template = img['template']
 
+                if template == "gemini":
+                    res[f'Image_{idx + 1}__{i + 1}'] = s3_url
+                    continue
+
                 # Decide which prompt to use for headline
                 if template == 1 or template == 2:
                     headline_prompt = (
