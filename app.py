@@ -208,7 +208,7 @@ def gen_flux_img(prompt, height=784, width=960):
 
 def gen_gemini_image(prompt, trys = 0):
 
-    while trys < 2 :
+    while trys < 10 :
 
 
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key={GEMINI_API_KEY}"
@@ -239,7 +239,7 @@ def gen_gemini_image(prompt, trys = 0):
                 }
             ],
             "generationConfig": {
-                "temperature": 0.8,
+                "temperature": 0.4,
                 "topK": 40,
                 "topP": 0.95,
                 "maxOutputTokens": 8192,
