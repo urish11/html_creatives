@@ -1282,7 +1282,7 @@ if st.button("Process Selected Images"):
 
                 if template == "gemini":
                     st.text(img)
-                    res[f'Image_{idx + 1}__{i + 1}'] = s3_url
+                    res[f'Image_{idx + 1}__{i + 1}'] = img['url']
                     continue
 
                 # Decide which prompt to use for headline
