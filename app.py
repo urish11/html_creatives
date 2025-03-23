@@ -254,7 +254,7 @@ def gen_gemini_image(prompt, retries = 10):
                 image_b64 = res_json['candidates'][0]["content"]["parts"][0]["inlineData"]['data']
                 image_data = base64.decodebytes(image_b64.encode())
 
-                return BytesIO(image_data)
+                return Image.open(image_data)
             except Exception as e:
                 retries +=1
                 print("Failed to extract or save image:", e)
