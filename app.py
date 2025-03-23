@@ -249,6 +249,7 @@ def gen_gemini_image(prompt, trys = 0):
         }
 
         response = requests.post(url, headers=headers, data=json.dumps(data))
+        st.text(response)
         if response.ok:
             res_json = response.json()
             try:
