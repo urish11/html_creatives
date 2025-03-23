@@ -1392,7 +1392,7 @@ if st.button("Process Selected Images"):
         image_cols = [col for col in output_df.columns if "Image_" in col]
         output_df[image_cols] = output_df[image_cols].apply(shift_left_and_pad, axis=1)
 
-        st.dataframe(output_df.drop_duplicates())
+        # st.dataframe(output_df.drop_duplicates())
 
         st.subheader("Final Results")
         st.dataframe(output_df)
