@@ -223,7 +223,9 @@ def gen_gemini_image(prompt, trys = 0):
                     "role": "user",
                     "parts": [
                         {
-                            "text": ( prompt
+                            "text": ( """square image of a concerned middle-aged woman looking at her tongue in the mirror under harsh bathroom lighting, with a cluttered counter and slightly blurry focus — big bold red text says “Early Warning Signs?” and a janky yellow button below reads “Learn More Here >>” — the image looks like it was taken on an old phone, with off angle, bad lighting, and a sense of urgency and confusion to provoke clicks.
+
+"""
                                 
                             )
                         }
