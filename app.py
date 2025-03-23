@@ -1054,7 +1054,7 @@ if 'generated_images' not in st.session_state:
 
 st.subheader("Enter Topics for Image Generation")
 df = st.data_editor(
-    pd.DataFrame({"topic": ["example_topic"], "count": [1], "lang": ["english"], "template": ["1,2,3,4,41,42,5,6 use , for multi"]}),
+    pd.DataFrame({"topic": ["example_topic"], "count": [1], "lang": ["english"], "template": ["1,2,3,4,41,42,5,6,7,gemini use , for multi"]}),
     num_rows="dynamic",
     key="table_input"
 )
@@ -1129,6 +1129,10 @@ if st.button("Generate Images"):
                                 'source': 'gemini',            # Mark as flux
                                 'dalle_generated': False     # Not relevant for flux, but keep structure
                             })
+
+                percent_complete = percent_complete + 1/total_images
+
+                my_bar.progress(percent_complete, text=progress_text)
 
 
         else:
