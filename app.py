@@ -1002,6 +1002,7 @@ if st.button("Generate Images"):
     percent_complete = 0
     my_bar = st.progress(0, text=progress_text)
 
+    total_images = [sum(row['count'] for _,row in df.iterrows() )]
 
     for _, row in df.iterrows():
         topic = row['topic']
