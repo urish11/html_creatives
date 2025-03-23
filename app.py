@@ -250,7 +250,6 @@ def gen_gemini_image(prompt, trys = 0):
 
         response = requests.post(url, headers=headers, data=json.dumps(data))
         if response.ok:
-            st.text('ok')
             res_json = response.json()
             try:
                 image_b64 = res_json['candidates'][0]["content"]["parts"][0]["inlineData"]['data']
@@ -1111,13 +1110,11 @@ if st.button("Generate Images"):
 
             gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang}. add a CTA button with 'Learn More Here >>'\nshould be low quality and very enticing and alerting\nstart with 'square image of ' """)
             gemini_img_bytes = gen_gemini_image(gemini_prompt)
-            st.text(type(gemini_img_bytes))
             gemini_image_url = upload_pil_image_to_s3(image = gemini_img_bytes ,bucket_name=S3_BUCKET_NAME,
                         aws_access_key_id=AWS_ACCESS_KEY_ID,
                         aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
                         region_name=AWS_REGION
                     )
-            st.text(gemini_image_url)
             if gemini_image_url:
                         topic_images.append({
                             'url': gemini_image_url,
@@ -1281,7 +1278,6 @@ if st.button("Process Selected Images"):
                 template = img['template']
 
                 if template == "gemini":
-                    st.text(img)
                     res[f'Image_{idx + 1}__{i + 1}'] = img['url']
                     continue
 
