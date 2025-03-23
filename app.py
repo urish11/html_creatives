@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 
 # Set your OpenAI key for DALL-E
 openai.api_key = st.secrets.get("OPENAI_API_KEY")
+GEMINI_API_KEY =st.secrets.get("GEMINI_API_KEY")
 
 def shift_left_and_pad(row):
     """
@@ -202,6 +203,69 @@ def gen_flux_img(prompt, height=784, width=960):
             if "NSFW" in str(e):
                 return None
             time.sleep(2)
+
+def gen_gemini_image(prompt, retries = 10):
+
+    while retries < 10 :
+
+
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key={GEMINI_API_KEY}"
+
+        headers = {
+            "Content-Type": "application/json"
+        }
+
+        data = {
+            "contents": [
+                {
+                    "role": "user",
+                    "parts": [
+                        {
+                            "text": ( prompt
+                                
+                            )
+                        }
+                    ]
+                },
+                {
+                    "role": "user",
+                    "parts": [
+                        {
+                            "text": "INSERT_INPUT_HERE"
+                        }
+                    ]
+                }
+            ],
+            "generationConfig": {
+                "temperature": 0.4,
+                "topK": 40,
+                "topP": 0.95,
+                "maxOutputTokens": 8192,
+                "responseMimeType": "text/plain",
+                "responseModalities": ["image", "text"]
+            }
+        }
+
+        response = requests.post(url, headers=headers, data=json.dumps(data))
+
+        if response.ok:
+            res_json = response.json()
+            try:
+                image_b64 = res_json['candidates'][0]["content"]["parts"][0]["inlineData"]['data']
+                image_data = base64.decodebytes(image_b64.encode())
+
+                return BytesIO(image_data)
+            except Exception as e:
+                retries +=1
+                print("Failed to extract or save image:", e)
+        else:
+            retries +=1
+            print("Error:")
+            print(response.text)
+
+
+
+
 
 
 def gen_flux_img_lora(prompt,height=784, width=960 ,lora_path="https://huggingface.co/ddh0/FLUX-Amateur-Photography-LoRA/resolve/main/FLUX-Amateur-Photography-LoRA-v2.safetensors?download=true"):
@@ -1038,6 +1102,25 @@ if st.button("Generate Images"):
                 })
             percent_complete = percent_complete + 1/len(df)
             my_bar.progress(percent_complete + 1/len(df), text=progress_text)
+
+
+
+        if template_str == 'gemini': # gemini
+
+            gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang}. add a CTA button with 'Learn More Here >>'\nshould be low quality and very enticing and alerting\nstart with 'square image of ' """)
+            gemini_img_bytes = gen_gemini_image(gemini_prompt)
+            gemini_image_url = upload_pil_image_to_s3(gemini_img_bytes)
+
+            if gemini_image_url:
+                        topic_images.append({
+                            'url': image_url,
+                            'selected': False,
+                            'template': template,
+                            'source': 'flux',            # Mark as flux
+                            'dalle_generated': False     # Not relevant for flux, but keep structure
+                        })
+
+
         else:
             # Otherwise, use FLUX to generate
             for i in range(count):
