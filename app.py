@@ -1108,23 +1108,25 @@ if st.button("Generate Images"):
 
         if template_str == 'gemini': # gemini
 
-            gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang}. add a CTA button with 
-                                    'Learn More Here >>'\nshould be low quality and very enticing and alerting\nstart with 'square image of ' """,model="gpt-4o")
-            st.text(f"img prompt {gemini_prompt}")
-            gemini_img_bytes = gen_gemini_image(gemini_prompt)
-            gemini_image_url = upload_pil_image_to_s3(image = gemini_img_bytes ,bucket_name=S3_BUCKET_NAME,
-                        aws_access_key_id=AWS_ACCESS_KEY_ID,
-                        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-                        region_name=AWS_REGION
-                    )
-            if gemini_image_url:
-                        topic_images.append({
-                            'url': gemini_image_url,
-                            'selected': False,
-                            'template': template_str,
-                            'source': 'gemini',            # Mark as flux
-                            'dalle_generated': False     # Not relevant for flux, but keep structure
-                        })
+            for i in range(count):
+
+                gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang}. add a CTA button with 
+                                        'Learn More Here >>'\nshould be low quality and very enticing and alerting\nstart with 'square image of ' """,model="gpt-4o")
+                st.text(f"img prompt {gemini_prompt}")
+                gemini_img_bytes = gen_gemini_image(gemini_prompt)
+                gemini_image_url = upload_pil_image_to_s3(image = gemini_img_bytes ,bucket_name=S3_BUCKET_NAME,
+                            aws_access_key_id=AWS_ACCESS_KEY_ID,
+                            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+                            region_name=AWS_REGION
+                        )
+                if gemini_image_url:
+                            topic_images.append({
+                                'url': gemini_image_url,
+                                'selected': False,
+                                'template': template_str,
+                                'source': 'gemini',            # Mark as flux
+                                'dalle_generated': False     # Not relevant for flux, but keep structure
+                            })
 
 
         else:
