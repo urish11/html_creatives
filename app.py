@@ -204,9 +204,9 @@ def gen_flux_img(prompt, height=784, width=960):
                 return None
             time.sleep(2)
 
-def gen_gemini_image(prompt, retries = 10):
+def gen_gemini_image(prompt, trys = 0):
 
-    while retries < 10 :
+    while trys < 10 :
 
 
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key={GEMINI_API_KEY}"
@@ -256,10 +256,10 @@ def gen_gemini_image(prompt, retries = 10):
 
                 return Image.open(image_data)
             except Exception as e:
-                retries +=1
+                trys +=1
                 print("Failed to extract or save image:", e)
         else:
-            retries +=1
+            trys +=1
             print("Error:")
             print(response.text)
 
@@ -1108,7 +1108,6 @@ if st.button("Generate Images"):
         if template_str == 'gemini': # gemini
 
             gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang}. add a CTA button with 'Learn More Here >>'\nshould be low quality and very enticing and alerting\nstart with 'square image of ' """)
-            st.text(gemini_prompt)
             gemini_img_bytes = gen_gemini_image(gemini_prompt)
             st.text(type(gemini_img_bytes))
             gemini_image_url = upload_pil_image_to_s3(image = gemini_img_bytes ,bucket_name=S3_BUCKET_NAME,
