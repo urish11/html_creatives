@@ -239,7 +239,7 @@ def gen_gemini_image(prompt, trys = 0):
                 }
             ],
             "generationConfig": {
-                "temperature": 0.4,
+                "temperature": 0.65,
                 "topK": 40,
                 "topP": 0.95,
                 "maxOutputTokens": 8192,
