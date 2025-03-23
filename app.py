@@ -1122,8 +1122,8 @@ if st.button("Generate Images"):
                         topic_images.append({
                             'url': gemini_image_url,
                             'selected': False,
-                            'template': template,
-                            'source': 'flux',            # Mark as flux
+                            'template': template_str,
+                            'source': 'gemini',            # Mark as flux
                             'dalle_generated': False     # Not relevant for flux, but keep structure
                         })
 
