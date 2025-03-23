@@ -1002,7 +1002,7 @@ if st.button("Generate Images"):
     percent_complete = 0
     my_bar = st.progress(0, text=progress_text)
 
-    total_images = [sum(row['count'] for _,row in df.iterrows() )]
+    total_images = int([sum(row['count'] for _,row in df.iterrows() )])
     st.text(total_images)
 
     for _, row in df.iterrows():
@@ -1114,7 +1114,7 @@ if st.button("Generate Images"):
                             'source': 'flux',            # Mark as flux
                             'dalle_generated': False     # Not relevant for flux, but keep structure
                         })
-                    percent_complete = percent_complete + 1/count
+                    percent_complete = percent_complete + 1/total_images
                     
                     my_bar.progress(percent_complete, text=progress_text)
 
