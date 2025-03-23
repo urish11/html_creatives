@@ -1281,6 +1281,7 @@ if st.button("Process Selected Images"):
                 template = img['template']
 
                 if template == "gemini":
+                    st.text(img)
                     res[f'Image_{idx + 1}__{i + 1}'] = s3_url
                     continue
 
