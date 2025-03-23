@@ -12,7 +12,7 @@ import time
 from playwright.sync_api import sync_playwright
 from tempfile import NamedTemporaryFile
 import re
-
+import math
 from google_images_search import GoogleImagesSearch
 import openai  # NEW: For DALL-E variations
 import logging
@@ -1113,7 +1113,7 @@ if st.button("Generate Images"):
                             'dalle_generated': False     # Not relevant for flux, but keep structure
                         })
 
-                    percent_complete = int(percent_complete + 1/count*100)
+                    percent_complete = math.ceil(percent_complete + 1/count*100)
                     
                     my_bar.progress(percent_complete, text=progress_text)
 
