@@ -1117,10 +1117,10 @@ if st.button("Generate Images"):
                         aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
                         region_name=AWS_REGION
                     )
-
+            st.text(gemini_image_url)
             if gemini_image_url:
                         topic_images.append({
-                            'url': image_url,
+                            'url': gemini_image_url,
                             'selected': False,
                             'template': template,
                             'source': 'flux',            # Mark as flux
