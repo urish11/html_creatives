@@ -239,7 +239,7 @@ def gen_gemini_image(prompt, trys = 0):
                 }
             ],
             "generationConfig": {
-                "temperature": 0.4,
+                "temperature": 0.8,
                 "topK": 40,
                 "topP": 0.95,
                 "maxOutputTokens": 8192,
@@ -1108,7 +1108,9 @@ if st.button("Generate Images"):
 
         if template_str == 'gemini': # gemini
 
-            gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang}. add a CTA button with 'Learn More Here >>'\nshould be low quality and very enticing and alerting\nstart with 'square image of ' """)
+            gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang}. add a CTA button with 
+                                    'Learn More Here >>'\nshould be low quality and very enticing and alerting\nstart with 'square image of ' """,model="gpt-4o")
+            st.text(f"img prompt {gemini_prompt}")
             gemini_img_bytes = gen_gemini_image(gemini_prompt)
             gemini_image_url = upload_pil_image_to_s3(image = gemini_img_bytes ,bucket_name=S3_BUCKET_NAME,
                         aws_access_key_id=AWS_ACCESS_KEY_ID,
