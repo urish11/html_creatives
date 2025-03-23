@@ -247,8 +247,8 @@ def gen_gemini_image(prompt, retries = 10):
         }
 
         response = requests.post(url, headers=headers, data=json.dumps(data))
-        st.text(response)
         if response.ok:
+            st.text('ok')
             res_json = response.json()
             try:
                 image_b64 = res_json['candidates'][0]["content"]["parts"][0]["inlineData"]['data']
