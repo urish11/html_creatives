@@ -1106,14 +1106,12 @@ if st.button("Generate Images"):
         else: # NOT google!
 
             for i in range(count):
-                st.text(f"i {i}")
 
 
                 if ',' in row["template"]:
                     template_str = random.choice([x for x in row["template"].split(",")])
 
 
-                st.text(template_str)
                 if combo not in processed_combinations:
                     processed_combinations.add(combo)
                     st.subheader(f"Generating images for: {topic}")
