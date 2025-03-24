@@ -1054,7 +1054,7 @@ if 'generated_images' not in st.session_state:
 
 st.subheader("Enter Topics for Image Generation")
 df = st.data_editor(
-    pd.DataFrame({"topic": ["example_topic"], "count": [1], "lang": ["english"], "template": ["1,2,3,4,41,42,5,6,7,gemini use , for multi"]}),
+    pd.DataFrame({"topic": ["example_topic"], "count": [1], "lang": ["english"], "template": ["1,2,3,4,41,42,5,6,7,gemini,gemini2 | use , for multi"]}),
     num_rows="dynamic",
     key="table_input"
 )
