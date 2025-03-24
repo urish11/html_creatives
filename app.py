@@ -1079,6 +1079,7 @@ if st.button("Generate Images"):
         combo = f"{topic}_{lang}"
         template_str = row["template"]
 
+
         if "google" in topic.lower():
             # If "google" is in the topic, fetch from Google
             topic = topic.replace('google', ' ')
@@ -1108,7 +1109,7 @@ if st.button("Generate Images"):
                 st.text(f"i {i}")
 
 
-                if ',' in template_str:
+                if ',' in row["template"]:
                     template_str = random.choice([x for x in template_str.split(",")])
 
 
