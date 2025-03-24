@@ -1071,23 +1071,13 @@ if st.button("Generate Images"):
     st.text(f"Total images: {total_images}")
 
     for _, row in df.iterrows():
+
+
         topic = row['topic']
         count = int(row['count'])
         lang = row['lang']
         combo = f"{topic}_{lang}"
         template_str = row["template"]
-
-
-        if ',' in template_str:
-            template_str = random.choice([x for x in template_str.split(",")])
-
-
-
-        if combo not in processed_combinations:
-            processed_combinations.add(combo)
-            st.subheader(f"Generating images for: {topic}")
-            topic_images = []
-            temp_topic = topic
 
         if "google" in topic.lower():
             # If "google" is in the topic, fetch from Google
@@ -1112,125 +1102,141 @@ if st.button("Generate Images"):
             my_bar.progress(percent_complete , text=progress_text)
 
 
-
-        if 'gemini' in  template_str.lower()  : # gemini
-
+        else: # NOT google!
 
             for i in range(count):
 
-                if template_str == 'gemini2':
 
-                    gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use photos',''])}. add a CTA button with 
-                                        'Learn More Here >>' in appropriate language\ns\nstart with 'square image aspect ratio of 1:1 of '\n\n 
+                if ',' in template_str:
+                    template_str = random.choice([x for x in template_str.split(",")])
 
-                        """,model="gpt-4o")
 
-                
+
+                if combo not in processed_combinations:
+                    processed_combinations.add(combo)
+                    st.subheader(f"Generating images for: {topic}")
+                    topic_images = []
+                    temp_topic = topic
+
+            
+
+
+                if 'gemini' in  template_str.lower()  : # gemini
+
+
+                    for i in range(count):
+
+                        if template_str == 'gemini2':
+
+                            gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use photos',''])}. add a CTA button with 
+                                                'Learn More Here >>' in appropriate language\ns\nstart with 'square image aspect ratio of 1:1 of '\n\n 
+
+                                """,model="gpt-4o")
+
+                        
+                        
+                            gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use photos',''])}. add a CTA button with 
+                                                    'Learn More Here >>' in appropriate language\nshould be low quality and very enticing and alerting\nstart with 'square image aspect ratio of 1:1 of '\n\n example output:\n\nsquare image of a concerned middle-aged woman looking at her tongue in the mirror under harsh bathroom lighting, with a cluttered counter and slightly blurry focus — big bold red text says “Early Warning Signs?” and a janky yellow button below reads “Learn More Here >>” — the image looks like it was taken on an old phone, with off angle, bad lighting, and a sense of urgency and confusion to provoke clicks.
+
+                              """,model="gpt-4o")
+                        st.text(f"img prompt {gemini_prompt}")
+                        gemini_img_bytes = gen_gemini_image(gemini_prompt)
+                        gemini_image_url = upload_pil_image_to_s3(image = gemini_img_bytes ,bucket_name=S3_BUCKET_NAME,
+                                    aws_access_key_id=AWS_ACCESS_KEY_ID,
+                                    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+                                    region_name=AWS_REGION
+                                )
+                        if gemini_image_url:
+                                    topic_images.append({
+                                        'url': gemini_image_url,
+                                        'selected': False,
+                                        'template': template_str,
+                                        'source': 'gemini',            # Mark as flux
+                                        'dalle_generated': False     # Not relevant for flux, but keep structure
+                                    })
+
+                        percent_complete = percent_complete + 1/total_images
+
+                        my_bar.progress(percent_complete, text=progress_text)
+
                 else:
-                    gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use photos',''])}. add a CTA button with 
-                                            'Learn More Here >>' in appropriate language\nshould be low quality and very enticing and alerting\nstart with 'square image aspect ratio of 1:1 of '\n\n example output:\n\nsquare image of a concerned middle-aged woman looking at her tongue in the mirror under harsh bathroom lighting, with a cluttered counter and slightly blurry focus — big bold red text says “Early Warning Signs?” and a janky yellow button below reads “Learn More Here >>” — the image looks like it was taken on an old phone, with off angle, bad lighting, and a sense of urgency and confusion to provoke clicks.
+                # Otherwise, use FLUX to generate
+                    topic = temp_topic
+                    if '^' in topic:
+                        topic = random.choice(topic.split("^"))
 
-    """,model="gpt-4o")
-                st.text(f"img prompt {gemini_prompt}")
-                gemini_img_bytes = gen_gemini_image(gemini_prompt)
-                gemini_image_url = upload_pil_image_to_s3(image = gemini_img_bytes ,bucket_name=S3_BUCKET_NAME,
-                            aws_access_key_id=AWS_ACCESS_KEY_ID,
-                            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-                            region_name=AWS_REGION
-                        )
-                if gemini_image_url:
+                    new_prompt = False
+                    if "," in template_str:
+                        template = random.choice([int(x) for x in template_str.split(",")])
+                    elif "*" in template_str:
+                        new_prompt = random.choice([True, False])
+                        template_str = template_str.replace("*", "")
+                        template = int(template_str)
+                    else:
+                        template = int(template_str)
+
+                    with st.spinner(f"Generating image {i + 1} for '{topic}'..."):
+                        if template == 5:
+                            rand_prompt = f"""Generate a concise visual image description (15 words MAX) for {topic}.
+                            Be wildly creative, curious, and push the limits of imagination—while staying grounded in real-life scenarios!
+                            Depict an everyday, highly relatable yet dramatically eye-catching scene that sparks immediate curiosity within 3 seconds.
+                            Ensure the image conveys the value of early detection (e.g., saving money, time, improving health, or education) in a sensational but simple way.
+                            The scene must feature one person, clearly illustrating the topic without confusion.
+                            Avoid surreal or abstract elements; instead, focus on relatable yet RANDOM high-energy moments from daily life.
+                            Do not include any text in the image.
+                            Your final output should be 8-13 words, written as if describing a snapshot from a camera.
+                            Make sure the offer’s value is unmistakably clear and visually intriguing"""
+                            image_prompt = chatGPT(rand_prompt, model='gpt-4', temperature=1.2)
+                            st.markdown(image_prompt)
+                        if template == 7 :
+                            image_prompt = chatGPT(f"Generate a  visual image description  50 words MAX for  {topic} , candid moment unstaged , taken  in the moment by eye witness like with a smartphone, viral reddit style, make it dramatic and visually enticing",  
+                                        model='o1-mini',
+                                #temperature=1.15
+                                
+                            )
+                        elif not new_prompt:
+                            image_prompt = chatGPT(
+                                f"""Generate a  visual image description  15 words MAX for  {topic}.
+                                Be creative, show the value of the offer (saving money, time, health, etc.) in a sensational yet simplistic scene.
+                                Include one person and do not include text in the image. 
+                                Output is up to 5 words. Think like a camera snapshot!""",
+                                model='gpt-4',
+                                temperature=1.15
+                            )
+                        
+                        else:
+                            image_prompt = chatGPT(
+                                f"""Generate a  visual image description 15 words MAX for {topic}.
+                                Use a visually enticing style with high CTR, avoid obvious descriptions.""",
+                                model='o1-mini'
+                            )
+
+                        # Generate with FLUX
+                        if template == 5:
+                            image_url = gen_flux_img(
+                                f"{random.choice(['cartoony clipart of ', 'cartoony clipart of ', '', ''])}{image_prompt}",
+                                width=688,
+                                height=416
+                            )
+                        if template == 7:
+                            image_url = gen_flux_img_lora(
+                                image_prompt )
+                        else:
+                            image_url = gen_flux_img(
+                                f"{random.choice(['cartoony clipart of ', 'cartoony clipart of ', '', ''])}{image_prompt}"
+                            )
+
+                        if image_url:
                             topic_images.append({
-                                'url': gemini_image_url,
+                                'url': image_url,
                                 'selected': False,
-                                'template': template_str,
-                                'source': 'gemini',            # Mark as flux
+                                'template': template,
+                                'source': 'flux',            # Mark as flux
                                 'dalle_generated': False     # Not relevant for flux, but keep structure
                             })
-
-                percent_complete = percent_complete + 1/total_images
-
-                my_bar.progress(percent_complete, text=progress_text)
-
-
-        else:
-            # Otherwise, use FLUX to generate
-            for i in range(count):
-                topic = temp_topic
-                if '^' in topic:
-                    topic = random.choice(topic.split("^"))
-
-                new_prompt = False
-                if "," in template_str:
-                    template = random.choice([int(x) for x in template_str.split(",")])
-                elif "*" in template_str:
-                    new_prompt = random.choice([True, False])
-                    template_str = template_str.replace("*", "")
-                    template = int(template_str)
-                else:
-                    template = int(template_str)
-
-                with st.spinner(f"Generating image {i + 1} for '{topic}'..."):
-                    if template == 5:
-                        rand_prompt = f"""Generate a concise visual image description (15 words MAX) for {topic}.
-                        Be wildly creative, curious, and push the limits of imagination—while staying grounded in real-life scenarios!
-                        Depict an everyday, highly relatable yet dramatically eye-catching scene that sparks immediate curiosity within 3 seconds.
-                        Ensure the image conveys the value of early detection (e.g., saving money, time, improving health, or education) in a sensational but simple way.
-                        The scene must feature one person, clearly illustrating the topic without confusion.
-                        Avoid surreal or abstract elements; instead, focus on relatable yet RANDOM high-energy moments from daily life.
-                        Do not include any text in the image.
-                        Your final output should be 8-13 words, written as if describing a snapshot from a camera.
-                        Make sure the offer’s value is unmistakably clear and visually intriguing"""
-                        image_prompt = chatGPT(rand_prompt, model='gpt-4', temperature=1.2)
-                        st.markdown(image_prompt)
-                    if template == 7 :
-                        image_prompt = chatGPT(f"Generate a  visual image description  50 words MAX for  {topic} , candid moment unstaged , taken  in the moment by eye witness like with a smartphone, viral reddit style, make it dramatic and visually enticing",  
-                                    model='o1-mini',
-                            #temperature=1.15
-                            
-                        )
-                    elif not new_prompt:
-                        image_prompt = chatGPT(
-                            f"""Generate a  visual image description  15 words MAX for  {topic}.
-                            Be creative, show the value of the offer (saving money, time, health, etc.) in a sensational yet simplistic scene.
-                            Include one person and do not include text in the image. 
-                            Output is up to 5 words. Think like a camera snapshot!""",
-                            model='gpt-4',
-                            temperature=1.15
-                        )
-                    
-                    else:
-                        image_prompt = chatGPT(
-                            f"""Generate a  visual image description 15 words MAX for {topic}.
-                            Use a visually enticing style with high CTR, avoid obvious descriptions.""",
-                            model='o1-mini'
-                        )
-
-                    # Generate with FLUX
-                    if template == 5:
-                        image_url = gen_flux_img(
-                            f"{random.choice(['cartoony clipart of ', 'cartoony clipart of ', '', ''])}{image_prompt}",
-                            width=688,
-                            height=416
-                        )
-                    if template == 7:
-                        image_url = gen_flux_img_lora(
-                            image_prompt )
-                    else:
-                        image_url = gen_flux_img(
-                            f"{random.choice(['cartoony clipart of ', 'cartoony clipart of ', '', ''])}{image_prompt}"
-                        )
-
-                    if image_url:
-                        topic_images.append({
-                            'url': image_url,
-                            'selected': False,
-                            'template': template,
-                            'source': 'flux',            # Mark as flux
-                            'dalle_generated': False     # Not relevant for flux, but keep structure
-                        })
-                    percent_complete = percent_complete + 1/total_images
-                    
-                    # my_bar.progress(percent_complete, text=progress_text)
+                        percent_complete = percent_complete + 1/total_images
+                        
+                        # my_bar.progress(percent_complete, text=progress_text)
 
 
         # Append the images for this topic
