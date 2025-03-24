@@ -1105,6 +1105,7 @@ if st.button("Generate Images"):
         else: # NOT google!
 
             for i in range(count):
+                st.text(f"i {i}")
 
 
                 if ',' in template_str:
