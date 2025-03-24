@@ -1111,7 +1111,7 @@ if st.button("Generate Images"):
                     template_str = random.choice([x for x in template_str.split(",")])
 
 
-
+                st.text(template_str)
                 if combo not in processed_combinations:
                     processed_combinations.add(combo)
                     st.subheader(f"Generating images for: {topic}")
