@@ -1107,16 +1107,16 @@ if st.button("Generate Images"):
 
 
 
-        if 'gemini' is  template_str.lower()  : # gemini
+        if 'gemini' in  template_str.lower()  : # gemini
 
             for i in range(count):
 
-                if template_str.lower() is 'gemini2':
+                if template_str is 'gemini2':
                     st.text('a')
                     gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use photos',''])}. add a CTA button with 
                                         'Learn More Here >>' in appropriate language\ns\nstart with 'square image aspect ratio of 1:1 of '\n\n 
 
- """,model="gpt-4o")
+                        """,model="gpt-4o")
 
                 
                 else:
