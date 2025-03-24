@@ -1214,7 +1214,7 @@ if st.button("Generate Images"):
                         })
                     percent_complete = percent_complete + 1/total_images
                     
-                    my_bar.progress(percent_complete, text=progress_text)
+                    # my_bar.progress(percent_complete, text=progress_text)
 
 
         # Append the images for this topic
