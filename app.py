@@ -1077,6 +1077,12 @@ if st.button("Generate Images"):
         combo = f"{topic}_{lang}"
         template_str = row["template"]
 
+
+        if ',' in template_str:
+            template_str = random.choice([x for x in template_str.split(",")])
+
+
+
         if combo not in processed_combinations:
             processed_combinations.add(combo)
             st.subheader(f"Generating images for: {topic}")
@@ -1097,7 +1103,7 @@ if st.button("Generate Images"):
                 topic_images.append({
                     'url': img_url,
                     'selected': False,
-                    'template': random.choice([int(x) for x in template_str.split(",")]),
+                    'template': template_str,
                     'source': 'google',       # Mark as Google
                     'dalle_generated': False  # For tracking DALL-E generation
                 })
