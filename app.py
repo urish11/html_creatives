@@ -1124,40 +1124,39 @@ if st.button("Generate Images"):
                 if 'gemini' in  template_str.lower()  : # gemini
 
 
-                    for i in range(count):
 
-                        if template_str == 'gemini2':
+                    if template_str == 'gemini2':
 
-                            gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use photos',''])}. add a CTA button with 
-                                                'Learn More Here >>' in appropriate language\ns\nstart with 'square image aspect ratio of 1:1 of '\n\n 
+                        gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use photos',''])}. add a CTA button with 
+                                            'Learn More Here >>' in appropriate language\ns\nstart with 'square image aspect ratio of 1:1 of '\n\n 
 
-                                """,model="gpt-4o")
+                            """,model="gpt-4o")
 
-                        
-                        
-                            gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use photos',''])}. add a CTA button with 
-                                                    'Learn More Here >>' in appropriate language\nshould be low quality and very enticing and alerting\nstart with 'square image aspect ratio of 1:1 of '\n\n example output:\n\nsquare image of a concerned middle-aged woman looking at her tongue in the mirror under harsh bathroom lighting, with a cluttered counter and slightly blurry focus — big bold red text says “Early Warning Signs?” and a janky yellow button below reads “Learn More Here >>” — the image looks like it was taken on an old phone, with off angle, bad lighting, and a sense of urgency and confusion to provoke clicks.
+                    
+                    
+                        gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use photos',''])}. add a CTA button with 
+                                                'Learn More Here >>' in appropriate language\nshould be low quality and very enticing and alerting\nstart with 'square image aspect ratio of 1:1 of '\n\n example output:\n\nsquare image of a concerned middle-aged woman looking at her tongue in the mirror under harsh bathroom lighting, with a cluttered counter and slightly blurry focus — big bold red text says “Early Warning Signs?” and a janky yellow button below reads “Learn More Here >>” — the image looks like it was taken on an old phone, with off angle, bad lighting, and a sense of urgency and confusion to provoke clicks.
 
-                              """,model="gpt-4o")
-                        st.text(f"img prompt {gemini_prompt}")
-                        gemini_img_bytes = gen_gemini_image(gemini_prompt)
-                        gemini_image_url = upload_pil_image_to_s3(image = gemini_img_bytes ,bucket_name=S3_BUCKET_NAME,
-                                    aws_access_key_id=AWS_ACCESS_KEY_ID,
-                                    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-                                    region_name=AWS_REGION
-                                )
-                        if gemini_image_url:
-                                    topic_images.append({
-                                        'url': gemini_image_url,
-                                        'selected': False,
-                                        'template': template_str,
-                                        'source': 'gemini',            # Mark as flux
-                                        'dalle_generated': False     # Not relevant for flux, but keep structure
-                                    })
+                            """,model="gpt-4o")
+                    st.text(f"img prompt {gemini_prompt}")
+                    gemini_img_bytes = gen_gemini_image(gemini_prompt)
+                    gemini_image_url = upload_pil_image_to_s3(image = gemini_img_bytes ,bucket_name=S3_BUCKET_NAME,
+                                aws_access_key_id=AWS_ACCESS_KEY_ID,
+                                aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+                                region_name=AWS_REGION
+                            )
+                    if gemini_image_url:
+                                topic_images.append({
+                                    'url': gemini_image_url,
+                                    'selected': False,
+                                    'template': template_str,
+                                    'source': 'gemini',            # Mark as flux
+                                    'dalle_generated': False     # Not relevant for flux, but keep structure
+                                })
 
-                        percent_complete = percent_complete + 1/total_images
+                    percent_complete = percent_complete + 1/total_images
 
-                        my_bar.progress(percent_complete, text=progress_text)
+                    my_bar.progress(percent_complete, text=progress_text)
 
                 else:
                 # Otherwise, use FLUX to generate
