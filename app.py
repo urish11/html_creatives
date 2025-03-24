@@ -1046,7 +1046,7 @@ def create_dalle_variation(image_url,count):
 # --------------------------------------------
 # Streamlit UI
 # --------------------------------------------
-st.title("AI Image Generation and Upload App")
+st.title("Creative Maker ")
 
 # Initialize session state for storing generated images
 if 'generated_images' not in st.session_state:
