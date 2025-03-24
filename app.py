@@ -1110,7 +1110,7 @@ if st.button("Generate Images"):
 
 
                 if ',' in row["template"]:
-                    template_str = random.choice([x for x in template_str.split(",")])
+                    template_str = random.choice([x for x in row["template"].split(",")])
 
 
                 st.text(template_str)
