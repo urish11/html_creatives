@@ -1101,9 +1101,9 @@ if st.button("Generate Images"):
                     'source': 'google',       # Mark as Google
                     'dalle_generated': False  # For tracking DALL-E generation
                 })
-            percent_complete = percent_complete + 1/len(df)
+            percent_complete = percent_complete + 1/len(total_images)
             percent_complete = percent_complete if percent_complete < 1.0 else 1.0
-            # my_bar.progress(percent_complete , text=progress_text)
+            my_bar.progress(percent_complete , text=progress_text)
 
 
 
