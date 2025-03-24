@@ -1103,7 +1103,7 @@ if st.button("Generate Images"):
                 })
             percent_complete = percent_complete + 1/len(df)
             percent_complete = percent_complete if percent_complete < 1.0 else 1.0
-            my_bar.progress(percent_complete , text=progress_text)
+            # my_bar.progress(percent_complete , text=progress_text)
 
 
 
