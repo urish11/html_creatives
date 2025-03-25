@@ -1058,7 +1058,7 @@ df = st.data_editor(
     num_rows="dynamic",
     key="table_input"
 )
-
+auto_mode  = st.checkbox("Auto mode? ")
 # Step 1: Generate Images
 if st.button("Generate Images"):
     st.session_state.generated_images = []  # Clear previous images
@@ -1252,7 +1252,18 @@ if st.button("Generate Images"):
         })
 
 # Step 2: Display generated images in a grid
-if st.session_state.generated_images:
+if auto_mode and st.session_state.generated_images:
+
+    for entry in st.session_state.generated_images:
+        images= entry["images"] 
+        for img in images:
+            img['selected_count'] = 1
+
+
+
+
+
+elif st.session_state.generated_images:
     st.subheader("Select Images to Process")
     zoom = st.slider("Zoom Level", min_value=50, max_value=500, value=300, step=50)
 
