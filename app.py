@@ -210,8 +210,11 @@ def gen_gemini_image(prompt, trys = 0):
 
     while trys < 10 :
 
+        api = random.choice(GEMINI_API_KEY)
+        st.text(api)
 
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key={random.choice(GEMINI_API_KEY)}"
+
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key={api}"
 
         headers = {
             "Content-Type": "application/json"
