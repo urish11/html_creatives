@@ -265,7 +265,7 @@ def gen_gemini_image(prompt, trys = 0):
         else:
             trys +=1
             print("Error:")
-            print(response.text)
+            st.text(response.text)
 
 
 
