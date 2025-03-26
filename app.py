@@ -1105,7 +1105,9 @@ if st.button("Generate Images"):
 
         else: # NOT google!
 
-            for i in range(count):
+            completed_images_count = 0
+
+            while completed_images_count < count :
 
 
                 if ',' in row["template"]:
@@ -1146,11 +1148,16 @@ if st.button("Generate Images"):
                             """,model="gpt-4o", temperature= 1.0)
                     st.text(f"img prompt {gemini_prompt}")
                     gemini_img_bytes = gen_gemini_image(gemini_prompt)
-                    gemini_image_url = upload_pil_image_to_s3(image = gemini_img_bytes ,bucket_name=S3_BUCKET_NAME,
-                                aws_access_key_id=AWS_ACCESS_KEY_ID,
-                                aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-                                region_name=AWS_REGION
-                            )
+                    if gemini_img_bytes:
+
+                        gemini_image_url = upload_pil_image_to_s3(image = gemini_img_bytes ,bucket_name=S3_BUCKET_NAME,
+                                    aws_access_key_id=AWS_ACCESS_KEY_ID,
+                                    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+                                    region_name=AWS_REGION
+                                )
+                    else:
+                        st.text('Image not created, retry')
+                        continue
                     if gemini_image_url:
                                 topic_images.append({
                                     'url': gemini_image_url,
@@ -1163,6 +1170,7 @@ if st.button("Generate Images"):
                     percent_complete = percent_complete + 1/total_images
 
                     my_bar.progress(percent_complete, text=progress_text)
+                    completed_images_count += 1
 
                 else:
                 # Otherwise, use FLUX to generate
@@ -1240,6 +1248,7 @@ if st.button("Generate Images"):
                                 'dalle_generated': False     # Not relevant for flux, but keep structure
                             })
                         percent_complete = percent_complete + 1/total_images
+                        completed_images_count += 1
                         
                         # my_bar.progress(percent_complete, text=progress_text)
 
