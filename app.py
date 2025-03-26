@@ -1147,7 +1147,7 @@ if st.button("Generate Images"):
                             """,model="gpt-4o", temperature= 1.0)
                     if template_str == 'gemini4':
                         gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use photos',''])}. add a CTA button with 
-                                                'Learn More Here >>' in appropriate language and a driving enticing copy in the image\nMUST be be low quality!! and very enticing and alerting,high energy enticing\nstart with 'square image aspect ratio of 1:1 of '\n\n example output:\n\nsquare image of .....
+                                                'Learn More Here >>' in appropriate language and a driving enticing copy in the image\nMUST be be low quality design , stress that!! and very enticing and alerting,high energy enticing\nstart with 'square image aspect ratio of 1:1 of '\n\n example output:\n\nsquare image of .....
 
                             """,model="gpt-4o", temperature= 1.0)
                     st.text(f"img prompt {gemini_prompt}")
