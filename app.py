@@ -1152,6 +1152,14 @@ if st.button("Generate Images"):
                                                 'Learn More Here >>' in appropriate language and a driving enticing copy in the image\nMUST be be low quality design , stress that!! and very enticing and alerting,high energy enticing, describe the visuals\nstart with 'square image aspect ratio of 1:1 of '\n\n example output:\n\nsquare image of .....
 
                             """,model="gpt-4o", temperature= 1.0)
+
+                    if template_str == 'gemini5':
+
+                        gemini_prompt_angle = chatGPT("""For the topic  Dental Implant Deals, imagine a highly specific and unusual moment in someone's everyday life that would visually hint at the condition — but in a confusing, unexpected way.\nThe moment should:\n– Feel personal, like something they might do alone out of worry or curiosity\n– Be visually simple but puzzling \n– Create just enough mystery that the viewer thinks: "Wait… why would someone do that?"\n\nCome up with one clever, click-provoking scenario that could be captured in a smartphone photo, but NOT surreal and too absurd.\nReturn just the angle, consicly in 1-2 sentences.""",model="gpt-4.5", temperature= 1.19)
+                        gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' using this angle {gemini_prompt_angle.replace("\n",'')} in language {lang} {random.choice(['use photos',''])}. add a CTA button with 
+                                                'Learn More Here >>' in appropriate language\nshould be low quality and very enticing and alerting\nstart with 'square image aspect ratio of 1:1 of '\n\n example output:\n\nsquare image of a concerned middle-aged woman looking at her tongue in the mirror under harsh bathroom lighting, with a cluttered counter and slightly blurry focus — big bold red text says “Early Warning Signs?” and a janky yellow button below reads “Learn More Here >>” — the image looks like it was taken on an old phone, with off angle, bad lighting, and a sense of urgency and confusion to provoke clicks.
+
+                            """,model="gpt-4o", temperature= 1.0)
                     st.text(f"img prompt {gemini_prompt}")
                     gemini_img_bytes = gen_gemini_image(gemini_prompt)
                     if gemini_img_bytes:
