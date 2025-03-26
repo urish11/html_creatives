@@ -1194,7 +1194,7 @@ if st.button("Generate Images"):
                     else:
                         template = int(template_str)
 
-                    with st.spinner(f"Generating image {i + 1} for '{topic}'..."):
+                    with st.spinner(f"Generating image {completed_images_count } for '{topic}'..."):
                         if template == 5:
                             rand_prompt = f"""Generate a concise visual image description (15 words MAX) for {topic}.
                             Be wildly creative, curious, and push the limits of imagination—while staying grounded in real-life scenarios!
