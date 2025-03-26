@@ -1108,7 +1108,7 @@ if st.button("Generate Images"):
             completed_images_count = 0
 
             while completed_images_count < count :
-
+                st.text(completed_images_count)
 
                 if ',' in row["template"]:
                     template_str = random.choice([x for x in row["template"].split(",")])
