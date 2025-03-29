@@ -1157,7 +1157,7 @@ if st.button("Generate Images"):
 
                     if template_str == 'gemini6':
                         if not headline_temp:
-                            headline_temp =chatGPT(f"""write 1 statement,kinda clickbaity, very consice and action driving, same length, no quotes, for {re.sub('\\|.*','',topic)} in {lang}. Examples:\n'Surprising Travel Perks You Might Be Missing'\n 'Little-Known Tax Tricks to Save Big'\n Dont mention 'Hidden' or 'Unlock'.\nmax  6 words""",model='o1', temperature=0)
+                            headline_temp =chatGPT(f"""write 1 statement,kinda clickbaity, very consice and action click driving, same length, no quotes, for {re.sub('\\|.*','',topic)} in {lang}. Examples:\n'Surprising Travel Perks You Might Be Missing'\n 'Little-Known Tax Tricks to Save Big'\n Dont mention 'Hidden' or 'Unlock'.\nmax  6 words""",model='o1', temperature=0)
 
 
 
