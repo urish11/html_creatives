@@ -157,6 +157,66 @@ def upload_pil_image_to_s3(
         st.error(f"Error in S3 upload: {str(e)}")
         return None
 
+
+def gemini_text(
+    prompt: str,
+    
+    api_key: str = random.choice(GEMINI_API_KEY),
+    model_id: str = "gemini-2.5-pro-exp-03-25",
+    api_endpoint: str = "streamGenerateContent"
+) -> str | None:
+    if api_key is None:
+        api_key = os.environ.get("GEMINI_API_KEY")
+
+    if not api_key:
+        print("Error: API key not provided and GEMINI_API_KEY environment variable not set.")
+        return None
+
+    api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:{api_endpoint}?key={api_key}"
+
+    headers = {
+        "Content-Type": "application/json",
+    }
+
+
+
+    request_data = {
+        "contents": [
+            {
+                "role": "user",
+                "parts": [
+                    {"text": prompt},
+                ],
+            },
+        ],
+        "generationConfig": {
+            "responseMimeType": "text/plain",
+        },
+    }
+
+    try:
+        response = requests.post(
+            api_url,
+            headers=headers,
+            json=request_data,
+            timeout=60
+        )
+        response.raise_for_status()
+        st.text(response.json())
+        return response.text
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error calling Gemini API: {e}")
+        if 'response' in locals() and response is not None:
+             print(f"Response status: {response.status_code}")
+             print(f"Response text: {response.text}")
+        return None
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        return None
+
+
+
 #@log_function_call
 def chatGPT(prompt, model="gpt-4o", temperature=1.0):
 
@@ -1157,7 +1217,7 @@ if st.button("Generate Images"):
 
                     if template_str == 'gemini6':
                         if not headline_temp:
-                            headline_temp =chatGPT(f"""write 1 statement,kinda clickbaity, very consice and action click driving, same length, no quotes, for {re.sub('\\|.*','',topic)} in {lang}. Examples:\n'Surprising Travel Perks You Might Be Missing'\n 'Little-Known Tax Tricks to Save Big'\n Dont mention 'Hidden' or 'Unlock'.\nmax  6 words""",model='o1', temperature=0)
+                            headline_temp =gemini_text(f"""write 1 statement,kinda clickbaity, very consice and action click driving, same length, no quotes, for {re.sub('\\|.*','',topic)} in {lang}. Examples:\n'Surprising Travel Perks You Might Be Missing'\n 'Little-Known Tax Tricks to Save Big'\n Dont mention 'Hidden' or 'Unlock'.\nmax  6 words""")
 
 
 
