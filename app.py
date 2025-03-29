@@ -159,6 +159,8 @@ def upload_pil_image_to_s3(
 
 #@log_function_call
 def chatGPT(prompt, model="gpt-4o", temperature=1.0):
+
+    
     """
     Call OpenAI's Chat Completion (GPT) to generate text.
     """
@@ -172,6 +174,9 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0):
         'temperature': temperature,
         'messages': [{'role': 'user', 'content': prompt}]
     }
+
+    if temperature == 0: data.pop('temperature')
+        
     response = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=data)
     content = response.json()['choices'][0]['message']['content'].strip()
     # st.text(content)
@@ -1155,7 +1160,7 @@ if st.button("Generate Images"):
 
                     if template_str == 'gemini5':
 
-                        gemini_prompt_angle = chatGPT(f"""For the topic  {topic}, imagine a highly specific and unusual moment in someone's everyday life that would visually hint at the condition — but in a confusing, unexpected way.\nThe moment should:\n– Feel personal, like something they might do alone out of worry or curiosity\n– Be visually simple but puzzling \n-High energy and dramatic\n– Create just enough mystery that the viewer thinks: "Wait… why would someone do that?"\n\nCome up with one clever, click-provoking scenario that could be captured in a smartphone photo, \n must be highly engaging visually for the topic, to be for image prompt.\nReturn just the angle, consicly in 1 sentence up to 12 words""",model="o1", temperature= 1.05)
+                        gemini_prompt_angle = chatGPT(f"""For the topic  {topic}, imagine a highly specific and unusual moment in someone's everyday life that would visually hint at the condition — but in a confusing, unexpected way.\nThe moment should:\n– Feel personal, like something they might do alone out of worry or curiosity\n– Be visually simple but puzzling \n-High energy and dramatic\n– Create just enough mystery that the viewer thinks: "Wait… why would someone do that?"\n\nCome up with one clever, click-provoking scenario that could be captured in a smartphone photo, \n must be highly engaging visually for the topic, to be for image prompt.\nReturn just the angle, consicly in 1 sentence up to 12 words""",model="o1", temperature= 0)
                         st.text(f"Angle {gemini_prompt_angle}")
                         gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' using this angle {gemini_prompt_angle.replace("\n",'')} in language {lang} {random.choice(['use photos',''])}. add a CTA button with 
                                                 'Learn More Here >>' in appropriate language\nshould be low quality and very enticing and alerting\nstart with 'square image aspect ratio of 1:1 of '\n\n example output:\n\nsquare image of a concerned middle-aged woman looking at her tongue in the mirror under harsh bathroom lighting, with a cluttered counter and slightly blurry focus — big bold red text says “.....” and a janky yellow button below reads “Learn More Here >>” — the image looks like it was taken on an old phone, with off angle, bad lighting, and a sense of urgency and confusion to provoke clicks.
