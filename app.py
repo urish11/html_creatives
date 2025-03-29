@@ -1085,6 +1085,7 @@ if st.button("Generate Images"):
         lang = row['lang']
         combo = f"{topic}_{lang}"
         template_str = row["template"]
+        headline_temp = None
 
 
         if "google" in topic.lower():
@@ -1155,11 +1156,13 @@ if st.button("Generate Images"):
 
 
                     if template_str == 'gemini6':
-                        headline =chatGPT(f"""write 1 statement,kinda clickbaity, very consice and action driving, same length, no quotes, for {re.sub('\\|.*','',topic)} in {lang}. Examples:\n'Surprising Travel Perks You Might Be Missing'\n 'Little-Known Tax Tricks to Save Big'\n Dont mention 'Hidden' or 'Unlock'.\nmax  6 words""",model='o3-mini', temperature=0)
+                        if not headline_temp:
+                            headline_temp =chatGPT(f"""write 1 statement,kinda clickbaity, very consice and action driving, same length, no quotes, for {re.sub('\\|.*','',topic)} in {lang}. Examples:\n'Surprising Travel Perks You Might Be Missing'\n 'Little-Known Tax Tricks to Save Big'\n Dont mention 'Hidden' or 'Unlock'.\nmax  6 words""",model='o1', temperature=0)
+
 
 
                         gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use photos',''])}. add a CTA button with 
-                                                'Learn More Here >>' in appropriate language\nshould be low quality and very enticing and alerting\ninclude the following text in the image '{headline}\nstart with 'square image aspect ratio of 1:1 of '\n\n example output:\n\nsquare image of a concerned middle-aged woman looking at her tongue in the mirror under harsh bathroom lighting, with a cluttered counter and slightly blurry focus — big bold red text says “Early Warning Signs?” and a janky yellow button below reads “Learn More Here >>” — the image looks like it was taken on an old phone, with off angle, bad lighting, and a sense of urgency and confusion to provoke clicks.
+                                                'Learn More Here >>' in appropriate language\nshould be low quality and very enticing and alerting\ninclude the following text in the image '{headline_temp}\nstart with 'square image aspect ratio of 1:1 of '\n\n example output:\n\nsquare image of a concerned middle-aged woman looking at her tongue in the mirror under harsh bathroom lighting, with a cluttered counter and slightly blurry focus — big bold red text says “Early Warning Signs?” and a janky yellow button below reads “Learn More Here >>” — the image looks like it was taken on an old phone, with off angle, bad lighting, and a sense of urgency and confusion to provoke clicks.
 
                             """,model="gpt-4o", temperature= 1.0)
                     if template_str == 'gemini4':
