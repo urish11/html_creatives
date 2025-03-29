@@ -1155,7 +1155,7 @@ if st.button("Generate Images"):
 
 
                     if template_str == 'gemini6':
-                        headline =chatGPT(f"""write 1 statement,kinda clickbaity, very consice and action driving, same length, no quotes, for {re.sub('\\|.*','',topic)} in {lang}. Examples:\n'Surprising Travel Perks You Might Be Missing'\n 'Little-Known Tax Tricks to Save Big'\n Dont mention 'Hidden' or 'Unlock'.""",model='gpt-4')
+                        headline =chatGPT(f"""write 1 statement,kinda clickbaity, very consice and action driving, same length, no quotes, for {re.sub('\\|.*','',topic)} in {lang}. Examples:\n'Surprising Travel Perks You Might Be Missing'\n 'Little-Known Tax Tricks to Save Big'\n Dont mention 'Hidden' or 'Unlock'.\nmax  6 words""",model='gpt-4')
 
 
                         gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use photos',''])}. add a CTA button with 
