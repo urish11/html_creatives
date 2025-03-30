@@ -226,7 +226,7 @@ def gemini_text_lib(prompt,model ='gemini-2.5-pro-exp-03-25' ):
     response = client.models.generate_content(
         model=model, contents=  prompt
     )
-    st.text(response.text) 
+    return response.text
 
 
 
