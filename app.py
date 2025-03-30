@@ -203,6 +203,8 @@ def gemini_text(
         )
         response.raise_for_status()
         st.text(f"asss {response}")
+        st.text(f"asss {json.loads(response)['candidates'][0]['content']['parts'][0]['text']}")
+
         return response['candidates'][0]['content']['parts'][0]['text']
 
     except requests.exceptions.RequestException as e:
