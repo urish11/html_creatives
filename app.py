@@ -238,28 +238,32 @@ def gemini_text_lib(prompt,model ='gemini-2.5-pro-exp-03-25' ):
 
 #@log_function_call
 def chatGPT(prompt, model="gpt-4o", temperature=1.0):
-
+    try:
     
-    """
-    Call OpenAI's Chat Completion (GPT) to generate text.
-    """
-    st.write("Generating image description...")
-    headers = {
-        'Authorization': f'Bearer {GPT_API_KEY}',
-        'Content-Type': 'application/json'
-    }
-    data = {
-        'model': model,
-        'temperature': temperature,
-        'messages': [{'role': 'user', 'content': prompt}]
-    }
+        """
+        Call OpenAI's Chat Completion (GPT) to generate text.
+        """
+        st.write("Generating image description...")
+        headers = {
+            'Authorization': f'Bearer {GPT_API_KEY}',
+            'Content-Type': 'application/json'
+        }
+        data = {
+            'model': model,
+            'temperature': temperature,
+            'messages': [{'role': 'user', 'content': prompt}]
+        }
 
-    if temperature == 0: data.pop('temperature')
-        
-    response = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=data)
-    content = response.json()['choices'][0]['message']['content'].strip()
-    # st.text(content)
-    return content
+        if temperature == 0: data.pop('temperature')
+            
+        response = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=data)
+        content = response.json()['choices'][0]['message']['content'].strip()
+        # st.text(content)
+        return content
+
+    except Exception as e:
+        st.text(f"Error in chatGPT: {str(e)}")
+        return None
 
 #@log_function_call
 def gen_flux_img(prompt, height=784, width=960):
@@ -1262,8 +1266,9 @@ if st.button("Generate Images"):
                                                 'Learn More Here >>' in appropriate language\nshould be low quality and very enticing and alerting\nstart with 'square image aspect ratio of 1:1 of '\n\n example output:\n\nsquare image of a concerned middle-aged woman looking at her tongue in the mirror under harsh bathroom lighting, with a cluttered counter and slightly blurry focus — big bold red text says “.....” and a janky yellow button below reads “Learn More Here >>” — the image looks like it was taken on an old phone, with off angle, bad lighting, and a sense of urgency and confusion to provoke clicks.
 
                             """,model="gpt-4o", temperature= 1.0)
-                    st.text(f"img prompt {gemini_prompt}")
-                    gemini_img_bytes = gen_gemini_image(gemini_prompt)
+                    if gemini_prompt :
+                        st.text(f"img prompt {gemini_prompt}")
+                        gemini_img_bytes = gen_gemini_image(gemini_prompt)
                     if gemini_img_bytes:
 
                         gemini_image_url = upload_pil_image_to_s3(image = gemini_img_bytes ,bucket_name=S3_BUCKET_NAME,
