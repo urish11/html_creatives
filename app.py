@@ -203,7 +203,7 @@ def gemini_text(
         )
         response.raise_for_status()
         st.text(f"asss {response.json()}")
-        st.text(f"asss {json.loads(response.json)['candidates'][0]['content']['parts'][0]['text']}")
+        st.text(f"asss {response.json()['candidates'][0]['content']['parts'][0]['text']}")
 
         return response['candidates'][0]['content']['parts'][0]['text']
 
