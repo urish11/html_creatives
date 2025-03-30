@@ -202,7 +202,7 @@ def gemini_text(
             timeout=60
         )
         response.raise_for_status()
-        st.text(f"asss {response['candidates'][0]['content']['parts'][0]['text']}")
+        st.text(f"asss {response}")
         return response['candidates'][0]['content']['parts'][0]['text']
 
     except requests.exceptions.RequestException as e:
