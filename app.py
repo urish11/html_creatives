@@ -203,7 +203,7 @@ def gemini_text(
         )
         response.raise_for_status()
 
-        return response.json()['candidates'][0]['content']['parts'][0]['text'].replace('```','').replace()
+        return response.json()['candidates'][0]['content']['parts'][0]['text'].replace('```','')
 
     except requests.exceptions.RequestException as e:
         print(f"Error calling Gemini API: {e}")
