@@ -1269,7 +1269,7 @@ if st.button("Generate Images"):
                     if gemini_prompt is not None  :
                         st.text(f"img prompt {gemini_prompt}")
                         gemini_img_bytes = gen_gemini_image(gemini_prompt)
-                        if gemini_img_bytes:
+                        if gemini_img_bytes is not None:
 
                             gemini_image_url = upload_pil_image_to_s3(image = gemini_img_bytes ,bucket_name=S3_BUCKET_NAME,
                                         aws_access_key_id=AWS_ACCESS_KEY_ID,
