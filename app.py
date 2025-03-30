@@ -202,10 +202,8 @@ def gemini_text(
             timeout=60
         )
         response.raise_for_status()
-        st.text(f"asss {response.json()}")
-        st.text(f"asss {response.json()['candidates'][0]['content']['parts'][0]['text']}")
 
-        return response['candidates'][0]['content']['parts'][0]['text']
+        return response.json()['candidates'][0]['content']['parts'][0]['text'].replace('```','').replace()
 
     except requests.exceptions.RequestException as e:
         print(f"Error calling Gemini API: {e}")
