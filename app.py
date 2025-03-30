@@ -219,7 +219,7 @@ def gemini_text(
         print(f"An unexpected error occurred: {e}")
         return None
 
-def gemini_text_lib(prompt,model ='gemini-2.5-pro-exp-03-25' ):
+def gemini_text_lib(prompt,model ='gemiasani-2.5-pro-exp-03-25' ):
 
     client = genai.Client(api_key=random.choice(GEMINI_API_KEY))
 
