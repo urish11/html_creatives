@@ -223,11 +223,15 @@ def gemini_text_lib(prompt,model ='gemini-2.5-pro-exp-03-25' ):
 
     client = genai.Client(api_key=random.choice(GEMINI_API_KEY))
 
-    response = client.models.generate_content(
-        model=model, contents=  prompt
-    )
-    return response.text
+    try:
+        response = client.models.generate_content(
+            model=model, contents=  prompt
+        )
 
+        return response.text
+    except Exception as e:
+        st.text(e)
+        return None
 
 
 
@@ -1235,7 +1239,6 @@ if st.button("Generate Images"):
                                                 'Learn More Here >>' in appropriate language\nshould be low quality and very enticing and alerting\nstart with 'square image aspect ratio of 1:1 of '\n\n example output:\n\nsquare image of a concerned middle-aged woman looking at her tongue in the mirror under harsh bathroom lighting, with a cluttered counter and slightly blurry focus — big bold red text says “Early Warning Signs?” and a janky yellow button below reads “Learn More Here >>” — the image looks like it was taken on an old phone, with off angle, bad lighting, and a sense of urgency and confusion to provoke clicks. return JUST the best option, no intros
 
                             """)
-                        st.text(gemini_prompt)
                     if template_str == 'gemini6':
                         headline_temp =gemini_text(f"""write 1 statement,kinda clickbaity, very consice and action click driving, same length, no quotes, for {re.sub('\\|.*','',topic)} in {lang}. Examples:\n'Surprising Travel Perks You Might Be Missing'\n 'Little-Known Tax Tricks to Save Big'\n Dont mention 'Hidden' or 'Unlock'.\nmax  6 words""")
 
