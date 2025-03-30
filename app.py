@@ -1263,8 +1263,7 @@ if st.button("Generate Images"):
 
                             """,model="gpt-4o", temperature= 1.0)
                     st.text(f"img prompt {gemini_prompt}")
-                    if gemini_prompt:
-                        gemini_img_bytes = gen_gemini_image(gemini_prompt)
+                    gemini_img_bytes = gen_gemini_image(gemini_prompt)
                     if gemini_img_bytes:
 
                         gemini_image_url = upload_pil_image_to_s3(image = gemini_img_bytes ,bucket_name=S3_BUCKET_NAME,
