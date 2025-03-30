@@ -231,6 +231,7 @@ def gemini_text_lib(prompt,model ='gemini-2.5-pro-exp-03-25' ):
         return response.text
     except Exception as e:
         st.text('gemini_text_lib error ' + str(e))
+        time.sleep(4)
         return None
 
 
