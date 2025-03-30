@@ -202,8 +202,8 @@ def gemini_text(
             timeout=60
         )
         response.raise_for_status()
-        st.text(f"asss {response}")
-        st.text(f"asss {json.loads(response)['candidates'][0]['content']['parts'][0]['text']}")
+        st.text(f"asss {response.json}")
+        st.text(f"asss {json.loads(response.json)['candidates'][0]['content']['parts'][0]['text']}")
 
         return response['candidates'][0]['content']['parts'][0]['text']
 
