@@ -7,6 +7,8 @@ from botocore.exceptions import NoCredentialsError
 import random
 import string
 import requests
+from google import genai
+
 import json
 import base64
 import os
@@ -216,6 +218,17 @@ def gemini_text(
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
         return None
+
+def gemini_text_lib(prompt,model ='gemini-2.5-pro-exp-03-25' ):
+
+    client = genai.Client(api_key=random.choice(GEMINI_API_KEY))
+
+    response = client.models.generate_content(
+        model=model, contents=  prompt
+    )
+    st.text(response.text) 
+
+
 
 
 
@@ -1218,7 +1231,7 @@ if st.button("Generate Images"):
 
                     
                     if template_str == 'gemini7': # gemini1 with geimini text
-                        gemini_prompt = gemini_text(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
+                        gemini_prompt = gemini_text_lib(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
                                                 'Learn More Here >>' in appropriate language\nshould be low quality and very enticing and alerting\nstart with 'square image aspect ratio of 1:1 of '\n\n example output:\n\nsquare image of a concerned middle-aged woman looking at her tongue in the mirror under harsh bathroom lighting, with a cluttered counter and slightly blurry focus — big bold red text says “Early Warning Signs?” and a janky yellow button below reads “Learn More Here >>” — the image looks like it was taken on an old phone, with off angle, bad lighting, and a sense of urgency and confusion to provoke clicks.
 
                             """)
