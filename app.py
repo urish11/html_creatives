@@ -202,7 +202,7 @@ def gemini_text(
             timeout=60
         )
         response.raise_for_status()
-        return response.text
+        return response['candidates'][0]['content']['parts'][0]['text']
 
     except requests.exceptions.RequestException as e:
         print(f"Error calling Gemini API: {e}")
