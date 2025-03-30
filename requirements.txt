@@ -7,3 +7,4 @@ botocore
 playwright
 google_images_search
 openai
+google
