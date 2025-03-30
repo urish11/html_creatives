@@ -1451,7 +1451,7 @@ if st.button("Process Selected Images"):
             for i in range(img['selected_count']):
                 template = img['template']
 
-                if  "gemini" in template   :
+                if  "gemini" in template and type(template) == str:
                     res[f'Image_{idx + 1}__{i + 1}'] = img['url']
                     continue
 
