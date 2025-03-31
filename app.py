@@ -1457,6 +1457,7 @@ if st.button("Process Selected Images"):
         images = entry["images"]
 
         res = {'Topic': topic, 'Language': lang}
+        print(topic)
         selected_images = [img for img in images if img['selected_count'] > 0]
 
         # We'll store CTA text per language in a dict to avoid repeated calls
