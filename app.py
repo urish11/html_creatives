@@ -219,7 +219,7 @@ def gemini_text(
         print(f"An unexpected error occurred: {e}")
         return None
 
-def gemini_text_lib(prompt,model ='gemiasani-2.5-pro-exp-03-25' ):
+def gemini_text_lib(prompt,model ='gemini-2.5-pro-exp-03-25' ):
 
     client = genai.Client(api_key=random.choice(GEMINI_API_KEY))
 
@@ -1241,7 +1241,7 @@ if st.button("Generate Images"):
                     
                     if template_str == 'gemini7': # gemini1 with geimini text
                         gemini_prompt = gemini_text_lib(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
-                                                'Learn More Here >>' in appropriate language\nshould be low quality and very enticing and alerting \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
+                                                'Learn More Here >>' in appropriate language\nshocking unexpected visuals \nshould be low quality and very enticing and alerting \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
 
                             """)
                     if template_str == 'gemini6':
