@@ -1247,6 +1247,12 @@ if st.button("Generate Images"):
                                                 'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
 
                             """)
+
+                    if template_str == 'gemini8': # gemini1 with geimini text
+                        gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
+                                                'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
+
+                            """,model='o3‑mini', temperature= 0)
                     if template_str == 'gemini6':
                         headline_temp =gemini_text(f"""write 1 statement,kinda clickbaity, very consice and action click driving, same length, no quotes, for {re.sub('\\|.*','',topic)} in {lang}. Examples:\n'Surprising Travel Perks You Might Be Missing'\n 'Little-Known Tax Tricks to Save Big'\n Dont mention 'Hidden' or 'Unlock'.\nmax  6 words""")
 
