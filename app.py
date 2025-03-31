@@ -244,9 +244,7 @@ def gemini_text_lib(prompt,model ='gemini-2.5-pro-exp-03-25' ):
 def chatGPT(prompt, model="gpt-4o", temperature=1.0):
     try:
     
-        """
-        Call OpenAI's Chat Completion (GPT) to generate text.
-        """
+ 
         st.write("Generating image description...")
         headers = {
             'Authorization': f'Bearer {GPT_API_KEY}',
