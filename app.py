@@ -225,7 +225,6 @@ def gemini_text_lib(prompt,model ='gemini-2.5-pro-exp-03-25' ):
 
     client = genai.Client(api_key=random.choice(GEMINI_API_KEY))
 
-    st.text(client.list_models())
 
     try:
         response = client.models.generate_content(
