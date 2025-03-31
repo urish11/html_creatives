@@ -22,11 +22,11 @@ import openai  # NEW: For DALL-E variations
 import logging
 from openai import OpenAI
 # Configure logging
-logging.basicConfig(
-    format='%(asctime)s [%(levelname)s] %(name)s - %(message)s', 
-    level=logging.DEBUG
-)
-logger = logging.getLogger(__name__)
+# logging.basicConfig(
+#     format='%(asctime)s [%(levelname)s] %(name)s - %(message)s', 
+#     level=logging.DEBUG
+# )
+# logger = logging.getLogger(__name__)
 
 # Set your OpenAI key for DALL-E
 openai.api_key = st.secrets.get("OPENAI_API_KEY")
