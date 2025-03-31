@@ -1424,9 +1424,9 @@ elif st.session_state.generated_images:
                     try:
                         img['selected_count'] = st.number_input(
                             f"Count for {img['url'][-5:]}",
-                            min_value=0, max_value=10, value=0, key=unique_key
+                            min_value=0, max_value=10, value=0, key=unique_key ,
                         )
-                    except:pass
+                    except:img['selected_count'] = 0
 
                     # DALL-E Variation button for Google images
                     if img.get("source") == "google" and not img.get("dalle_generated", False):
