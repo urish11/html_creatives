@@ -1216,6 +1216,8 @@ if st.button("Generate Images"):
 
 
                 if 'gemini' in  template_str.lower()  : # gemini
+                    if "^" in template_str:
+                        template_str = random.choice(template_str.split("^"))
 
 
 
