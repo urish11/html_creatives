@@ -253,7 +253,7 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0,reasoning_effort=''):
         data = {
             'model': model,
             'temperature': temperature,
-            'messages': [{'role': 'user', 'content': prompt}],
+            input : prompt,
             'reasoning': reasoning_effort,
         }
 
@@ -262,8 +262,8 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0,reasoning_effort=''):
 
 
             
-        response = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=data)
-        content = response.json()['choices'][0]['message']['content'].strip()
+        response = requests.post('https://api.openai.com/v1/responses', headers=headers, json=data)
+        content = response.json()["output"]['content'][0]['text']
         # st.text(content)
         return content
 
