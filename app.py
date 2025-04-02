@@ -241,7 +241,7 @@ def gemini_text_lib(prompt,model ='gemini-2.5-pro-exp-03-25' ):
 
 
 #@log_function_call
-def chatGPT(prompt, model="gpt-4o", temperature=1.0):
+def chatGPT(prompt, model="gpt-4o", temperature=1.0,reasoning_effort=''):
     try:
     
  
@@ -253,10 +253,14 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0):
         data = {
             'model': model,
             'temperature': temperature,
-            'messages': [{'role': 'user', 'content': prompt}]
+            'messages': [{'role': 'user', 'content': prompt}],
+            'reasoning': reasoning_effort,
         }
 
         if temperature == 0: data.pop('temperature')
+        if reasoning_effort == '': data.pop('reasoning')
+
+
             
         response = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=data)
         content = response.json()['choices'][0]['message']['content'].strip()
@@ -1254,7 +1258,7 @@ if st.button("Generate Images"):
                         gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
                                                 'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
 
-                            """,model='o3-mini-high', temperature= 0) 
+                            """,model='o3-mini-high', temperature= 0,reasoning_effort='high') 
                     if template_str == 'gemini6':
                         headline_temp =gemini_text(f"""write 1 statement,kinda clickbaity, very consice and action click driving, same length, no quotes, for {re.sub('\\|.*','',topic)} in {lang}. Examples:\n'Surprising Travel Perks You Might Be Missing'\n 'Little-Known Tax Tricks to Save Big'\n Dont mention 'Hidden' or 'Unlock'.\nmax  6 words""")
 
