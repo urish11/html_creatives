@@ -253,7 +253,7 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0,reasoning_effort=''):
         data = {
             'model': model,
             'temperature': temperature,
-            input : prompt,
+            "input" : prompt,
             'reasoning': reasoning_effort,
         }
 
