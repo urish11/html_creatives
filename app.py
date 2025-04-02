@@ -260,12 +260,20 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0,reasoning_effort=''):
         if temperature == 0: data.pop('temperature')
         if reasoning_effort == '': data.pop('reasoning')
 
+        if 'o' in model:
 
-            
-        response = requests.post('https://api.openai.com/v1/responses', headers=headers, json=data)
-        content = json.loads(response.content)['output'][0]['content'][0]['text']
-        # st.text(content)
-        return content
+            response = requests.post('https://api.openai.com/v1/responses', headers=headers, json=data)
+            content = json.loads(response.content)['output'][1]['content'][0]['text']
+            # st.text(content)
+            return content
+
+
+
+        else: 
+            response = requests.post('https://api.openai.com/v1/responses', headers=headers, json=data)
+            content = json.loads(response.content)['output'][0]['content'][0]['text']
+            # st.text(content)
+            return content
 
     except Exception as e:
         st.text(f"Error in chatGPT: {str(e)}")
