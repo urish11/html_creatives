@@ -254,7 +254,7 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0,reasoning_effort=''):
             'model': model,
             'temperature': temperature,
             "input" : prompt,
-            'reasoning': reasoning_effort,
+            'reasoning': {"effort": reasoning_effort},
         }
 
         if temperature == 0: data.pop('temperature')
