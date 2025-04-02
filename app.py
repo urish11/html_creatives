@@ -265,6 +265,8 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0):
 
     except Exception as e:
         st.text(f"Error in chatGPT: {str(e)}")
+        st.text(response.json())
+
         return None
 
 #@log_function_call
