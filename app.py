@@ -264,7 +264,7 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0,reasoning_effort=''):
             
         response = requests.post('https://api.openai.com/v1/responses', headers=headers, json=data)
         st.text(json.loads(response.content))
-        content = response.json()["output"]['content'][0]['text']
+        content = json.loads(response.content)['output'][0]['content'][0]['text']
         # st.text(content)
         return content
 
