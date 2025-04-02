@@ -260,7 +260,7 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0,reasoning_effort=''):
         if temperature == 0: data.pop('temperature')
         if reasoning_effort == '': data.pop('reasoning')
 
-        if 'o' in model:
+        if 'o1' in model or 'o3' in model:
 
             response = requests.post('https://api.openai.com/v1/responses', headers=headers, json=data)
             content = json.loads(response.content)['output'][1]['content'][0]['text']
