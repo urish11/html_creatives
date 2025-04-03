@@ -1174,9 +1174,9 @@ df = st.data_editor(
     key="table_input"
 )
 
-is_pd_policy  = st.checkbox("PD policy? ")
 
 auto_mode  = st.checkbox("Auto mode? ")
+is_pd_policy  = st.checkbox("PD policy? ")
 
 # Step 1: Generate Images
 if st.button("Generate Images"):
