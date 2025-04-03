@@ -167,6 +167,8 @@ def gemini_text(
     model_id: str = "gemini-2.5-pro-exp-03-25",
     api_endpoint: str = "generateContent"
 ) -> str | None:
+    if is_pd_policy : prompt += predict_policy
+
     if api_key is None:
         api_key = os.environ.get("GEMINI_API_KEY")
 
@@ -220,6 +222,8 @@ def gemini_text(
         return None
 
 def gemini_text_lib(prompt,model ='gemini-2.5-pro-exp-03-25' ):
+    if is_pd_policy : prompt += predict_policy
+
 
 
 
@@ -242,6 +246,8 @@ def gemini_text_lib(prompt,model ='gemini-2.5-pro-exp-03-25' ):
 
 #@log_function_call
 def chatGPT(prompt, model="gpt-4o", temperature=1.0,reasoning_effort=''):
+
+    if is_pd_policy : prompt += predict_policy
     try:
     
  
@@ -1149,6 +1155,9 @@ def create_dalle_variation(image_url,count):
         st.error(f"Error generating DALL-E variation: {e}")
         return None
 
+
+
+predict_policy = """Ad-Landing Page Consistency: Ensure all ad elements (headline, text, image/video) accurately reflect the content on the landing page to avoid clickbait.   \nSensitive Groups: Ads targeting groups like seniors and single moms face higher scrutiny and must be highly accurate.   \nApproved CTAs: Use calls-to-action like "Learn More" or "See Options" that clearly indicate leading to an article. Avoid CTAs like "Apply Now" or "Shop Now" that promise value not offered on the landing page.   \nProhibited Language: Do not use urgency terms ("Click now"), geographic suggestions ("Near you"), or superlatives ("Best").   \nEmployment/Education Claims: Do not guarantee employment benefits (like high pay or remote work) or education outcomes (like degrees or job placements).   \nFinancial Ad Rules: Do not guarantee loans, credit approval, specific investment returns, or debt relief. Do not offer banking, insurance, or licensed financial services.   \n"Free" Promotions: Generally avoid promoting services/products as "free". Exceptions require clarity: directing to an info article about a real free service, promoting a genuinely free course, or advertising free trials with clear terms.  """
 # --------------------------------------------
 # Streamlit UI
 # --------------------------------------------
@@ -1165,6 +1174,8 @@ df = st.data_editor(
     key="table_input"
 )
 auto_mode  = st.checkbox("Auto mode? ")
+is_pd_policy  = st.checkbox("PD policy? ")
+
 # Step 1: Generate Images
 if st.button("Generate Images"):
     st.session_state.generated_images = []  # Clear previous images
