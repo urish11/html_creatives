@@ -1176,7 +1176,7 @@ df = st.data_editor(
 
 
 # Create two columns of equal width
-col1, col2 = st.columns(6)
+col1, col2,col3,col4,col5,col6 = st.columns(6)
 
 # Place the first checkbox in the first column
 with col1:
