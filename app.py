@@ -1175,17 +1175,8 @@ df = st.data_editor(
 )
 
 
-# Create two columns of equal width
-col1, col2,col3,col4,col5,col6 = st.columns(6)
-
-# Place the first checkbox in the first column
-with col1:
-  auto_mode = st.checkbox("Auto mode?")
-
-# Place the second checkbox in the second column
-with col2:
-  is_pd_policy = st.checkbox("PD policy?")
-
+auto_mode  = st.checkbox("Auto mode? ")
+is_pd_policy  = st.checkbox("PD policy? ")
 
 # Step 1: Generate Images
 if st.button("Generate Images"):
