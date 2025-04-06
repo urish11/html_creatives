@@ -1317,7 +1317,7 @@ if st.button("Generate Images"):
                         if 'batch' in template_str:
                             st.text(f'Batch ! {gemini_prompt}')
                             batch_complete_counter = 0
-                            
+                            gemini_prompt = list(gemini_prompt)
                             while batch_complete_counter < len(gemini_prompt):
                                 for prompt in gemini_prompt:
                                     st.text(f"img prompt {gemini_prompt}")
