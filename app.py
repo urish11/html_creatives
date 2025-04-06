@@ -1360,22 +1360,22 @@ if st.button("Generate Images"):
                                             aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
                                             region_name=AWS_REGION
                                         )
-                        else:
-                            st.text('Image not created, retry')
-                            continue
-                        if gemini_image_url:
-                                    topic_images.append({
-                                        'url': gemini_image_url,
-                                        'selected': False,
-                                        'template': template_str,
-                                        'source': 'gemini',            # Mark as flux
-                                        'dalle_generated': False     # Not relevant for flux, but keep structure
-                                    })
+                    else:
+                        st.text('Image not created, retry')
+                        continue
+                    if gemini_image_url:
+                                topic_images.append({
+                                    'url': gemini_image_url,
+                                    'selected': False,
+                                    'template': template_str,
+                                    'source': 'gemini',            # Mark as flux
+                                    'dalle_generated': False     # Not relevant for flux, but keep structure
+                                })
 
-                        percent_complete = percent_complete + 1/total_images
+                    percent_complete = percent_complete + 1/total_images
 
-                        my_bar.progress(percent_complete, text=progress_text)
-                        completed_images_count += 1
+                    my_bar.progress(percent_complete, text=progress_text)
+                    completed_images_count += 1
 
                 else:
                 # Otherwise, use FLUX to generate
