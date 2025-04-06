@@ -1280,6 +1280,7 @@ if st.button("Generate Images"):
                                                 'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the 10 best options,be creative and have variance between the prompts, no intros , as json
 
                             """)
+                        gemini_prompt= gemini_prompt.replace('```json','').replace("```","")
 
                             
 
