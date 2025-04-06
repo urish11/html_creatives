@@ -1277,7 +1277,7 @@ if st.button("Generate Images"):
                     
                     if template_str == 'gemini7batch': # gemini1 with geimini text
                         gemini_prompt = gemini_text_lib(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
-                                                'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the {count} best options,be creative and have variance between the prompts, no intros , as json key int , "text" is prompt
+                                                'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the {count} best options,be creative and have variance between the prompts, no intros , as json key is int index , it's value is the prompt
 
                             """)
                         gemini_prompt= gemini_prompt.replace('```json','').replace("```","").replace("python","")
@@ -1320,10 +1320,9 @@ if st.button("Generate Images"):
                             batch_complete_counter = 0
                             st.text(type(gemini_prompt))
                             while batch_complete_counter < len(gemini_prompt):
-                                for i in len(gemini_prompt):
-                                    gemini_prompt = gemini_prompt[i]['text']
-                                    st.text(f"img prompt {gemini_prompt}")
-                                    gemini_img_bytes = gen_gemini_image(gemini_prompt)
+                                for prompt in gemini_prompt:
+                                    st.text(f"img prompt {prompt}")
+                                    gemini_img_bytes = gen_gemini_image(prompt)
                                     if gemini_img_bytes is not None:
 
                                         gemini_image_url = upload_pil_image_to_s3(image = gemini_img_bytes ,bucket_name=S3_BUCKET_NAME,
