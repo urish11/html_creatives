@@ -1320,7 +1320,8 @@ if st.button("Generate Images"):
                             batch_complete_counter = 0
                             st.text(type(gemini_prompt))
                             while batch_complete_counter < len(gemini_prompt):
-                                for prompt in gemini_prompt:
+                                for key in list(gemini_prompt.keys()):
+                                    prompt = gemini_prompt[key]
                                     st.text(f"img prompt {prompt}")
                                     gemini_img_bytes = gen_gemini_image(prompt)
                                     if gemini_img_bytes is not None:
