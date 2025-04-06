@@ -1277,7 +1277,7 @@ if st.button("Generate Images"):
                     
                     if template_str == 'gemini7batch': # gemini1 with geimini text
                         gemini_prompt = gemini_text_lib(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
-                                                'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the 10 best options,be creative and have variance between the prompts, no intros , as json
+                                                'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the 10 best options,be creative and have variance between the prompts, no intros , as python list
 
                             """)
                         gemini_prompt= gemini_prompt.replace('```json','').replace("```","")
@@ -1349,33 +1349,33 @@ if st.button("Generate Images"):
                                     batch_complete_counter += 1
 
                                 
+                        else:
 
+                            st.text(f"img prompt {gemini_prompt}")
+                            gemini_img_bytes = gen_gemini_image(gemini_prompt)
+                            if gemini_img_bytes is not None:
 
-                        st.text(f"img prompt {gemini_prompt}")
-                        gemini_img_bytes = gen_gemini_image(gemini_prompt)
-                        if gemini_img_bytes is not None:
+                                gemini_image_url = upload_pil_image_to_s3(image = gemini_img_bytes ,bucket_name=S3_BUCKET_NAME,
+                                            aws_access_key_id=AWS_ACCESS_KEY_ID,
+                                            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+                                            region_name=AWS_REGION
+                                        )
+                        else:
+                            st.text('Image not created, retry')
+                            continue
+                        if gemini_image_url:
+                                    topic_images.append({
+                                        'url': gemini_image_url,
+                                        'selected': False,
+                                        'template': template_str,
+                                        'source': 'gemini',            # Mark as flux
+                                        'dalle_generated': False     # Not relevant for flux, but keep structure
+                                    })
 
-                            gemini_image_url = upload_pil_image_to_s3(image = gemini_img_bytes ,bucket_name=S3_BUCKET_NAME,
-                                        aws_access_key_id=AWS_ACCESS_KEY_ID,
-                                        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-                                        region_name=AWS_REGION
-                                    )
-                    else:
-                        st.text('Image not created, retry')
-                        continue
-                    if gemini_image_url:
-                                topic_images.append({
-                                    'url': gemini_image_url,
-                                    'selected': False,
-                                    'template': template_str,
-                                    'source': 'gemini',            # Mark as flux
-                                    'dalle_generated': False     # Not relevant for flux, but keep structure
-                                })
+                        percent_complete = percent_complete + 1/total_images
 
-                    percent_complete = percent_complete + 1/total_images
-
-                    my_bar.progress(percent_complete, text=progress_text)
-                    completed_images_count += 1
+                        my_bar.progress(percent_complete, text=progress_text)
+                        completed_images_count += 1
 
                 else:
                 # Otherwise, use FLUX to generate
