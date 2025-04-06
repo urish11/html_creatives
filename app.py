@@ -1315,13 +1315,13 @@ if st.button("Generate Images"):
                     if gemini_prompt is not None  :
 
                         if 'batch' in template_str:
-                            gemini_prompt = json.loads(gemini_prompt)
-                            st.text(f'Batch ! {gemini_prompt}')
+                            json_data = json.loads(gemini_prompt)
+                            st.text(f'Batch ! {json_data}')
                             batch_complete_counter = 0
-                            st.text(type(gemini_prompt))
-                            while batch_complete_counter < len(gemini_prompt):
-                                for key in list(gemini_prompt.keys()):
-                                    prompt = gemini_prompt[key]
+                            st.text(type(json_data))
+                            while batch_complete_counter < len(json_data):
+                                for key in list(json_data.keys()):
+                                    prompt = json_data[key]
                                     st.text(f"img prompt {prompt}")
                                     gemini_img_bytes = gen_gemini_image(prompt)
                                     if gemini_img_bytes is not None:
