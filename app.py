@@ -1315,6 +1315,7 @@ if st.button("Generate Images"):
                     if gemini_prompt is not None  :
 
                         if 'batch' in template_str:
+                            gemini_prompt = json.loads(gemini_prompt)
                             st.text(f'Batch ! {gemini_prompt}')
                             batch_complete_counter = 0
                             st.text(type(gemini_prompt))
