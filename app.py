@@ -1277,7 +1277,7 @@ if st.button("Generate Images"):
                     
                     if template_str == 'gemini7batch': # gemini1 with geimini text
                         gemini_prompt = gemini_text_lib(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
-                                                'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the 10 best options, no intros , as json
+                                                'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the 10 best options,be creative and have variance between the prompts, no intros , as json
 
                             """)
 
