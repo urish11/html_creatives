@@ -288,7 +288,7 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0,reasoning_effort=''):
         return None
 
 
-def claude(prompt , model = "claude-3-7-sonnet-20250219", temperature=1):
+def claude(prompt , model = "claude-3-7-sonnet-20250219", temperature=1 , is_thinking = False):
 
 
 
@@ -296,22 +296,47 @@ def claude(prompt , model = "claude-3-7-sonnet-20250219", temperature=1):
     # defaults to os.environ.get("ANTHROPIC_API_KEY")
     api_key=st.secrets["ANTHROPIC_API_KEY"])
 
-    message = client.messages.create(
-    model=model,
-    max_tokens=20000,
-    temperature=temperature,
-    messages=[
-        {
-            "role": "user",
-            "content": [
-                {
-                    "type": "text",
-                    "text": prompt
-                }
-            ]
-        }
-    ]
-)
+    if is_thinking == False:
+            
+        message = client.messages.create(
+            
+        model=model,
+        max_tokens=20000,
+        temperature=temperature,
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": prompt
+                    }
+                ]
+            }
+        ]
+    )
+    if is_thinking == True:
+        message = client.messages.create(
+            
+        model=model,
+        max_tokens=20000,
+        temperature=temperature,
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": prompt
+                    }
+                ]
+            }
+        ]
+        thinking = { "type": "enabled",
+        "budget_tokens": 16000}
+    )
+
+
 
     return message.content[0].text
 
