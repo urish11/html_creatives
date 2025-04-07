@@ -1233,10 +1233,10 @@ df = st.data_editor(
     key="table_input"
 )
 
-ennhance_input = st.checkbox("Enhance input? ")
 
 auto_mode  = st.checkbox("Auto mode? ")
 is_pd_policy  = st.checkbox("PD policy? ")
+ennhance_input = st.checkbox("Enhance input? ")
 
 # Step 1: Generate Images
 if st.button("Generate Images"):
