@@ -1236,6 +1236,7 @@ df = st.data_editor(
 
 auto_mode  = st.checkbox("Auto mode? ")
 is_pd_policy  = st.checkbox("PD policy? ")
+ennhance_input = st.checkbox("Enhance input? ")
 
 # Step 1: Generate Images
 if st.button("Generate Images"):
@@ -1283,6 +1284,9 @@ if st.button("Generate Images"):
 
 
         else: # NOT google!
+
+            if ennhance_input:
+                topic = chatGPT(f"write this as more commercially attractive in {int(topic.count(" ") + 1)} words, 1 best option\n\n {topic}")
 
             completed_images_count = 0
 
