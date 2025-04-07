@@ -316,6 +316,7 @@ def claude(prompt , model = "claude-3-7-sonnet-20250219", temperature=1 , is_thi
             }
         ]
     )
+        return message.content[0].text
     if is_thinking == True:
         message = client.messages.create(
             
@@ -336,6 +337,8 @@ def claude(prompt , model = "claude-3-7-sonnet-20250219", temperature=1 , is_thi
         thinking = { "type": "enabled",
         "budget_tokens": 16000}
     )
+        return message.content[1].text
+
 
 
     print(message)
