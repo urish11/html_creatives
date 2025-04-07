@@ -313,7 +313,7 @@ def claude(prompt , model = "claude-3-7-sonnet-20250219", temperature=1):
     ]
 )
 
-    return message.content
+    return message.content[0].text
 
 
 
