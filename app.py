@@ -338,7 +338,7 @@ def claude(prompt , model = "claude-3-7-sonnet-20250219", temperature=1 , is_thi
     )
 
 
-
+    print(message)
     return message.content[0].text
 
 
