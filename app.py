@@ -1286,7 +1286,7 @@ if st.button("Generate Images"):
         else: # NOT google!
 
             if ennhance_input:
-                topic = chatGPT(f"write this as more commercially (but dont make overkill promises) attractive in {int(topic.count(" ") + 1)} words, 1 best option\n\n {topic}")
+                topic = chatGPT(f"write this as more commercially  attractive for ad promiting a article in {int(topic.count(" ") + 1)} words, 1 best option\n\n {topic}")
 
             completed_images_count = 0
 
