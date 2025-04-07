@@ -289,6 +289,7 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0,reasoning_effort=''):
 
 
 def claude(prompt , model = "claude-3-7-sonnet-20250219", temperature=1 , is_thinking = False):
+    if is_pd_policy : prompt += predict_policy
 
 
 
@@ -1334,7 +1335,7 @@ if st.button("Generate Images"):
                         gemini_prompt = claude(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
                                                 'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting, don't promise something outlandish \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
 
-                            """)
+                            """, is_thinking=True)
                     if template_str == 'gemini7batch': # gemini1 with geimini text
                         gemini_prompt = gemini_text_lib(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
                                                 'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the {count} best options, each prompt is a FULL PROMPT !! each at least 500 chrs(dont write it),be creative and have variance between the prompts, no intros , as json key is int index , it's value is the prompt. .
