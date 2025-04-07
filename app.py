@@ -8,7 +8,7 @@ import random
 import string
 import requests
 from google import genai
-
+import anthropic
 import json
 import base64
 import os
@@ -286,6 +286,36 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0,reasoning_effort=''):
         st.text(response.json())
 
         return None
+
+
+def claude(prompt , model = "claude-3-7-sonnet-20250219", temperature=1):
+
+
+
+    client = anthropic.Anthropic(
+    # defaults to os.environ.get("ANTHROPIC_API_KEY")
+    api_key=st.secrets["ANTHROPIC_API_KEY"])
+
+    message = client.messages.create(
+    model=model,
+    max_tokens=20000,
+    temperature=temperature,
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": prompt
+                }
+            ]
+        }
+    ]
+)
+
+    return message.content
+
+
 
 #@log_function_call
 def gen_flux_img(prompt, height=784, width=960):
@@ -1277,7 +1307,7 @@ if st.button("Generate Images"):
                     
                     if template_str == 'gemini7batch': # gemini1 with geimini text
                         gemini_prompt = gemini_text_lib(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
-                                                'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the {count} best options, each prompt is a FULL PROMPT !! ,be creative and have variance between the prompts, no intros , as json key is int index , it's value is the prompt. .
+                                                'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the {count} best options, each prompt is a FULL PROMPT !! each at least 500 chrs(dont write it),be creative and have variance between the prompts, no intros , as json key is int index , it's value is the prompt. .
 
                             """)
                         gemini_prompt= gemini_prompt.replace('```json','').replace("```","").replace("python","")

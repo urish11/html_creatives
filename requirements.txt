@@ -8,3 +8,4 @@ playwright
 google_images_search
 openai
 google-genai
+anthropic
