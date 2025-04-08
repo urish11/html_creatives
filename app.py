@@ -411,7 +411,7 @@ def gen_gemini_image(prompt, trys = 0):
                     "role": "user",
                     "parts": [
                         {
-                            "text": "INSERT_INPUT_HERE"
+                            "text": "" #INSERT_INPUT_HERE
                         }
                     ]
                 }
