@@ -1382,7 +1382,7 @@ if st.button("Generate Images"):
                     if template_str == 'geminicandid':
                         gemini_prompt = claude(f"""write a image prompt of a candid unstaged photo taken of a regular joe showing off his\her {topic}. the image is taken with smartphone candidly. in 1-2 sentences. Describe the quality of the image looking smartphone. start with "Square photo 1:1 iphone 12 photo uploaded to reddit:"
 
-                        this is for a fb ad that tries to look organic, so try to be that but also draw clicks with high energy in the photo. dont make up facts like discounts
+                        this is for a fb ad that tries to look organic, but also make the image content intecing and somewhat perplexing, so try to be that but also draw clicks with high energy in the photo. dont make up facts like discounts
                         if you want to add a caption, specifically instruct it to be on the image. and be short
                             """, is_thinking=True).replace("#","")
                     
