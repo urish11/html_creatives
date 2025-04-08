@@ -1737,14 +1737,12 @@ if st.button("Process Selected Images"):
                     tag_line = ''
 
                 # Build final HTML
-                st.text(template )
-                st.text(type(template ))
-
+              
                 html_content = save_html(
                     headline=headline_text,
                     image_url=img['url'],
                     cta_text=cta_text,
-                    template=template,
+                    template=int(template),
                     tag_line=tag_line
                 )
 
