@@ -288,63 +288,69 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0,reasoning_effort=''):
         return None
 
 
-def claude(prompt , model = "claude-3-7-sonnet-20250219", temperature=1 , is_thinking = False):
+def claude(prompt , model = "claude-3-7-sonnet-20250219", temperature=1 , is_thinking = False, max_retries = 10):
     if is_pd_policy : prompt += predict_policy
+    tries = 0
 
-
-
-    client = anthropic.Anthropic(
-    # defaults to os.environ.get("ANTHROPIC_API_KEY")
-    api_key=st.secrets["ANTHROPIC_API_KEY"])
-
-    if is_thinking == False:
-            
-        message = client.messages.create(
-            
-        model=model,
-        max_tokens=20000,
-        temperature=temperature,
-        messages=[
-            {
-                "role": "user",
-                "content": [
+    while tries < max_retires:
+        try:
+        
+        
+        
+            client = anthropic.Anthropic(
+            # defaults to os.environ.get("ANTHROPIC_API_KEY")
+            api_key=st.secrets["ANTHROPIC_API_KEY"])
+        
+            if is_thinking == False:
+                    
+                message = client.messages.create(
+                    
+                model=model,
+                max_tokens=20000,
+                temperature=temperature,
+                messages=[
                     {
-                        "type": "text",
-                        "text": prompt
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": prompt
+                            }
+                        ]
                     }
                 ]
-            }
-        ]
-    )
-        return message.content[0].text
-    if is_thinking == True:
-        message = client.messages.create(
-            
-        model=model,
-        max_tokens=20000,
-        temperature=temperature,
-        messages=[
-            {
-                "role": "user",
-                "content": [
+            )
+                return message.content[0].text
+            if is_thinking == True:
+                message = client.messages.create(
+                    
+                model=model,
+                max_tokens=20000,
+                temperature=temperature,
+                messages=[
                     {
-                        "type": "text",
-                        "text": prompt
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": prompt
+                            }
+                        ]
                     }
-                ]
-            }
-        ],
-        thinking = { "type": "enabled",
-        "budget_tokens": 16000}
-    )
-        return message.content[1].text
+                ],
+                thinking = { "type": "enabled",
+                "budget_tokens": 16000}
+            )
+                return message.content[1].text
+        
+        
+        
+            print(message)
+            return message.content[0].text
 
-
-
-    print(message)
-    return message.content[0].text
-
-
+        except Exception as e:
+            st.text(e)
+            tries += 1 
 
 #@log_function_call
 def gen_flux_img(prompt, height=784, width=960):
