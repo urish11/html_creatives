@@ -1250,7 +1250,7 @@ with st.expander(f"Click to see examples for templates ", expanded=False):
      {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1743927991_4259.png", "caption": "gemini7"},
 
     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744111645_6029.png", "caption": "gemini7"},
-    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744098746_6749.png", "caption": "geminiclaude"},
+    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744098746_6749.png", "caption": "gemini7claude"},
 
     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744107557_6569.png", "caption": "geminicandid"},
     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744107067_6826.png", "caption": "geminicandid"},
@@ -1284,7 +1284,7 @@ with st.expander(f"Click to see examples for templates ", expanded=False):
 
 st.subheader("Enter Topics for Image Generation")
 df = st.data_editor(
-    pd.DataFrame({"topic": ["example_topic"], "count": [1], "lang": ["english"], "template": ["2,3,4,41,42,5,6,7,gemini,gemini2,gemini7,geminiclaude,geminicandid | use , for random template"]}),
+    pd.DataFrame({"topic": ["example_topic"], "count": [1], "lang": ["english"], "template": ["2,3,4,41,42,5,6,7,gemini,gemini2,gemini7,gemini7claude,geminicandid | use , for random template"]}),
     num_rows="dynamic",
     key="table_input"
 )
