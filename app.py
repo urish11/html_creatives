@@ -1233,6 +1233,40 @@ st.title("Creative Maker ")
 if 'generated_images' not in st.session_state:
     st.session_state.generated_images = {}
 
+with st.expander(f"Click to see examples for templates ", expanded=False):
+    # --- Content inside the expander ---
+
+    image_list =  [{"image": "https://placekitten.com/200/300", "caption": "Cute Kitten"},
+        {"image": "https://placedog.net/200/300", "caption": "Happy Dog"},
+        {"image": "https://placebear.com/200/300", "caption": "Brown Bear"},
+        {"image": "https://placekitten.com/201/300", "caption": "Another Kitten"},
+        {"image": "https://placedog.net/201/300", "caption": "Playful Pup"}
+
+    # Define number of columns for the grid
+    num_columns = 3 # You can change this number
+
+    # Calculate number of rows needed
+    num_images = len(image_list)
+    num_rows = (num_images + num_columns - 1) // num_columns # Ceiling division
+
+    # Create the grid *inside* the expander
+    for i in range(num_rows):
+        cols = st.columns(num_columns) # Create columns for the current row
+        # Get the slice of images for the current row
+        row_images = image_list[i * num_columns : (i + 1) * num_columns]
+
+        # Populate columns with images and captions
+        for j, item in enumerate(row_images):
+            if item: # Check if there's an item
+                # Use the j-th column *within the expander*
+                with cols[j]:
+                    st.image(
+                        item["image"],
+                        use_column_width=True
+                        )
+                    st.caption(item["caption"])
+
+
 st.subheader("Enter Topics for Image Generation")
 df = st.data_editor(
     pd.DataFrame({"topic": ["example_topic"], "count": [1], "lang": ["english"], "template": ["1,2,3,4,41,42,5,6,7,gemini,gemini2 | use , for multi"]}),
