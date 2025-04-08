@@ -322,6 +322,9 @@ def claude(prompt , model = "claude-3-7-sonnet-20250219", temperature=1 , is_thi
                 model=model,
                 max_tokens=20000,
                 temperature=temperature,
+                
+                top_p= 0.8,
+
                 messages=[
                     {
                         "role": "user",
