@@ -351,6 +351,7 @@ def claude(prompt , model = "claude-3-7-sonnet-20250219", temperature=1 , is_thi
         except Exception as e:
             st.text(e)
             tries += 1 
+            time.sleep(5)
 
 #@log_function_call
 def gen_flux_img(prompt, height=784, width=960):
