@@ -77,7 +77,6 @@ def fetch_google_images(query, num_images=3, max_retries = 5 ):
 
             try:
                 gis.search(search_params)
-                st.text([result.url for result in gis.results()])
                 image_urls = [result.url for result in gis.results()]
                 res_urls.extend(image_urls)
             except Exception as e:
@@ -1308,6 +1307,7 @@ if st.button("Generate Images"):
 
 
         if "google" in topic.lower():
+            topic_images = []
             # If "google" is in the topic, fetch from Google
             topic = topic.replace('google', ' ')
             if '|' in topic:
