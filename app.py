@@ -377,7 +377,7 @@ def gen_flux_img(prompt, height=784, width=960):
 
 def gen_gemini_image(prompt, trys = 0):
 
-    while trys < 10 :
+    while trys < 40 :
 
         api = random.choice(GEMINI_API_KEY)
 
