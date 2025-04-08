@@ -99,7 +99,7 @@ def install_playwright_browsers():
         return False
 
 # Set up page config
-st.set_page_config(layout="wide")
+st.set_page_config(layout="wide",page_title= "Creative Gen", page_icon="🎨")
 
 # Install playwright if needed
 if 'playwright_installed' not in st.session_state:
@@ -1249,7 +1249,7 @@ with st.expander(f"Click to see examples for templates ", expanded=False):
     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744111645_6029.png", "caption": "gemini7"},
      {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1743927991_4259.png", "caption": "gemini7"},
 
-    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744111645_6029.png", "caption": "gemini7"},
+    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1743411423_1020.png", "caption": "gemini7"},
     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744098746_6749.png", "caption": "gemini7claude"},
 
     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744107557_6569.png", "caption": "geminicandid"},
