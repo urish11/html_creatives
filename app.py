@@ -84,6 +84,20 @@ def fetch_google_images(query, num_images=3, max_retries = 5 ):
                 res_urls.append([])
                 time.sleep(5)
         return list(set(res_urls))
+def play_sound(audio_file_path):
+    """Plays an audio file in the Streamlit app."""
+    with open(audio_file_path, "rb") as f:
+        data = f.read()
+        b64 = base64.b64encode(data).decode()
+        md = f"""
+            <audio autoplay>
+            <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
+            </audio>
+        """
+        st.markdown(md, unsafe_allow_html=True)
+
+
+
 
 #@log_function_call
 def install_playwright_browsers():
@@ -1596,6 +1610,7 @@ if st.button("Generate Images"):
             "lang": lang,
             "images": topic_images
         })
+        play_sound("audio/bonus-points-190035.mp3")
 
 # Step 2: Display generated images in a grid
 if auto_mode and st.session_state.generated_images:
