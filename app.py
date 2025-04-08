@@ -1329,7 +1329,7 @@ if st.button("Generate Images"):
                         gemini_prompt = chatGPT(f""" write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use authentic photos', 'no special photo requirement'])}.\nmake it visually engaging and emotionally intriguing.\nadd a bold CTA button with 'Learn More Here >>' in appropriate language.\nstart the prompt with 'square image aspect ratio of 1:1 of '\nmake sure the image grabs attention and sparks curiosity.\n
                                             """,model="gpt-4o")
 
-                    if template_str == 'candid':
+                    if template_str == 'geminicandid':
                         gemini_prompt = claude(f"""write a image prompt of a candid unstaged photo taken of a regular joe showing off his\her {topic}. the image is taken with smartphone candidly. in 1-2 sentences. Describe the quality of the image looking smartphone. start with "square iphone 12 photo uploaded to reddit:"
 
                         this is for a fb ad that tries to look organic, so try to be that but also draw clicks with high energy in the photo
