@@ -1240,10 +1240,12 @@ with st.expander(f"Click to see examples for templates ", expanded=False):
     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744112392_1276.png", "caption": "2"},
     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744111957_2195.png", "caption": "3"},
     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744112152_3198.png", "caption": "4"},
-    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744111656_7460.png", "caption": "gemini"},
-    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744112288_6237.png", "caption": "6 (image as is)"},
-    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744111645_6029.png", "caption": "gemini7"},
     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744112606_9864.png", "caption": "5"},
+    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744112288_6237.png", "caption": "6 (image as is)"},
+    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744112288_6237.png", "caption": "'google' in topic, use w/ templates 1-6"},
+
+    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744111656_7460.png", "caption": "gemini"},
+    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744111645_6029.png", "caption": "gemini7"},
     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744107557_6569.png", "caption": "geminicandid"},
     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744107067_6826.png", "caption": "geminicandid another option"}
 ]
@@ -1664,6 +1666,7 @@ if st.button("Process Selected Images"):
         for idx, img in enumerate(selected_images):
             for i in range(img['selected_count']):
                 template = img['template']
+                st.text(template)
 
                 if    type(template) == str and "gemini" in template:
                     res[f'Image_{idx + 1}__{i + 1}'] = img['url']
