@@ -1296,6 +1296,7 @@ ennhance_input = st.checkbox("Enhance input? ")
 
 # Step 1: Generate Images
 if st.button("Generate Images"):
+    st.set_page_config( page_icon="🔄")
     st.session_state.generated_images = []  # Clear previous images
     processed_combinations = set()
     progress_text =  "Generating images progress...  "
@@ -1596,6 +1597,7 @@ if st.button("Generate Images"):
             "lang": lang,
             "images": topic_images
         })
+        st.set_page_config( page_icon="🎨")
 
 # Step 2: Display generated images in a grid
 if auto_mode and st.session_state.generated_images:
@@ -1657,6 +1659,7 @@ elif st.session_state.generated_images:
 
 # Step 3: Process selected images -> generate HTML, screenshot, upload to S3
 if st.button("Process Selected Images"):
+    st.set_page_config( page_icon="🔄")
     final_results = []
 
     for entry in st.session_state.generated_images:
@@ -1774,6 +1777,7 @@ if st.button("Process Selected Images"):
         final_results.append(res)
 
     if final_results:
+        st.set_page_config( page_icon="🎨")
         output_df = pd.DataFrame(final_results)
 
         # Reorganize and flatten image links
