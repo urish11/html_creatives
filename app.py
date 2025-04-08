@@ -1284,7 +1284,7 @@ with st.expander(f"Click to see examples for templates ", expanded=False):
 
 st.subheader("Enter Topics for Image Generation")
 df = st.data_editor(
-    pd.DataFrame({"topic": ["example_topic"], "count": [1], "lang": ["english"], "template": ["1,2,3,4,41,42,5,6,7,gemini,gemini2 | use , for multi"]}),
+    pd.DataFrame({"topic": ["example_topic"], "count": [1], "lang": ["english"], "template": ["2,3,4,41,42,5,6,7,gemini,gemini2,gemini7,geminiclaude,geminicandid | use , for random template"]}),
     num_rows="dynamic",
     key="table_input"
 )
