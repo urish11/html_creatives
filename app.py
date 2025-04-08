@@ -1267,7 +1267,7 @@ with st.expander(f"Click to see examples for templates ", expanded=False):
                 with cols[j]:
                     st.image(
                         item["image"],
-                        use_column_width=True
+                        use_container_width=True
                         )
                     st.caption(item["caption"])
 
