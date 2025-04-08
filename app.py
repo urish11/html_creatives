@@ -1242,7 +1242,7 @@ with st.expander(f"Click to see examples for templates ", expanded=False):
     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744112152_3198.png", "caption": "4"},
     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744112606_9864.png", "caption": "5"},
     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744112288_6237.png", "caption": "6 (image as is)"},
-    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744112288_6237.png", "caption": "'google' in topic, use w/ templates 1-6"},
+    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744114000_7129.png", "caption": "'google' in topic, use w/ templates 1-6"},
 
     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744111656_7460.png", "caption": "gemini"},
     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744111645_6029.png", "caption": "gemini7"},
