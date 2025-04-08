@@ -1248,7 +1248,7 @@ with st.expander(f"Click to see examples for templates ", expanded=False):
     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744107067_6826.png", "caption": "geminicandid another option"}
 ]
     # Define number of columns for the grid
-    num_columns = 3 # You can change this number
+    num_columns = 6 # You can change this number
 
     # Calculate number of rows needed
     num_images = len(image_list)
