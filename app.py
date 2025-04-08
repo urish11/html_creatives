@@ -292,7 +292,7 @@ def claude(prompt , model = "claude-3-7-sonnet-20250219", temperature=1 , is_thi
     if is_pd_policy : prompt += predict_policy
     tries = 0
 
-    while tries < max_retires:
+    while tries < max_retries:
         try:
         
         
