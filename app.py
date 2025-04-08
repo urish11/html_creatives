@@ -1666,7 +1666,6 @@ if st.button("Process Selected Images"):
         for idx, img in enumerate(selected_images):
             for i in range(img['selected_count']):
                 template = img['template']
-                st.text(template)
 
                 if    type(template) == str and "gemini" in template:
                     res[f'Image_{idx + 1}__{i + 1}'] = img['url']
@@ -1738,6 +1737,9 @@ if st.button("Process Selected Images"):
                     tag_line = ''
 
                 # Build final HTML
+                st.text(template )
+                st.text(type(template ))
+
                 html_content = save_html(
                     headline=headline_text,
                     image_url=img['url'],
