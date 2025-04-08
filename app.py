@@ -1236,12 +1236,38 @@ if 'generated_images' not in st.session_state:
 with st.expander(f"Click to see examples for templates ", expanded=False):
     # --- Content inside the expander ---
 
-    image_list =  [{"image": "https://placekitten.com/200/300", "caption": "Cute Kitten"},
-        {"image": "https://placedog.net/200/300", "caption": "Happy Dog"},
-        {"image": "https://placebear.com/200/300", "caption": "Brown Bear"},
-        {"image": "https://placekitten.com/201/300", "caption": "Another Kitten"},
-        {"image": "https://placedog.net/201/300", "caption": "Playful Pup"}
-
+    image_list =  [
+  {
+    "image": "https://placekitten.com/200/300",
+    "caption": "Cute Kitten",
+    "template": "2",
+    "templateURL": "https://image-script.s3.us-east-1.amazonaws.com/image_1744112392_1276.png"
+  },
+  {
+    "image": "https://placedog.net/200/300",
+    "caption": "Happy Dog",
+    "template": "3",
+    "templateURL": "https://image-script.s3.us-east-1.amazonaws.com/image_1744111957_2195.png"
+  },
+  {
+    "image": "https://placebear.com/200/300",
+    "caption": "Brown Bear",
+    "template": "4",
+    "templateURL": "https://image-script.s3.us-east-1.amazonaws.com/image_1744112152_3198.png"
+  },
+  {
+    "image": "https://placekitten.com/201/300",
+    "caption": "Another Kitten",
+    "template": "gemini",
+    "templateURL": "https://image-script.s3.us-east-1.amazonaws.com/image_1744111656_7460.png"
+  },
+  {
+    "image": "https://placedog.net/201/300",
+    "caption": "Playful Pup",
+    "template": "6 (image as is)",
+    "templateURL": "https://image-script.s3.us-east-1.amazonaws.com/image_1744112288_6237.png"
+  }
+]
     # Define number of columns for the grid
     num_columns = 3 # You can change this number
 
