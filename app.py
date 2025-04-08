@@ -1253,7 +1253,9 @@ with st.expander(f"Click to see examples for templates ", expanded=False):
     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744098746_6749.png", "caption": "geminiclaude"},
 
     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744107557_6569.png", "caption": "geminicandid"},
-    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744107067_6826.png", "caption": "geminicandid another option"}
+    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744107067_6826.png", "caption": "geminicandid"}
+        {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744107348_8664.png", "caption": "geminicandid"}
+
 ]
     # Define number of columns for the grid
     num_columns = 6 # You can change this number
