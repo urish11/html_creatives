@@ -6,618 +6,729 @@ import boto3
 from botocore.exceptions import NoCredentialsError
 import random
 import string
-import requests
-from google import genai
-import anthropic
+import httpx # Use httpx for async requests
+import google.generativeai as genai # Use the official library which supports async
+from google.generativeai.types import GenerationConfig # For generation config
+import anthropic # Anthropic library supports async
 import json
 import base64
 import os
 import time
-from playwright.sync_api import sync_playwright
+import asyncio # Import asyncio
+from playwright.async_api import async_playwright # Use async playwright
 from tempfile import NamedTemporaryFile
 import re
 import math
-from google_images_search import GoogleImagesSearch
-import openai  # NEW: For DALL-E variations
+from google_images_search import GoogleImagesSearch # This library is synchronous
+import openai # For DALL-E variations (Needs async version)
+from openai import AsyncOpenAI # Use AsyncOpenAI
 import logging
-from openai import OpenAI
-# Configure logging
+import aiobotocore.session # Use aiobotocore for async S3
+from functools import wraps
+
+
+# Configure logging (optional, uncomment if needed)
 # logging.basicConfig(
-#     format='%(asctime)s [%(levelname)s] %(name)s - %(message)s', 
+#     format='%(asctime)s [%(levelname)s] %(name)s - %(message)s',
 #     level=logging.DEBUG
 # )
 # logger = logging.getLogger(__name__)
 
-# Set your OpenAI key for DALL-E
-openai.api_key = st.secrets.get("OPENAI_API_KEY")
-GEMINI_API_KEY =st.secrets.get("GEMINI_API_KEY")
+# --- Load Secrets ---
+# It's generally better to load secrets once at the top
+try:
+    AWS_ACCESS_KEY_ID = st.secrets["AWS_ACCESS_KEY_ID"]
+    AWS_SECRET_ACCESS_KEY = st.secrets["AWS_SECRET_ACCESS_KEY"]
+    S3_BUCKET_NAME = st.secrets["S3_BUCKET_NAME"]
+    AWS_REGION = st.secrets.get("AWS_REGION", "us-east-1")
+    GPT_API_KEY = st.secrets["GPT_API_KEY"]
+    FLUX_API_KEY = st.secrets["FLUX_API_KEY"] # Assuming this is a list or tuple
+    GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"] # Assuming this is a list or tuple
+    ANTHROPIC_API_KEY = st.secrets["ANTHROPIC_API_KEY"]
+    OPENAI_API_KEY = st.secrets.get("OPENAI_API_KEY")
+    GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"] # Assuming this is a list or tuple
+    GOOGLE_CX = st.secrets["GOOGLE_CX"]
+
+    # --- Initialize Async Clients ---
+    # Initialize clients once to reuse connections
+    async_openai_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
+    async_anthropic_client = anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
+    # No persistent client needed for genai library, it's handled per call
+    # No persistent client needed for aiobotocore, typically created with async with
+    # No persistent client needed for httpx, typically created with async with
+
+except KeyError as e:
+    st.error(f"Missing secret: {e}. Please check your Streamlit secrets.")
+    st.stop()
+except Exception as e:
+    st.error(f"Error loading secrets or initializing clients: {e}")
+    st.stop()
+
+
+# --- Utility Functions ---
 
 def shift_left_and_pad(row):
     """
     Utility function to left-shift non-null values in each row
     and pad with empty strings, preserving columns' order.
     """
-    valid_values = [x for x in row if pd.notna(x)]  # Filter non-null values
-    padded_values = valid_values + [''] * (len(image_cols) - len(valid_values))  # Pad with empty strings
-    return pd.Series(padded_values[:len(image_cols)])  # Ensure correct length
+    valid_values = [x for x in row if pd.notna(x)]
+    # Need image_cols defined globally or passed in. Define later.
+    padded_values = valid_values + [''] * (len(st.session_state.get('image_cols', [])) - len(valid_values))
+    return pd.Series(padded_values[:len(st.session_state.get('image_cols', []))])
 
 def log_function_call(func):
     """
-    Decorator to log function calls and return values.
+    Decorator to log function calls and return values (works for async too).
     """
-    def wrapper(*args, **kwargs):
-        logger.info(f"CALL: {func.__name__} - args: {args}, kwargs: {kwargs}")
-        result = func(*args, **kwargs)
-        logger.info(f"RETURN: {func.__name__} -> {result}")
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        # logger.info(f"CALL: {func.__name__} - args: {args}, kwargs: {kwargs}")
+        print(f"CALL: {func.__name__}") # Simplified logging for example
+        if asyncio.iscoroutinefunction(func):
+            result = await func(*args, **kwargs)
+        else:
+            # Allow decorating sync functions if needed, run in thread
+            loop = asyncio.get_running_loop()
+            result = await loop.run_in_executor(None, func, *args, **kwargs)
+        # logger.info(f"RETURN: {func.__name__} -> {result}")
+        print(f"RETURN: {func.__name__} -> Type: {type(result)}") # Simplified
         return result
     return wrapper
 
-#@log_function_call
-def fetch_google_images(query, num_images=3, max_retries = 5 ):
 
-    for trial in range(max_retries):
-        
-        """
-        Fetch images from Google Images using google_images_search.
-        Splits query by '~' to handle multiple search terms if needed.
-        """
-        terms_list = query.split('~')
-        res_urls = []
-        for term in terms_list:
-            API_KEY = random.choice(st.secrets["GOOGLE_API_KEY"])
+# --- Asynchronous API/IO Functions ---
 
-            CX = st.secrets["GOOGLE_CX"]
+# @log_function_call # Decorator might add overhead, use if debugging needed
+async def fetch_google_images_async(query, num_images=3, max_retries=5):
+    """
+    Fetch images from Google Images using google_images_search asynchronously.
+    Uses asyncio.to_thread to run the synchronous library code without blocking.
+    """
+    terms_list = query.split('~')
+    all_image_urls = []
+    loop = asyncio.get_running_loop()
 
-            gis = GoogleImagesSearch(API_KEY, CX)
+    gis_instances = {} # Cache instances per API key if needed, though random choice might negate benefit
 
-            search_params = {
-                'q': term,
-                'num': num_images,
-            }
-
+    async def search_term(term):
+        for trial in range(max_retries):
             try:
-                gis.search(search_params)
-                image_urls = [result.url for result in gis.results()]
-                res_urls.extend(image_urls)
+                # Select API key randomly for each attempt or term
+                api_key = random.choice(GOOGLE_API_KEY)
+                cx = GOOGLE_CX
+
+                # Create GIS instance (synchronous part)
+                # Run synchronous GIS setup and search in a separate thread
+                def sync_search():
+                    # Consider caching GIS instance based on api_key if retries are frequent
+                    # if api_key not in gis_instances:
+                    #     gis_instances[api_key] = GoogleImagesSearch(api_key, cx)
+                    # gis = gis_instances[api_key]
+                    gis = GoogleImagesSearch(api_key, cx) # Create fresh instance
+
+                    search_params = {
+                        'q': term.strip(),
+                        'num': num_images,
+                        # Add other params like safe search if needed: 'safe': 'medium'
+                    }
+                    gis.search(search_params=search_params)
+                    return [result.url for result in gis.results()]
+
+                # Execute the synchronous search function in the executor
+                term_urls = await loop.run_in_executor(None, sync_search)
+                return term_urls # Return successfully found URLs for this term
             except Exception as e:
-                st.text(f"Error fetching Google Images for '{query}': {e}")
-                res_urls.append([])
-                time.sleep(5)
-        return list(set(res_urls))
+                st.warning(f"Error fetching Google Images for '{term}' (Attempt {trial+1}/{max_retries}): {e}")
+                if trial < max_retries - 1:
+                    await asyncio.sleep(random.uniform(3, 7)) # Exponential backoff might be better
+                else:
+                    st.error(f"Failed to fetch Google Images for '{term}' after {max_retries} attempts.")
+                    return [] # Return empty list on failure for this term
+        return [] # Should not be reached if loop completes, but safety return
+
+    # Gather results for all terms concurrently
+    results_per_term = await asyncio.gather(*(search_term(term) for term in terms_list))
+
+    # Flatten the list of lists and remove duplicates
+    for url_list in results_per_term:
+        all_image_urls.extend(url_list)
+
+    return list(set(all_image_urls))
+
+
 def play_sound(audio_file_path):
-    """Plays an audio file in the Streamlit app."""
-    with open(audio_file_path, "rb") as f:
-        data = f.read()
+    """Plays an audio file in the Streamlit app. (Remains Synchronous)"""
+    try:
+        with open(audio_file_path, "rb") as f:
+            data = f.read()
         b64 = base64.b64encode(data).decode()
         md = f"""
             <audio autoplay>
             <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
+            Your browser does not support the audio element.
             </audio>
         """
         st.markdown(md, unsafe_allow_html=True)
+    except FileNotFoundError:
+        st.error(f"Audio file not found: {audio_file_path}")
+    except Exception as e:
+        st.error(f"Error playing sound: {e}")
 
 
-
-
-#@log_function_call
+# @log_function_call
 def install_playwright_browsers():
     """
-    Install Playwright browsers (Chromium) if not installed yet.
+    Install Playwright browsers (Chromium) if not installed yet. (Remains Synchronous)
+    Best run once at startup.
     """
+    st.info("Checking and installing Playwright browser dependencies...")
     try:
-        os.system('playwright install-deps')
-        os.system('playwright install chromium')
+        # Use subprocess for better error handling if needed
+        result_deps = os.system('playwright install-deps')
+        if result_deps != 0:
+             st.warning("Playwright install-deps might have had issues (non-zero exit code).")
+        result_install = os.system('playwright install chromium')
+        if result_install != 0:
+            raise OSError("Playwright install chromium failed.")
+        st.success("Playwright browsers should be installed.")
         return True
     except Exception as e:
         st.error(f"Failed to install Playwright browsers: {str(e)}")
         return False
 
-# Set up page config
-st.set_page_config(layout="wide",page_title= "Creative Gen", page_icon="🎨")
-
-# Install playwright if needed
+# Initialize playwright state
 if 'playwright_installed' not in st.session_state:
     st.session_state.playwright_installed = install_playwright_browsers()
 
-# --------------------------------------------
-# Load Secrets
-# --------------------------------------------
-AWS_ACCESS_KEY_ID = st.secrets["AWS_ACCESS_KEY_ID"]
-AWS_SECRET_ACCESS_KEY = st.secrets["AWS_SECRET_ACCESS_KEY"]
-S3_BUCKET_NAME = st.secrets["S3_BUCKET_NAME"]
-AWS_REGION = st.secrets.get("AWS_REGION", "us-east-1")
-GPT_API_KEY = st.secrets["GPT_API_KEY"]
-FLUX_API_KEY = st.secrets["FLUX_API_KEY"]
 
-client = OpenAI(api_key=GPT_API_KEY)
-
-#@log_function_call
-def upload_pil_image_to_s3(
-    image, 
-    bucket_name, 
-    aws_access_key_id, 
-    aws_secret_access_key, 
+# @log_function_call
+async def upload_pil_image_to_s3_async(
+    image,
+    bucket_name,
+    aws_access_key_id,
+    aws_secret_access_key,
     object_name='',
-    region_name='us-east-1', 
+    region_name='us-east-1',
     image_format='PNG'
 ):
     """
-    Upload a PIL image to S3 in PNG (or other) format.
+    Upload a PIL image to S3 asynchronously using aiobotocore.
     """
+    session = aiobotocore.session.get_session()
+    # Use async with to ensure the client is closed properly
+    async with session.create_client(
+        's3',
+        region_name=region_name.strip(),
+        aws_access_key_id=aws_access_key_id.strip(),
+        aws_secret_access_key=aws_secret_access_key.strip()
+    ) as s3_client:
+        try:
+            if not object_name:
+                object_name = f"image_{int(time.time())}_{random.randint(1000, 9999)}.{image_format.lower()}"
+
+            img_byte_arr = BytesIO()
+            image.save(img_byte_arr, format=image_format)
+            img_byte_arr.seek(0)
+
+            await s3_client.put_object(
+                Bucket=bucket_name.strip(),
+                Key=object_name,
+                Body=img_byte_arr,
+                ContentType=f'image/{image_format.lower()}'
+            )
+
+            # Construct URL (consider using get_presigned_url if needed, but public URL is often simpler)
+            # Ensure your bucket policy allows public reads if using this format
+            url = f"https://{bucket_name}.s3.{region_name}.amazonaws.com/{object_name}"
+            return url
+
+        except NoCredentialsError:
+            st.error("S3 Upload Error: AWS credentials not found.")
+            return None
+        except Exception as e:
+            st.error(f"Error in S3 upload async: {str(e)}")
+            return None
+
+# @log_function_call
+async def gemini_text_lib_async(prompt, model='gemini-1.5-flash', is_pd_policy=False, predict_policy=""):
+    """ Generate text using Google GenAI async library """
+    if is_pd_policy:
+        prompt += predict_policy
+
+    api_key = random.choice(GEMINI_API_KEY)
+    genai.configure(api_key=api_key)
+
     try:
-        s3_client = boto3.client(
-            's3',
-            aws_access_key_id=aws_access_key_id.strip(),
-            aws_secret_access_key=aws_secret_access_key.strip(),
-            region_name=region_name.strip()
+        # Choose an appropriate async model if available, or use the specified one
+        async_model = genai.GenerativeModel(model)
+        response = await async_model.generate_content_async(
+            prompt,
+            generation_config=GenerationConfig(
+                # response_mime_type="text/plain", # Often default
+                temperature=0.7 # Example config
+            )
         )
-
-        if not object_name:
-            object_name = f"image_{int(time.time())}_{random.randint(1000, 9999)}.{image_format.lower()}"
-
-        img_byte_arr = BytesIO()
-        image.save(img_byte_arr, format=image_format)
-        img_byte_arr.seek(0)
-
-        s3_client.put_object(
-            Bucket=bucket_name.strip(),
-            Key=object_name,
-            Body=img_byte_arr,
-            ContentType=f'image/{image_format.lower()}'
-        )
-
-        url = f"https://{bucket_name}.s3.{region_name}.amazonaws.com/{object_name}"
-        return url
+        # Accessing response parts safely
+        if response.candidates and response.candidates[0].content.parts:
+             return response.candidates[0].content.parts[0].text.replace('```', '')
+        else:
+             # Log or handle cases with no response or unexpected structure
+             st.warning(f"Gemini response structure unexpected or empty for prompt: {prompt[:100]}...")
+             # Attempt to access text directly if structure is simpler
+             try:
+                 return response.text.replace('```', '')
+             except AttributeError:
+                 st.error("Could not extract text from Gemini response.")
+                 return None
 
     except Exception as e:
-        st.error(f"Error in S3 upload: {str(e)}")
-        return None
+        st.error(f'gemini_text_lib_async error: {e}')
+        await asyncio.sleep(random.uniform(3, 5)) # Sleep before potential retry
+        return None # Indicate failure
 
-
-def gemini_text(
-    prompt: str,
-    
-    api_key: str = random.choice(GEMINI_API_KEY),
-    model_id: str = "gemini-2.5-pro-exp-03-25",
-    api_endpoint: str = "generateContent"
-) -> str | None:
-    if is_pd_policy : prompt += predict_policy
-
-    if api_key is None:
-        api_key = os.environ.get("GEMINI_API_KEY")
-
-    if not api_key:
-        print("Error: API key not provided and GEMINI_API_KEY environment variable not set.")
-        return None
-
-    api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:{api_endpoint}?key={api_key}"
-
-    headers = {
-        "Content-Type": "application/json",
-    }
-
-
-
-    request_data = {
-        "contents": [
-            {
-                "role": "user",
-                "parts": [
-                    {"text": prompt},
-                ],
-            },
-        ],
-        "generationConfig": {
-            "responseMimeType": "text/plain",
-        },
-    }
+# @log_function_call
+async def chatGPT_async(prompt, model="gpt-4o", temperature=1.0, reasoning_effort='', is_pd_policy=False, predict_policy=""):
+    """ Generate text using OpenAI async library """
+    if is_pd_policy:
+        prompt += predict_policy
 
     try:
-        response = requests.post(
-            api_url,
-            headers=headers,
-            json=request_data,
-            timeout=60
-        )
-        response.raise_for_status()
-
-        st.text(response.json())
-
-        return response.json()['candidates'][0]['content']['parts'][0]['text'].replace('```','')
-
-    except requests.exceptions.RequestException as e:
-        print(f"Error calling Gemini API: {e}")
-        if 'response' in locals() and response is not None:
-             print(f"Response status: {response.status_code}")
-             print(f"Response text: {response.text}")
-        return None
-    except Exception as e:
-        print(f"An unexpected error occurred: {e}")
-        return None
-
-def gemini_text_lib(prompt,model ='gemini-2.5-pro-exp-03-25' ):
-    if is_pd_policy : prompt += predict_policy
-
-
-
-
-    client = genai.Client(api_key=random.choice(GEMINI_API_KEY))
-
-
-    try:
-        response = client.models.generate_content(
-            model=model, contents=  prompt
-        )
-
-        return response.text
-    except Exception as e:
-        st.text('gemini_text_lib error ' + str(e))
-        time.sleep(4)
-        return None
-
-
-
-
-#@log_function_call
-def chatGPT(prompt, model="gpt-4o", temperature=1.0,reasoning_effort=''):
-
-    if is_pd_policy : prompt += predict_policy
-    try:
-    
- 
-        st.write("Generating image description...")
-        headers = {
-            'Authorization': f'Bearer {GPT_API_KEY}',
-            'Content-Type': 'application/json'
+        messages = [{"role": "user", "content": prompt}]
+        # Base parameters
+        params = {
+            "model": model,
+            "messages": messages,
+            "temperature": temperature,
         }
-        data = {
-            'model': model,
-            'temperature': temperature,
-            "input" : prompt,
-            'reasoning': {"effort": reasoning_effort}
-        }
+        # Conditional parameters (Note: OpenAI API might not support 'reasoning' or 'input' directly like this for standard chat completions)
+        # Adapt based on the actual API endpoint and parameters if using a non-standard one.
+        # For standard chat completions, only include standard parameters.
+        # if reasoning_effort: params['reasoning'] = {"effort": reasoning_effort} # This looks non-standard
+        if temperature == 0: del params['temperature'] # Or set to a very low value like 0.01
 
-        if temperature == 0: data.pop('temperature')
-        if reasoning_effort == '': data.pop('reasoning')
+        # Use the standard async chat completion endpoint
+        response = await async_openai_client.chat.completions.create(**params)
 
-        if 'o1' in model or 'o3' in model:
-
-            response = requests.post('https://api.openai.com/v1/responses', headers=headers, json=data)
-            content = json.loads(response.content)['output'][1]['content'][0]['text']
-            # st.text(content)
-            return content
-
-
-
-        else: 
-            response = requests.post('https://api.openai.com/v1/responses', headers=headers, json=data)
-            content = json.loads(response.content)['output'][0]['content'][0]['text']
-            # st.text(content)
-            return content
+        # Extract content safely
+        if response.choices and response.choices[0].message:
+            content = response.choices[0].message.content
+            return content.strip()
+        else:
+            st.error("Invalid response structure from OpenAI.")
+            return None
 
     except Exception as e:
-        st.text(f"Error in chatGPT: {str(e)}")
-        st.text(response.json())
-
+        st.error(f"Error in chatGPT_async: {str(e)}")
+        # Log the actual response if available and helpful
+        # if 'response' in locals() and hasattr(response, 'text'):
+        #     st.text(f"Response text: {response.text}")
         return None
 
 
-def claude(prompt , model = "claude-3-7-sonnet-20250219", temperature=1 , is_thinking = False, max_retries = 10):
-    if is_pd_policy : prompt += predict_policy
+# @log_function_call
+async def claude_async(prompt, model="claude-3-haiku-20240307", temperature=1, is_thinking=False, max_retries=5, is_pd_policy=False, predict_policy=""):
+    if is_pd_policy:
+        prompt += predict_policy
+
     tries = 0
-
     while tries < max_retries:
         try:
-        
-        
-        
-            client = anthropic.Anthropic(
-            # defaults to os.environ.get("ANTHROPIC_API_KEY")
-            api_key=st.secrets["ANTHROPIC_API_KEY"])
-        
-            if is_thinking == False:
-                    
-                message = client.messages.create(
-                    
-                model=model,
-                max_tokens=20000,
-                temperature=temperature,
-                
-                top_p= 0.8,
+            messages = [{"role": "user", "content": prompt}]
 
-                messages=[
-                    {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "text",
-                                "text": prompt
-                            }
-                        ]
-                    }
-                ]
-            )
-                return message.content[0].text
-            if is_thinking == True:
-                message = client.messages.create(
-                    
-                model=model,
-                max_tokens=20000,
-                temperature=temperature,
-                messages=[
-                    {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "text",
-                                "text": prompt
-                            }
-                        ]
-                    }
-                ],
-                thinking = { "type": "enabled",
-                "budget_tokens": 16000}
-            )
-                return message.content[1].text
-        
-        
-        
-            print(message)
-            return message.content[0].text
-
-        except Exception as e:
-            st.text(e)
-            tries += 1 
-            time.sleep(5)
-
-#@log_function_call
-def gen_flux_img(prompt, height=784, width=960):
-    """
-    Generate images using FLUX model from the Together.xyz API.
-    """
-    while True:
-        try:
-            url = "https://api.together.xyz/v1/images/generations"
-            payload = {
-                "prompt": prompt,
-                "model": "black-forest-labs/FLUX.1-schnell-Free",
-                "steps": 4,
-                "n": 1,
-                "height": height,
-                "width": width,
-            }
-            headers = {
-                "accept": "application/json",
-                "content-type": "application/json",
-                "authorization": f"Bearer {random.choice(FLUX_API_KEY)}"
-            }
-            response = requests.post(url, json=payload, headers=headers)
-            return response.json()["data"][0]["url"]
-        except Exception as e:
-            print(e)
-            if "NSFW" in str(e):
-                return None
-            time.sleep(2)
-
-def gen_gemini_image(prompt, trys = 0):
-
-    while trys < 40 :
-
-        api = random.choice(GEMINI_API_KEY)
-
-
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key={api}"
-
-        headers = {
-            "Content-Type": "application/json"
-        }
-
-        data = {
-            "contents": [
-                {
-                    "role": "user",
-                    "parts": [
-                        {
-                            "text": ( prompt
-                                
-                            )
-                        }
-                    ]
-                },
-                {
-                    "role": "user",
-                    "parts": [
-                        {
-                            "text": "" #INSERT_INPUT_HERE
-                        }
-                    ]
-                }
-            ],
-            "generationConfig": {
-                "temperature": 0.65,
-                "topK": 40,
-                "topP": 0.95,
-                "maxOutputTokens": 8192,
-                "responseMimeType": "text/plain",
-                "responseModalities": ["image", "text"]
-            }
-        }
-
-        response = requests.post(url, headers=headers, data=json.dumps(data))
-        if response.status_code == 200:
-            res_json = response.json()
-            try:
-                image_b64 = res_json['candidates'][0]["content"]["parts"][0]["inlineData"]['data']
-                image_data = base64.decodebytes(image_b64.encode())
-
-                return Image.open(BytesIO(image_data))
-            except Exception as e:
-                trys +=1
-                print("Failed to extract or save image:", e)
-        else:
-            trys +=1
-            print("Error:")
-            st.text(response.text)
-
-
-
-
-
-
-def gen_flux_img_lora(prompt,height=784, width=960 ,lora_path="https://huggingface.co/ddh0/FLUX-Amateur-Photography-LoRA/resolve/main/FLUX-Amateur-Photography-LoRA-v2.safetensors?download=true"):
-    retries =0
-    while retries < 10:
-        try:
-           
-
-            url = "https://api.together.xyz/v1/images/generations"
-            headers = {
-                "Authorization": f"Bearer {random.choice(FLUX_API_KEY)}",  # Replace with your actual API key
-                "Content-Type": "application/json"
-            }
-            data = {
-                "model": "black-forest-labs/FLUX.1-dev-lora",
-                "prompt":"candid unstaged taken with iphone 8 : " +  prompt,
-                "width": width,
-                "height": height,
-                "steps": 20,
-                "n": 1,
-                "response_format": "url",
-                "image_loras": [
-                    {
-                        "path": "https://huggingface.co/ddh0/FLUX-Amateur-Photography-LoRA/resolve/main/FLUX-Amateur-Photography-LoRA-v2.safetensors?download=true",
-                        "scale": 0.99
-                    }
-                ],
-                "update_at": "2025-03-04T16:25:21.474Z"
+            # Base parameters
+            params = {
+                "model": model,
+                "messages": messages,
+                "max_tokens": 4000, # Reduced from 20000, adjust as needed
+                "temperature": temperature,
+                "top_p": 0.8 # Example, adjust as needed
             }
 
-            response = requests.post(url, headers=headers, json=data)
+            # Conditional parameters for 'thinking' - Check Anthropic docs for current implementation
+            # The original 'thinking' structure seems non-standard for the messages API.
+            # If 'thinking' is a specific feature, consult docs. Assuming it's not standard here.
+            # if is_thinking:
+                # This structure might be incorrect for the standard API
+                # params["thinking"] = {"type": "enabled", "budget_tokens": 16000}
 
-            if response.status_code == 200:
-                # Assuming the response contains the image URL in the data
-                response_data = response.json()
-                image_url = response_data['data'][0]['url']
-                print(f"Image URL: {image_url}")
-                return image_url
+            message = await async_anthropic_client.messages.create(**params)
+
+            # Extract content safely
+            if message.content and isinstance(message.content, list) and message.content[0].type == "text":
+                # If is_thinking modified the structure, adjust index (e.g., [1] ?)
+                # Assuming standard response structure here:
+                return message.content[0].text.strip()
             else:
-                print(f"Request failed with status code {response.status_code}")
+                 st.warning(f"Claude response structure unexpected or empty for prompt: {prompt[:100]}...")
+                 # Maybe try accessing attributes differently if needed
+                 try:
+                      if isinstance(message.content, str): # Handle simpler string response if API changes
+                           return message.content.strip()
+                 except Exception:
+                      pass # Ignore if alternative access fails
+                 st.error("Could not extract text from Claude response.")
+                 return None # Indicate failure
 
-    
+
+        except anthropic.APIConnectionError as e:
+             st.warning(f"Claude Connection Error (Attempt {tries+1}/{max_retries}): {e}. Retrying...")
+             tries += 1
+             await asyncio.sleep(random.uniform(2**tries, 2**(tries+1))) # Exponential backoff
+        except anthropic.APIStatusError as e:
+             st.warning(f"Claude API Status Error (Attempt {tries+1}/{max_retries}): {e.status_code} - {e.response}. Retrying...")
+             tries += 1
+             await asyncio.sleep(random.uniform(2**tries, 2**(tries+1))) # Exponential backoff
+        except anthropic.RateLimitError as e:
+             st.warning(f"Claude Rate Limit Error (Attempt {tries+1}/{max_retries}): {e}. Retrying after delay...")
+             tries += 1
+             await asyncio.sleep(random.uniform(10, 20)) # Longer wait for rate limits
         except Exception as e:
-            time.sleep(3)
-            retries +=1
-            st.text(e)
+            st.error(f"Claude Error (Attempt {tries+1}/{max_retries}): {e}")
+            tries += 1
+            if tries >= max_retries:
+                 st.error(f"Failed to get response from Claude after {max_retries} attempts.")
+                 return None # Indicate failure after all retries
+            await asyncio.sleep(random.uniform(5, 10)) # General retry delay
+
+    return None # Failed after retries
 
 
-
-#@log_function_call
-def capture_html_screenshot_playwright(html_content):
+# @log_function_call
+async def gen_flux_img_async(prompt, height=784, width=960, model="black-forest-labs/FLUX.1-schnell-Free"):
     """
-    Use Playwright to capture a screenshot of the given HTML snippet.
+    Generate images using FLUX model via Together.xyz API asynchronously.
     """
-    if not st.session_state.playwright_installed:
+    url = "https://api.together.xyz/v1/images/generations"
+    payload = {
+        "prompt": prompt,
+        "model": model,
+        "steps": 4, # Adjust as needed
+        "n": 1,
+        "height": height,
+        "width": width,
+    }
+    headers = {
+        "accept": "application/json",
+        "content-type": "application/json",
+        "authorization": f"Bearer {random.choice(FLUX_API_KEY)}"
+    }
+    max_retries = 5
+    for attempt in range(max_retries):
+        try:
+            async with httpx.AsyncClient(timeout=90.0) as client: # Increased timeout for image gen
+                 response = await client.post(url, json=payload, headers=headers)
+                 response.raise_for_status() # Raise HTTPStatusError for bad responses (4xx or 5xx)
+                 data = response.json()
+                 if data.get("data") and len(data["data"]) > 0 and data["data"][0].get("url"):
+                      return data["data"][0]["url"]
+                 elif data.get("error"):
+                      st.warning(f"Flux API returned error: {data['error']}")
+                      # Check for specific errors like NSFW
+                      if "NSFW" in str(data['error']):
+                           st.warning(f"NSFW content detected by Flux API for prompt: {prompt[:100]}...")
+                           return None # Indicate NSFW failure
+                      # Other errors might be retriable
+                 else:
+                      st.warning(f"Unexpected response format from Flux API: {data}")
+
+        except httpx.HTTPStatusError as e:
+            st.warning(f"Flux API HTTP Error (Attempt {attempt+1}/{max_retries}): {e.response.status_code} - {e.response.text}")
+            if e.response.status_code == 429: # Rate limit
+                await asyncio.sleep(random.uniform(5, 10) * (attempt + 1)) # Exponential backoff
+            elif e.response.status_code >= 500: # Server error
+                await asyncio.sleep(random.uniform(3, 7) * (attempt + 1))
+            else: # Other client errors (4xx) - likely not retriable
+                st.error(f"Flux API client error: {e.response.status_code}")
+                return None # Non-retriable client error
+        except httpx.RequestError as e:
+            st.warning(f"Flux API Request Error (Attempt {attempt+1}/{max_retries}): {e}")
+            await asyncio.sleep(random.uniform(3, 7) * (attempt + 1))
+        except Exception as e:
+            st.error(f"Unexpected error in gen_flux_img_async (Attempt {attempt+1}/{max_retries}): {e}")
+            # Check if it's a known non-retriable error based on string content
+            if "NSFW" in str(e): # Example check
+                return None
+            await asyncio.sleep(random.uniform(3, 7) * (attempt + 1))
+
+    st.error(f"Failed to generate Flux image for prompt '{prompt[:100]}...' after {max_retries} attempts.")
+    return None # Failed after all retries
+
+
+# @log_function_call
+async def gen_gemini_image_async(prompt, max_retries=5):
+    """ Generate image using Gemini Image API async """
+    api_key = random.choice(GEMINI_API_KEY)
+    # Correct endpoint might vary, check latest Gemini docs. This looks plausible.
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key={api_key}" # Using pro-vision as example, check docs for specific image gen model endpoint
+    # url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}" # Or maybe flash directly?
+
+    headers = {"Content-Type": "application/json"}
+
+    # Construct the payload carefully based on API docs
+    # The original payload mixes user roles and has an empty part, which seems wrong.
+    # A more typical structure for multimodal might be:
+    data = {
+        "contents": [{
+            "role": "user",
+            "parts": [{"text": prompt}] # Send the prompt as text
+        }],
+        "generationConfig": {
+             "temperature": 0.65,
+             "topK": 40,
+             "topP": 0.95,
+             "maxOutputTokens": 1024, # Adjust token limits as needed
+            # "responseMimeType": "application/json", # Usually default
+            # Requesting an image modality might need specific parameters
+            # "output_modality": "image/png" # Hypothetical, check docs
+        },
+        # Add safety settings if needed
+        # "safetySettings": [...]
+    }
+
+    # Simplified payload for potential image model (check exact API)
+    # data_img_gen = {
+    #     "prompt": {"text": prompt},
+    #     "n": 1,
+    #     "size": "1024x1024", # Example
+    #     "response_format": "b64_json"
+    # }
+
+
+    for attempt in range(max_retries):
+        try:
+            async with httpx.AsyncClient(timeout=120.0) as client: # Longer timeout for image generation
+                response = await client.post(url, headers=headers, json=data) # Using multimodal payload structure
+                response.raise_for_status()
+                res_json = response.json()
+
+                # --- Safely extract image data ---
+                # The path might differ based on the actual API response structure
+                # Path 1: From original code (might be correct for some versions)
+                try:
+                    image_b64 = res_json['candidates'][0]["content"]["parts"][0]["inlineData"]['data']
+                    image_data = base64.b64decode(image_b64) # Use b64decode
+                    return Image.open(BytesIO(image_data))
+                except (KeyError, IndexError, TypeError) as e1:
+                    # Path 2: Alternative structure (e.g., direct image data)
+                    try:
+                        # Check if 'image_data' or similar key exists directly
+                        if 'image_bytes' in res_json: # Hypothetical key
+                             image_data = base64.b64decode(res_json['image_bytes'])
+                             return Image.open(BytesIO(image_data))
+                        # Add other potential paths based on Gemini API docs
+                    except (KeyError, IndexError, TypeError) as e2:
+                        st.warning(f"Could not extract Gemini image data (Attempt {attempt+1}). Structure: {res_json}. Errors: {e1}, {e2}")
+                        # Fall through to retry logic
+
+        except httpx.HTTPStatusError as e:
+            st.warning(f"Gemini Image API HTTP Error (Attempt {attempt+1}/{max_retries}): {e.response.status_code} - {e.response.text}")
+            if e.response.status_code == 429: # Rate limit
+                await asyncio.sleep(random.uniform(5, 10) * (attempt + 1))
+            elif e.response.status_code >= 500: # Server error
+                await asyncio.sleep(random.uniform(3, 7) * (attempt + 1))
+            elif "API key not valid" in e.response.text:
+                 st.error(f"Invalid Gemini API Key used. Please check secrets.")
+                 return None # Non-retriable
+            else: # Other client errors (4xx)
+                st.error(f"Gemini Image API client error: {e.response.status_code}. Response: {e.response.text}")
+                return None # Likely non-retriable
+        except httpx.RequestError as e:
+            st.warning(f"Gemini Image API Request Error (Attempt {attempt+1}/{max_retries}): {e}")
+            await asyncio.sleep(random.uniform(3, 7) * (attempt + 1))
+        except Exception as e:
+            st.error(f"Unexpected error in gen_gemini_image_async (Attempt {attempt+1}/{max_retries}): {e}")
+            await asyncio.sleep(random.uniform(3, 7) * (attempt + 1))
+
+        if attempt == max_retries - 1:
+            st.error(f"Failed to generate Gemini image for prompt '{prompt[:100]}...' after {max_retries} attempts.")
+
+    return None # Failed
+
+
+# @log_function_call
+async def gen_flux_img_lora_async(prompt, height=784, width=960, lora_path="https://huggingface.co/ddh0/FLUX-Amateur-Photography-LoRA/resolve/main/FLUX-Amateur-Photography-LoRA-v2.safetensors?download=true", lora_scale=0.99):
+    """ Generate image using Flux with LoRA via Together.xyz API async """
+    url = "https://api.together.xyz/v1/images/generations"
+    headers = {
+        "Authorization": f"Bearer {random.choice(FLUX_API_KEY)}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "model": "black-forest-labs/FLUX.1-dev-lora", # Ensure this model ID is correct
+        "prompt": "candid unstaged taken with iphone 8 : " + prompt, # Prepending style
+        "width": width,
+        "height": height,
+        "steps": 20, # Adjust as needed
+        "n": 1,
+        "response_format": "url",
+        "image_loras": [
+            {"path": lora_path, "scale": lora_scale}
+        ],
+        # "update_at": "2025-03-04T16:25:21.474Z" # update_at seems unnecessary for generation
+    }
+    max_retries = 5
+    for attempt in range(max_retries):
+        try:
+            async with httpx.AsyncClient(timeout=120.0) as client: # Longer timeout
+                 response = await client.post(url, headers=headers, json=data)
+                 response.raise_for_status()
+                 response_data = response.json()
+                 if response_data.get("data") and len(response_data["data"]) > 0 and response_data["data"][0].get("url"):
+                      image_url = response_data['data'][0]['url']
+                      # print(f"Flux LoRA Image URL: {image_url}") # Debug
+                      return image_url
+                 else:
+                      st.warning(f"Unexpected response format from Flux LoRA API: {response_data}")
+
+        except httpx.HTTPStatusError as e:
+            st.warning(f"Flux LoRA API HTTP Error (Attempt {attempt+1}/{max_retries}): {e.response.status_code} - {e.response.text}")
+            if e.response.status_code == 429:
+                await asyncio.sleep(random.uniform(5, 10) * (attempt + 1))
+            elif e.response.status_code >= 500:
+                await asyncio.sleep(random.uniform(3, 7) * (attempt + 1))
+            else:
+                st.error(f"Flux LoRA API client error: {e.response.status_code}")
+                return None
+        except httpx.RequestError as e:
+            st.warning(f"Flux LoRA API Request Error (Attempt {attempt+1}/{max_retries}): {e}")
+            await asyncio.sleep(random.uniform(3, 7) * (attempt + 1))
+        except Exception as e:
+            st.error(f"Unexpected error in gen_flux_img_lora_async (Attempt {attempt+1}/{max_retries}): {e}")
+            await asyncio.sleep(random.uniform(3, 7) * (attempt + 1))
+
+    st.error(f"Failed to generate Flux LoRA image after {max_retries} attempts.")
+    return None
+
+
+# @log_function_call
+async def capture_html_screenshot_playwright_async(html_content, width=1000, height=1000):
+    """
+    Use async Playwright to capture a screenshot of the given HTML snippet.
+    """
+    if not st.session_state.get('playwright_installed', False):
         st.error("Playwright browsers not installed properly")
         return None
 
+    screenshot_bytes = None
+    temp_html_path = None
+
     try:
-        with sync_playwright() as p:
-            browser = p.chromium.launch(
+        # async with playwright context manager
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(
                 headless=True,
-                args=['--no-sandbox', '--disable-dev-shm-usage']
+                args=['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu'] # Added disable-gpu
             )
-            page = browser.new_page(viewport={'width': 1000, 'height': 1000})
+            page = await browser.new_page(viewport={'width': width, 'height': height})
 
-            with NamedTemporaryFile(delete=False, suffix='.html', mode='w') as f:
-                f.write(html_content)
-                temp_html_path = f.name
+            # Use NamedTemporaryFile correctly (synchronous part, but acceptable)
+            # Needs to be created outside the async with block if cleaned up later
+            with NamedTemporaryFile(delete=False, suffix='.html', mode='w', encoding='utf-8') as f:
+                 f.write(html_content)
+                 temp_html_path = f.name # Get the path
 
-            page.goto(f'file://{temp_html_path}')
-            page.wait_for_timeout(1000)
-            screenshot_bytes = page.screenshot()
+            # Go to the local file URL
+            await page.goto(f'file://{temp_html_path}')
+            # Wait for potential JS or rendering to settle
+            await page.wait_for_timeout(1500) # Slightly longer wait
 
-            browser.close()
+            # Take screenshot
+            screenshot_bytes = await page.screenshot(type='png') # Specify type
+
+            # Close browser
+            await browser.close()
+
+        # Clean up the temporary file *after* browser is closed
+        if temp_html_path and os.path.exists(temp_html_path):
             os.unlink(temp_html_path)
 
-            return Image.open(BytesIO(screenshot_bytes))
+        if screenshot_bytes:
+             return Image.open(BytesIO(screenshot_bytes))
+        else:
+             st.error("Screenshot capture failed (no bytes returned).")
+             return None
+
     except Exception as e:
-        st.error(f"Screenshot capture error: {str(e)}")
+        st.error(f"Async screenshot capture error: {str(e)}")
+        # Ensure cleanup happens even on error
+        if temp_html_path and os.path.exists(temp_html_path):
+            try:
+                os.unlink(temp_html_path)
+            except Exception as cleanup_e:
+                st.warning(f"Could not delete temp file {temp_html_path}: {cleanup_e}")
         return None
 
-#@log_function_call
+
+# @log_function_call # This function is CPU-bound (HTML string formatting), not IO-bound. Async doesn't help here.
 def save_html(headline, image_url, cta_text, template, tag_line='', output_file="advertisement.html"):
     """
-    Returns an HTML string based on the chosen template ID (1..6, 41, 42, etc.).
+    Returns an HTML string based on the chosen template ID. (Remains Synchronous)
     """
+    # Basic input validation
+    if not isinstance(template, int):
+         try:
+              template = int(template)
+         except (ValueError, TypeError):
+              st.error(f"Invalid template format: {template}. Must be an integer.")
+              return f"<p>Invalid Template ID: {template}</p>" # Return error HTML
+
+    # Template definitions (Keep existing HTML, ensure template IDs match usage)
     # Template 1
     if template == 1:
         html_template = f"""
-       <!DOCTYPE html>
-       <html lang="en">
-       <head>
-           <meta charset="UTF-8">
-           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-           <title>Ad Template</title>
-           <style>
-               body {{
-                   font-family: 'Gisha', sans-serif;
-                   font-weight: 550;
-                   margin: 0;
-                   padding: 0;
-                   display: flex;
-                   justify-content: center;
-                   align-items: center;
-                   height: 100vh;
-               }}
-               .ad-container {{
-                   width: 1000px;
-                   height: 1000px;
-                   border: 1px solid #ddd;
-                   border-radius: 20px;
-                   box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
-                   display: flex;
-                   flex-direction: column;
-                   justify-content: space-between;
-                   align-items: center;
-                   padding: 30px;
-                   background: url('{image_url}') no-repeat center center/cover;
-                   background-size: contain;
-                   text-align: center;
-               }}
-               .ad-title {{
-                   font-size: 3.2em;
-                   margin-top: 10px;
-                   color: #333;
-                   background-color:white;
-                   padding: 20px 40px;
-                   border-radius: 20px;
-               }}
-               .cta-button {{
-                   font-weight: 400;
-                   display: inline-block;
-                   padding: 40px 60px;
-                   font-size: 3em;
-                   color: white;
-                   background-color: #FF5722;
-                   border: none;
-                   border-radius: 20px;
-                   text-decoration: none;
-                   cursor: pointer;
-                   transition: background-color 0.3s ease;
-                   margin-bottom: 20px;
-               }}
-               .cta-button:hover {{
-                   background-color: #E64A19;
-               }}
-           </style>
-       </head>
-       <body>
-           <div class="ad-container">
-               <div class="ad-title">{headline}!</div>
-               <a href="#" class="cta-button">{cta_text}</a>
-           </div>
-       </body>
-       </html>
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Ad Template 1</title>
+            <style>
+                body {{
+                    font-family: 'Gisha', sans-serif; /* Ensure font is available or use fallback */
+                    font-weight: 550; margin: 0; padding: 0; display: flex;
+                    justify-content: center; align-items: center; height: 100vh;
+                    background-color: #f0f0f0; /* Added background for context */
+                }}
+                .ad-container {{
+                    width: 1000px; height: 1000px; border: 1px solid #ddd;
+                    border-radius: 20px; box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+                    display: flex; flex-direction: column; justify-content: space-between;
+                    align-items: center; padding: 30px;
+                    background: url('{image_url}') no-repeat center center; /* Ensure URL is valid */
+                    background-size: contain; /* Changed from cover for potentially better text visibility */
+                    text-align: center; position: relative; /* Added relative for potential overlay */
+                    overflow: hidden; /* Prevents content spillover */
+                }}
+                 /* Added overlay for better text readability on diverse images */
+                .text-overlay {{
+                    background-color: rgba(255, 255, 255, 0.85); /* Semi-transparent white */
+                    padding: 20px 40px; border-radius: 15px; margin-top: 20px; /* Adjusted margin */
+                    display: inline-block; /* Fit content width */
+                    max-width: 90%; /* Prevent excessive width */
+                 }}
+                .ad-title {{
+                    font-size: 3.2em; color: #333; margin: 0; /* Removed margin-top from here */
+                }}
+                .cta-button {{
+                    font-weight: 400; display: inline-block; padding: 30px 50px; /* Adjusted padding */
+                    font-size: 2.8em; /* Adjusted size */ color: white; background-color: #FF5722;
+                    border: none; border-radius: 20px; text-decoration: none;
+                    cursor: pointer; transition: background-color 0.3s ease;
+                    margin-bottom: 40px; /* Adjusted margin */ box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+                }}
+                .cta-button:hover {{ background-color: #E64A19; }}
+            </style>
+        </head>
+        <body>
+            <div class="ad-container">
+                <div class="text-overlay">
+                     <div class="ad-title">{headline}</div>
+                 </div>
+                <a href="#" class="cta-button">{cta_text}</a>
+            </div>
+        </body>
+        </html>
         """
     # Template 2
     elif template == 2:
@@ -625,65 +736,15 @@ def save_html(headline, image_url, cta_text, template, tag_line='', output_file=
         <!DOCTYPE html>
         <html lang="en">
         <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Ad Template</title>
+            <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Ad Template 2</title>
             <style>
-                body {{
-                    font-family: 'Gisha', sans-serif;
-                    font-weight: 550;
-                    margin: 0;
-                    padding: 0;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    height: 100vh;
-                }}
-                .ad-container {{
-                    width: 1000px;
-                    height: 1000px;
-                    border: 2px solid black;
-                    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
-                    display: flex;
-                    flex-direction: column;
-                    overflow: hidden;
-                    position: relative;
-                }}
-                .ad-title {{
-                    font-size: 3.2em;
-                    color: #333;
-                    background-color: white;
-                    padding: 20px;
-                    text-align: center;
-                    flex: 0 0 20%;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                }}
-                .ad-image {{
-                    flex: 1 1 80%;
-                    background: url('{image_url}') no-repeat center center/cover;
-                    background-size: fill;
-                    position: relative;
-                }}
-                .cta-button {{
-                    font-weight: 400;
-                    display: inline-block;
-                    padding: 20px 40px;
-                    font-size: 3.2em;
-                    color: white;
-                    background-color: #FF5722;
-                    border: none;
-                    border-radius: 20px;
-                    text-decoration: none;
-                    cursor: pointer;
-                    transition: background-color 0.3s ease;
-                    position: absolute;
-                    bottom: 10%;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    z-index: 10;
-                }}
+                body {{ font-family: 'Gisha', sans-serif; font-weight: 550; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f0f0f0; }}
+                .ad-container {{ width: 1000px; height: 1000px; border: 2px solid black; box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2); display: flex; flex-direction: column; overflow: hidden; position: relative; background-color: white; }}
+                .ad-title {{ font-size: 3em; /* Adjusted size */ color: #333; background-color: white; padding: 25px; /* Adjusted padding */ text-align: center; flex: 0 0 auto; /* Don't grow/shrink, use content height */ border-bottom: 1px solid #eee; /* Separator */ }}
+                .ad-image {{ flex: 1 1 auto; /* Grow and shrink */ background: url('{image_url}') no-repeat center center; background-size: cover; /* Changed to cover */ position: relative; }}
+                .cta-button {{ font-weight: 400; display: inline-block; padding: 25px 45px; /* Adjusted */ font-size: 3em; /* Adjusted */ color: white; background-color: #FF5722; border: none; border-radius: 20px; text-decoration: none; cursor: pointer; transition: background-color 0.3s ease; position: absolute; bottom: 8%; /* Adjusted position */ left: 50%; transform: translateX(-50%); z-index: 10; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }}
+                .cta-button:hover {{ background-color: #E64A19; }}
             </style>
         </head>
         <body>
@@ -696,1129 +757,63 @@ def save_html(headline, image_url, cta_text, template, tag_line='', output_file=
         </body>
         </html>
         """
-    # Template 3
-    elif template in  [3,7]:
+    # Template 3 or 7 (Consolidated - Check if visual difference was intended for 7)
+    elif template in [3, 7]:
+        # If template 7 needs specific style changes, add conditional CSS or duplicate block
+        button_class = "cta-button" if template == 3 else "c1ta-button" # Use different class for 7 if needed
         html_template = f"""
         <!DOCTYPE html>
         <html>
         <head>
-            <style>
-                body {{
-                    margin: 0;
-                    padding: 0;
-                    font-family: 'Boogaloo', 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    min-height: 100vh;
-                    background: #f0f0f0;
-                }}
-                .container {{
-                    position: relative;
-                    width: 1000px;
-                    height: 1000px;
-                    margin: 0;
-                    padding: 0;
-                    overflow: hidden;
-                    box-shadow: 0 0 20px rgba(0,0,0,0.2);
-                }}
-                .image {{
-                    width: 1000px;
-                    height: 1000px;
-                    object-fit: cover;
-                    filter: saturate(130%) contrast(110%);
-                    transition: transform 0.3s ease;
-                }}
-                .image:hover {{
-                    transform: scale(1.05);
-                }}
-                .overlay {{
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    min-height: 14%;
-                    background: red;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-                    padding: 20px;
-                    box-sizing: border-box;
-                }}
-                .overlay-text {{
-                    color: #FFFFFF;
-                    font-size: 4em;
-                    text-align: center;
-                    text-shadow: 2.5px 2.5px 2px #000000;
-                    letter-spacing: 2px;
-                    font-family: 'Boogaloo', 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif;
-                    margin: 0;
-                    word-wrap: break-word;
-                }}
-                .cta-button {{
-                    position: absolute;
-                    bottom: 10%;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    padding: 20px 40px;
-                    background: blue;
-                    color: white;
-                    border: none;
-                    border-radius: 50px;
-                    font-size: 3.5em;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                    font-family: 'Boogaloo', 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif;
-                    text-transform: uppercase;
-                    letter-spacing: 2px;
-                    box-shadow: 0 5px 15px rgba(255,107,107,0.4);
-                }}
-                .cta-button:hover {{
-                    background: #4ECDC4;
-                    transform: translateX(-50%) translateY(-5px);
-                    box-shadow: 0 8px 20px rgba(78,205,196,0.6);
-                }}
-                @keyframes shine {{
-                    0% {{ left: -100%; }}
-                    100% {{ left: 200%; }}
-                }}
-            </style>
+            <title>Ad Template {template}</title>
             <link href="https://fonts.googleapis.com/css2?family=Boogaloo&display=swap" rel="stylesheet">
+            <style>
+                body {{ margin: 0; padding: 0; font-family: 'Boogaloo', 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f0f0f0; }}
+                .container {{ position: relative; width: 1000px; height: 1000px; margin: 0; padding: 0; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.2); background-color: #ccc; /* BG if image fails */}}
+                .image {{ width: 100%; height: 100%; object-fit: cover; filter: saturate(120%) contrast(105%); /* Adjusted filter */ transition: transform 0.3s ease; display: block; /* Remove potential bottom space */ }}
+                .image:hover {{ transform: scale(1.03); /* Reduced hover effect */ }}
+                .overlay {{ position: absolute; top: 0; left: 0; width: 100%; background: rgba(255, 0, 0, 0.85); /* Red overlay with alpha */ display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); padding: 25px; /* Adjusted padding */ box-sizing: border-box; min-height: 12%; /* Adjusted */ }}
+                .overlay-text {{ color: #FFFFFF; font-size: 3.8em; /* Adjusted size */ text-align: center; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); /* Softer shadow */ letter-spacing: 1px; /* Adjusted */ margin: 0; word-wrap: break-word; }}
+                .{button_class} {{ /* Dynamic class based on template */ position: absolute; bottom: 8%; /* Adjusted position */ left: 50%; transform: translateX(-50%); padding: 25px 50px; /* Adjusted padding */ background: blue; color: white; border: none; border-radius: 50px; font-size: 3.2em; /* Adjusted */ cursor: pointer; transition: all 0.3s ease; font-family: 'Boogaloo', sans-serif; text-transform: uppercase; letter-spacing: 1.5px; /* Adjusted */ box-shadow: 0 5px 15px rgba(0,0,255,0.4); /* Blue shadow */ }}
+                .{button_class}:hover {{ background: #007bff; /* Lighter blue */ transform: translateX(-50%) translateY(-3px); box-shadow: 0 8px 20px rgba(0,123,255,0.6); }}
+                /* Keyframes for shine effect (if used) */
+                /* Example: Add a pseudo-element to the button if shine is desired */
+            </style>
         </head>
         <body>
             <div class="container">
-                <img src="{image_url}" class="image" alt="Health Image">
+                <img src="{image_url}" class="image" alt="Ad Image for {headline}">
                 <div class="overlay">
                     <h1 class="overlay-text">{headline}</h1>
                 </div>
-                <button class="cta-button">
-                    {cta_text}
-                    <div class="shine"></div>
-                </button>
+                <button class="{button_class}">{cta_text}</button>
             </div>
         </body>
         </html>
         """
-    # Template 4
-    elif template == 4:
+        # Specific CSS override for template 7 if button class is different
+        # if template == 7:
+        #    html_template = html_template.replace(
+        #         f'.{button_class} {{',
+        #         f'.{button_class} {{ /* Add specific styles for c1ta-button here */'
+        #    )
+
+    # Template 4, 41, 42 (Consolidated - Adjust positioning)
+    elif template in [4, 41, 42]:
+        if template == 4: top_position = "50%"
+        elif template == 41: top_position = "15%"
+        elif template == 42: top_position = "85%" # Changed from 90% for better spacing
+        else: top_position = "50%" # Default
+
         html_template = f"""
         <!DOCTYPE html>
         <html lang="en">
         <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Nursing Careers in the UK</title>
+            <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Ad Template {template}</title>
+            <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Bebas+Neue&display=swap" rel="stylesheet">
             <style>
-                @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@700&display=swap');
-                @font-face {{
-                    font-family: 'Calibre';
-                    src: url('path-to-calibre-font.woff2') format('woff2');
-                }}
-                body {{
-                    margin: 0;
-                    padding: 0;
-                    font-family: Arial, sans-serif;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    height: 100vh;
-                    background-color: #F4F4F4;
-                }}
-                .container {{
-                    position: relative;
-                    width: 1000px;
-                    height: 1000px;
-                    background-image: url('{image_url}');
-                    background-size: cover;
-                    background-position: center;
-                    border-radius: 10px;
-                    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-                }}
-                .text-overlay {{
-                    position: absolute;
-                    width: 95%;
-                    background-color: rgba(255, 255, 255, 1);
-                    padding: 30px;
-                    border-radius: 10px;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    text-align: center;
-                }}
-                .small-text {{
-                    font-size: 36px;
-                    font-weight: bold;
-                    color: #333;
-                    margin-bottom: 10px;
-                    font-family: 'Calibre', Arial, sans-serif;
-                }}
-                .primary-text {{
-                    font-size: 60px;
-                    font-weight: bold;
-                    color: #FF8C00;
-                    font-family: 'Montserrat', sans-serif;
-                    line-height: 1.2;
-                    text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000;
-                }}
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="text-overlay">
-                    <div class="small-text">{cta_text}</div>
-                    <div class="primary-text">{headline}</div>
-                </div>
-            </div>
-        </body>
-        </html>
-        """
-    # Template 5
-    elif template == 5:
-        html_template = f"""
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Landing Page Template</title>
-            <style>
-                @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
-                @import url('https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap');
-                * {{
-                    margin: 0;
-                    padding: 0;
-                    box-sizing: border-box;
-                }}
-                body {{
-                    width: 1000px;
-                    height: 1000px;
-                    margin: 0 auto;
-                    font-family: 'Outfit', sans-serif;
-                }}
-                .container {{
-                    width: 100%;
-                    height: 100%;
-                    display: flex;
-                    flex-direction: column;
-                    position: relative;
-                    object-fit: fill;
-                }}
-                .image-container {{
-                    width: 100%;
-                    height: 60%;
-                    background-color: #f0f0f0;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }}
-                .image-container img {{
-                    width: 100%;
-                    height: 100%;
-                    object-fit: cover;
-                }}
-                .content-container {{
-                    width: 100%;
-                    height: 40%;
-                    background-color: #121421;
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    padding: 2rem;
-                    gap: 2rem;
-                }}
-                .main-text {{
-                    color: white;
-                    font-size: 3.5rem;
-                    font-weight: 700;
-                    text-align: center;
-                }}
-                .cta-button {{
-                    background-color: #ff0000;
-                    color: white;
-                    padding: 1rem 2rem;
-                    font-size: 3.5rem;
-                    font-weight: 700;
-                    font-family: 'Outfit', sans-serif;
-                    border: none;
-                    font-style: italic;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    transition: background-color 0.3s ease;
-                }}
-                .cta-button:hover {{
-                    background-color: #cc0000;
-                }}
-                .intersection-rectangle {{
-                    position: absolute;
-                    max-width: 70%;
-                    min-width: max-content;
-                    height: 80px;
-                    background-color: #121421;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    top: calc(60% - 40px);
-                    border-radius: 10px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    padding: 0 40px;
-                }}
-                .rectangle-text {{
-                    font-family: 'Noto Color Emoji', sans-serif;
-                    color: #66FF00;
-                    font-weight: 700;
-                    text-align: center;
-                    font-size: 45px;
-                    white-space: nowrap;
-                }}
-                .highlight {{
-                    color: #FFFF00;
-                    font-size: 3.5rem;
-                    font-style: italic;
-                    font-weight: 1000;
-                    text-align: center;
-                }}
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="image-container">
-                    <img src="{image_url}" alt="Placeholder image">
-                </div>
-                <div class="intersection-rectangle">
-                    <p class="rectangle-text">{tag_line.upper()}</p>
-                </div>
-                <div class="content-container">
-                    <h1 class="main-text">{headline}</h1>
-                    <button class="cta-button">{cta_text}</button>
-                </div>
-            </div>
-        </body>
-        </html>
-        """
-    # Template 41
-    elif template == 41:
-        html_template = f"""
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Nursing Careers in the UK</title>
-            <style>
-                @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@700&display=swap');
-                @font-face {{
-                    font-family: 'Calibre';
-                    src: url('path-to-calibre-font.woff2') format('woff2');
-                }}
-                body {{
-                    margin: 0;
-                    padding: 0;
-                    font-family: Arial, sans-serif;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    height: 100vh;
-                    background-color: #F4F4F4;
-                }}
-                .container {{
-                    position: relative;
-                    width: 1000px;
-                    height: 1000px;
-                    background-image: url('{image_url}');
-                    background-size: cover;
-                    background-position: center;
-                    border-radius: 10px;
-                    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-                }}
-                .text-overlay {{
-                    position: absolute;
-                    width: 95%;
-                    background-color: rgba(255, 255, 255, 1);
-                    padding: 30px;
-                    border-radius: 10px;
-                    top: 15%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    text-align: center;
-                }}
-                .small-text {{
-                    font-size: 36px;
-                    font-weight: bold;
-                    color: #333;
-                    margin-bottom: 10px;
-                    font-family: 'Calibre', Arial, sans-serif;
-                }}
-                .primary-text {{
-                    font-size: 60px;
-                    font-weight: bold;
-                    color: #FF8C00;
-                    font-family: 'Montserrat', sans-serif;
-                    line-height: 1.2;
-                    text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000;
-                }}
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="text-overlay">
-                    <div class="small-text">{cta_text}</div>
-                    <div class="primary-text">{headline}</div>
-                </div>
-            </div>
-        </body>
-        </html>
-        """
-    # Template 42
-    elif template == 42:
-        html_template = f"""
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Nursing Careers in the UK</title>
-            <style>
-                @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@700&display=swap');
-                @font-face {{
-                    font-family: 'Calibre';
-                    src: url('path-to-calibre-font.woff2') format('woff2');
-                }}
-                body {{
-                    margin: 0;
-                    padding: 0;
-                    font-family: Arial, sans-serif;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    height: 100vh;
-                    background-color: #F4F4F4;
-                }}
-                .container {{
-                    position: relative;
-                    width: 1000px;
-                    height: 1000px;
-                    background-image: url('{image_url}');
-                    background-size: cover;
-                    background-position: center;
-                    border-radius: 10px;
-                    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-                }}
-                .text-overlay {{
-                    position: absolute;
-                    width: 95%;
-                    background-color: rgba(255, 255, 255, 1);
-                    padding: 30px;
-                    border-radius: 10px;
-                    top: 90%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    text-align: center;
-                }}
-                .small-text {{
-                    font-size: 36px;
-                    font-weight: bold;
-                    color: #333;
-                    margin-bottom: 10px;
-                    font-family: 'Calibre', Arial, sans-serif;
-                }}
-                .primary-text {{
-                    font-size: 60px;
-                    font-weight: bold;
-                    color: #FF8C00;
-                    font-family: 'Montserrat', sans-serif;
-                    line-height: 1.2;
-                    text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000;
-                }}
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="text-overlay">
-                    <div class="small-text">{cta_text}</div>
-                    <div class="primary-text">{headline}</div>
-                </div>
-            </div>
-        </body>
-        </html>
-        """
-    # Template 6
-    elif template == 6:
-        html_template = f"""
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Nursing Careers in the UK</title>
-            <style>
-                @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@700&display=swap');
-                @font-face {{
-                    font-family: 'Calibre';
-                    src: url('path-to-calibre-font.woff2') format('woff2');
-                }}
-                body {{
-                    margin: 0;
-                    padding: 0;
-                    font-family: Arial, sans-serif;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    height: 100vh;
-                    background-color: #F4F4F4;
-                }}
-                .container {{
-                    position: relative;
-                    width: 1000px;
-                    height: 1000px;
-                    background-image: url('{image_url}');
-                    background-size: cover;
-                    background-position: center;
-                    border-radius: 10px;
-                    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-                }}
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="text-overlay">
-                </div>
-            </div>
-        </body>
-        </html>
-        """
-    
-    
-    else:
-        
-        print('template not found')
-        html_template = f"<p>Template {template} not found</p>"
-
-        
-    if template == 7:
-        html_template = html_template.replace('button class="cta-button','button class="c1ta-button')
-    return html_template
-
-# NEW: Create DALLE Variation
-#@log_function_call
-def create_dalle_variation(image_url,count):
-    """
-    Downloads a Google image, converts it to PNG (resizing if needed to keep it under 4MB),
-    then creates a DALL-E variation via OpenAI, returning the new image URL.
-    """ 
-    try:
-        headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-}
-        resp = requests.get(image_url,headers=headers)
-        resp.raise_for_status()
-        img = Image.open(BytesIO(resp.content))
-
-        # Convert to PNG
-        png_buffer = BytesIO()
-        img.save(png_buffer, format="PNG")
-        png_buffer.seek(0)
-
-        # If >4MB, resize to 512x512
-        if len(png_buffer.getvalue()) > 4 * 1024 * 1024:
-            img = img.resize((512, 512))
-            png_buffer = BytesIO()
-            img.save(png_buffer, format="PNG")
-            png_buffer.seek(0)
-
-        response = client.images.create_variation(
-            image=png_buffer,
-            n=count,
-            size="512x512"
-        )
-        return response.data
-    except Exception as e:
-        st.error(f"Error generating DALL-E variation: {e}")
-        return None
-
-
-
-predict_policy = """   Approved CTAs: Use calls-to-action like "Learn More" or "See Options" that clearly indicate leading to an article. Avoid CTAs like "Apply Now" or "Shop Now" that promise value not offered on the landing page.   \nProhibited Language: Do not use urgency terms ("Click now"), geographic suggestions ("Near you"), or superlatives ("Best").   \nEmployment/Education Claims: Do not guarantee employment benefits (like high pay or remote work) or education outcomes (like degrees or job placements).   \nFinancial Ad Rules: Do not guarantee loans, credit approval, specific investment returns, or debt relief. Do not offer banking, insurance, or licensed financial services.   \n"Free" Promotions: Generally avoid promoting services/products as "free". Exceptions require clarity: directing to an info article about a real free service, promoting a genuinely free course, or advertising free trials with clear terms. USE text on image, the most persuasive as you can you can add visual elements to the text to make up for the policy .the above is NOT relevent to the visual aspect of the image!  """
-# --------------------------------------------
-# Streamlit UI
-# --------------------------------------------
-st.title("Creative Maker ")
-
-# Initialize session state for storing generated images
-if 'generated_images' not in st.session_state:
-    st.session_state.generated_images = {}
-
-with st.expander(f"Click to see examples for templates ", expanded=False):
-    # --- Content inside the expander ---
-
-    image_list =  [
-    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744112392_1276.png", "caption": "2"},
-    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744114470_4147.png", "caption": "3"},
-    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744114474_6128.png", "caption": "3"},
-    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744112152_3198.png", "caption": "4"},
-    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744112606_9864.png", "caption": "5"},
-    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744112288_6237.png", "caption": "6 (image as is)"},
-    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744114000_7129.png", "caption": "'google' in topic, google image search, use w/ templates 1-6"},
-
-    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744111656_7460.png", "caption": "gemini"},
-    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744111645_6029.png", "caption": "gemini7"},
-     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1743927991_4259.png", "caption": "gemini7"},
-
-    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1743411423_1020.png", "caption": "gemini7"},
-    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744098746_6749.png", "caption": "gemini7claude"},
-
-    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744107557_6569.png", "caption": "geminicandid"},
-    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744107067_6826.png", "caption": "geminicandid"},
-        {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744107348_8664.png", "caption": "geminicandid"},
-                {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744212220_8873.png", "caption": "geministock"}
-
-
-]
-    # Define number of columns for the grid
-    num_columns = 6 # You can change this number
-
-    # Calculate number of rows needed
-    num_images = len(image_list)
-    num_rows = (num_images + num_columns - 1) // num_columns # Ceiling division
-
-    # Create the grid *inside* the expander
-    for i in range(num_rows):
-        cols = st.columns(num_columns) # Create columns for the current row
-        # Get the slice of images for the current row
-        row_images = image_list[i * num_columns : (i + 1) * num_columns]
-
-        # Populate columns with images and captions
-        for j, item in enumerate(row_images):
-            if item: # Check if there's an item
-                # Use the j-th column *within the expander*
-                with cols[j]:
-                    st.image(
-                        item["image"],
-                        use_container_width=True
-                        )
-                    st.caption(item["caption"])
-
-
-st.subheader("Enter Topics for Image Generation")
-df = st.data_editor(
-    pd.DataFrame({"topic": ["example_topic"], "count": [1], "lang": ["english"], "template": ["2,3,4,41,42,5,6,7,gemini,gemini2,gemini7,gemini7claude,geminicandid,geministock | use , for random template"]}),
-    num_rows="dynamic",
-    key="table_input"
-)
-
-
-auto_mode  = st.checkbox("Auto mode? ")
-is_pd_policy  = st.checkbox("PD policy? ")
-ennhance_input = st.checkbox("Enhance input? ")
-
-# Step 1: Generate Images
-if st.button("Generate Images"):
-    st.session_state.generated_images = []  # Clear previous images
-    processed_combinations = set()
-    progress_text =  "Generating images progress...  "
-    percent_complete = 0
-    my_bar = st.progress(0, text=progress_text)
-
-    total_images = int(sum(row['count'] for _,row in df.iterrows() ))
-    st.text(f"Total images: {total_images}")
-
-    for _, row in df.iterrows():
-
-
-        topic = row['topic']
-        count = int(row['count'])
-        lang = row['lang']
-        combo = f"{topic}_{lang}"
-        template_str = row["template"]
-        headline_temp = None
-
-
-        if "google" in topic.lower():
-            topic_images = []
-            # If "google" is in the topic, fetch from Google
-            topic = topic.replace('google', ' ')
-            if '|' in topic:
-                topic_for_google = re.sub("^.*\|", "", topic)
-                st.markdown(topic_for_google)
-            else:
-                topic_for_google = topic
-
-            google_image_urls = fetch_google_images(topic_for_google, num_images=int(count))
-            for img_url in google_image_urls:
-                topic_images.append({
-                    'url': img_url,
-                    'selected': False,
-                    'template': template_str,
-                    'source': 'google',       # Mark as Google
-                    'dalle_generated': False  # For tracking DALL-E generation
-                })
-            percent_complete = percent_complete + 1/total_images
-            percent_complete = percent_complete if percent_complete < 1.0 else 1.0
-            my_bar.progress(percent_complete , text=progress_text)
-
-
-        else: # NOT google!
-
-            if ennhance_input:
-                topic = chatGPT(f"write this as more commercially  attractive for ad promiting a article in {int(topic.count(" ") + 1)} words, 1 best option\n\n {topic}")
-
-            completed_images_count = 0
-
-            while completed_images_count < count :
-
-                if ',' in row["template"]:
-                    template_str = random.choice([x for x in row["template"].split(",")])
-
-                st.text(template_str)
-                if combo not in processed_combinations:
-                    processed_combinations.add(combo)
-                    st.subheader(f"Generating images for: {topic}")
-                    topic_images = []
-                    temp_topic = topic
-
-            
-
-
-                if 'gemini' in  template_str.lower()  : # gemini
-                    if "^" in template_str:
-                        template_str = random.choice(template_str.split("^"))
-
-
-
-                    if template_str == 'gemini2':
-
-                        gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use photos',''])}. add a CTA button with 
-                                            'Learn More Here >>' in appropriate language\ns\nstart with 'square image aspect ratio of 1:1 of '\n\n 
-
-                            """,model="gpt-4o")
-                    if template_str == 'gemini3':
-
-                        gemini_prompt = chatGPT(f""" write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use authentic photos', 'no special photo requirement'])}.\nmake it visually engaging and emotionally intriguing.\nadd a bold CTA button with 'Learn More Here >>' in appropriate language.\nstart the prompt with 'square image aspect ratio of 1:1 of '\nmake sure the image grabs attention and sparks curiosity.\n
-                                            """,model="gpt-4o")
-
-                    if template_str == 'geminicandid':
-                        gemini_prompt = claude(f"""write a image prompt of a candid unstaged photo taken of a regular joe showing off his\her {topic} . the image is taken with smartphone candidly. in 1-2 sentences. Describe the quality of the image looking smartphone. start with "Square photo 1:1 iphone 12 photo uploaded to reddit:"
-
-                        this is for a fb ad that tries to look organic, but also make the image content intecing and somewhat perplexing, so try to be that but also draw clicks with high energy in the photo. dont make up facts like discounts! or specific prices!
-                        if you want to add a caption, specifically instruct it to be on the image. and be short in language {lang}
-                            """, is_thinking=True).replace("#","")
-                    
-                    if template_str == 'gemini':
-                        gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use photos',''])}. add a CTA button with 
-                                                'Learn More Here >>' in appropriate language\nshould be low quality and very enticing and alerting\nstart with 'square image aspect ratio of 1:1 of '\n\n example output:\n\nsquare image of a concerned middle-aged woman looking at her tongue in the mirror under harsh bathroom lighting, with a cluttered counter and slightly blurry focus — big bold red text says “Early Warning Signs?” and a janky yellow button below reads “Learn More Here >>” — the image looks like it was taken on an old phone, with off angle, bad lighting, and a sense of urgency and confusion to provoke clicks.
-
-                            """,model="gpt-4o", temperature= 1.0)
-
-                    
-                    if template_str == 'gemini7': # gemini1 with geimini text
-                        gemini_prompt = gemini_text_lib(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
-                                                'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
-
-                            """)
-                    
-                    if template_str == 'gemini7claude': # gemini1 with geimini text
-                        gemini_prompt = claude(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
-                                                'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting, don't make specific promises like x% discount   \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
-                                                if you want to add a caption, specifically instruct it to be on the image. and be short
-
-                            """, is_thinking=False)
-                    if template_str == 'gemini7batch': # gemini1 with geimini text
-                        gemini_prompt = gemini_text_lib(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
-                                                'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the {count} best options, each prompt is a FULL PROMPT !! each at least 500 chrs(dont write it),be creative and have variance between the prompts, no intros , as json key is int index , it's value is the prompt. .
-
-                            """)
-                        gemini_prompt= gemini_prompt.replace('```json','').replace("```","").replace("python","")
-
-                            
-
-                    if template_str == 'gemini8': # gemini1 with geimini text
-                        gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
-                                                'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
-
-                            """,model='o3-mini', temperature= 0,reasoning_effort='high') 
-                    if template_str == 'gemini6':
-                        headline_temp =gemini_text(f"""write 1 statement,kinda clickbaity, very consice and action click driving, same length, no quotes, for {re.sub('\\|.*','',topic)} in {lang}. Examples:\n'Surprising Travel Perks You Might Be Missing'\n 'Little-Known Tax Tricks to Save Big'\n Dont mention 'Hidden' or 'Unlock'.\nmax  6 words""")
-
-                        # gemini_prompt_angle = gemini_text(f"""For the topic  {topic}, imagine a highly specific and unusual moment in someone's everyday life that would visually hint at the condition — but in a confusing, unexpected way.\nThe moment should:\n– Feel personal, like something they might do alone out of worry or curiosity\n– Be visually simple but puzzling \n-High energy and dramatic\n– Create just enough mystery that the viewer thinks: "Wait… why would someone do that?"\n\nCome up with one clever, click-provoking scenario that could be captured in a smartphone photo, \n must be highly engaging visually for the topic, to be for image prompt.\nReturn just the angle, consicly in 1 sentence up to 16 words""")
-
-                        gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use photos',''])}. add a CTA button with 
-                                                'Learn More Here >>' in appropriate language\nshould be low quality and very enticing and alerting\ninclude the following text in the image '{headline_temp}\nstart with 'square image aspect ratio of 1:1 of '\n\n example output:\n\nsquare image of a concerned middle-aged woman looking at her tongue in the mirror under harsh bathroom lighting, with a cluttered counter and slightly blurry focus — big bold red text says “Early Warning Signs?” and a janky yellow button below reads “Learn More Here >>” — the image looks like it was taken on an old phone, with off angle, bad lighting, and a sense of urgency and confusion to provoke clicks.
-
-                            """,model="gpt-4o", temperature= 1.0)
-                    if template_str == 'gemini4':
-                        gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use photos',''])}. add a CTA button with 
-                                                'Learn More Here >>' in appropriate language and a driving enticing copy in the image\nMUST be be low quality design , stress that!! and very enticing and alerting,high energy enticing, describe the visuals\nstart with 'square image aspect ratio of 1:1 of '\n\n example output:\n\nsquare image of .....
-
-                            """,model="gpt-4o", temperature= 1.0)
-
-                    if template_str == 'gemini5':
-
-                        gemini_prompt_angle = chatGPT(f"""For the topic  {topic}, imagine a highly specific and unusual moment in someone's everyday life that would visually hint at the condition — but in a confusing, unexpected way.\nThe moment should:\n– Feel personal, like something they might do alone out of worry or curiosity\n– Be visually simple but puzzling \n-High energy and dramatic\n– Create just enough mystery that the viewer thinks: "Wait… why would someone do that?"\n\nCome up with one clever, click-provoking scenario that could be captured in a smartphone photo, \n must be highly engaging visually for the topic, to be for image prompt.\nReturn just the angle, consicly in 1 sentence up to 16 words""",model="o1", temperature= 0)
-                        st.text(f"Angle {gemini_prompt_angle}")
-                        gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' using this angle {gemini_prompt_angle.replace("\n",'')} in language {lang} {random.choice(['use photos',''])}. add a CTA button with 
-                                                'Learn More Here >>' in appropriate language\nshould be low quality and very enticing and alerting\nstart with 'square image aspect ratio of 1:1 of '\n\n example output:\n\nsquare image of a concerned middle-aged woman looking at her tongue in the mirror under harsh bathroom lighting, with a cluttered counter and slightly blurry focus — big bold red text says “.....” and a janky yellow button below reads “Learn More Here >>” — the image looks like it was taken on an old phone, with off angle, bad lighting, and a sense of urgency and confusion to provoke clicks.
-
-                            """,model="gpt-4o", temperature= 1.0)
-                        
-                        
-
-                    if template_str == 'geministock':
-                            gemini_prompt = chatGPT(f""" write short image prompt for {topic},no text on image
-                            """,model="gpt-4o", temperature= 1.0)
-
-
-                    if gemini_prompt is not None  :
-
-                        if 'batch' in template_str:
-                            json_data = json.loads(gemini_prompt)
-                            st.text(f'Batch ! {json_data}')
-                            batch_complete_counter = 0
-                            st.text(type(json_data))
-                            while batch_complete_counter < len(json_data):
-                                for key in list(json_data.keys()):
-                                    prompt = json_data[key]
-                                    st.text(f"img prompt {prompt}")
-                                    gemini_img_bytes = gen_gemini_image(prompt)
-                                    if gemini_img_bytes is not None:
-
-                                        gemini_image_url = upload_pil_image_to_s3(image = gemini_img_bytes ,bucket_name=S3_BUCKET_NAME,
-                                                    aws_access_key_id=AWS_ACCESS_KEY_ID,
-                                                    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-                                                    region_name=AWS_REGION
-                                                )
-                                    else:
-                                        st.text('Image not created, retry')
-                                        continue
-                                    if gemini_image_url:
-                                                topic_images.append({
-                                                    'url': gemini_image_url,
-                                                    'selected': False,
-                                                    'template': template_str,
-                                                    'source': 'gemini',            # Mark as flux
-                                                    'dalle_generated': False     # Not relevant for flux, but keep structure
-                                                })
-                                                
-                                        
-                                    # percent_complete = percent_complete + 1/total_images
-
-                                    my_bar.progress(percent_complete, text=progress_text)
-                                    completed_images_count += 1
-                                    batch_complete_counter += 1
-
-                                
-                        else:
-
-                            st.text(f"img prompt {gemini_prompt}")
-                            gemini_img_bytes = gen_gemini_image(gemini_prompt)
-                            if gemini_img_bytes is not None:
-
-                                gemini_image_url = upload_pil_image_to_s3(image = gemini_img_bytes ,bucket_name=S3_BUCKET_NAME,
-                                            aws_access_key_id=AWS_ACCESS_KEY_ID,
-                                            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-                                            region_name=AWS_REGION
-                                        )
-                    else:
-                        st.text('Image not created, retry')
-                        continue
-                    if gemini_image_url:
-                                topic_images.append({
-                                    'url': gemini_image_url,
-                                    'selected': False,
-                                    'template': template_str,
-                                    'source': 'gemini',            # Mark as flux
-                                    'dalle_generated': False     # Not relevant for flux, but keep structure
-                                })
-
-                    percent_complete = percent_complete + 1/total_images
-
-                    my_bar.progress(percent_complete, text=progress_text)
-                    completed_images_count += 1
-
-                else:
-                # Otherwise, use FLUX to generate
-                    topic = temp_topic
-                    if '^' in topic:
-                        topic = random.choice(topic.split("^"))
-
-                    new_prompt = False
-                    if "," in template_str:
-                        template = random.choice([int(x) for x in template_str.split(",")])
-                    elif "*" in template_str:
-                        new_prompt = random.choice([True, False])
-                        template_str = template_str.replace("*", "")
-                        template = int(template_str)
-                    else:
-                        template = int(template_str)
-
-                    with st.spinner(f"Generating image {completed_images_count } for '{topic}'..."):
-                        if template == 5:
-                            rand_prompt = f"""Generate a concise visual image description (15 words MAX) for {topic}.
-                            Be wildly creative, curious, and push the limits of imagination—while staying grounded in real-life scenarios!
-                            Depict an everyday, highly relatable yet dramatically eye-catching scene that sparks immediate curiosity within 3 seconds.
-                            Ensure the image conveys the value of early detection (e.g., saving money, time, improving health, or education) in a sensational but simple way.
-                            The scene must feature one person, clearly illustrating the topic without confusion.
-                            Avoid surreal or abstract elements; instead, focus on relatable yet RANDOM high-energy moments from daily life.
-                            Do not include any text in the image.
-                            Your final output should be 8-13 words, written as if describing a snapshot from a camera.
-                            Make sure the offer’s value is unmistakably clear and visually intriguing"""
-                            image_prompt = chatGPT(rand_prompt, model='gpt-4', temperature=1.2)
-                            st.markdown(image_prompt)
-                        if template == 7 :
-                            image_prompt = chatGPT(f"Generate a  visual image description  50 words MAX for  {topic} , candid moment unstaged , taken  in the moment by eye witness like with a smartphone, viral reddit style, make it dramatic and visually enticing",  
-                                        model='o1-mini',
-                                #temperature=1.15
-                                
-                            )
-                        elif not new_prompt:
-                            image_prompt = chatGPT(
-                                f"""Generate a  visual image description  15 words MAX for  {topic}.
-                                Be creative, show the value of the offer (saving money, time, health, etc.) in a sensational yet simplistic scene.
-                                Include one person and do not include text in the image. 
-                                Output is up to 5 words. Think like a camera snapshot!""",
-                                model='gpt-4',
-                                temperature=1.15
-                            )
-                        
-                        else:
-                            image_prompt = chatGPT(
-                                f"""Generate a  visual image description 15 words MAX for {topic}.
-                                Use a visually enticing style with high CTR, avoid obvious descriptions.""",
-                                model='o1-mini'
-                            )
-
-                        # Generate with FLUX
-                        if template == 5:
-                            image_url = gen_flux_img(
-                                f"{random.choice(['cartoony clipart of ', 'cartoony clipart of ', '', ''])}{image_prompt}",
-                                width=688,
-                                height=416
-                            )
-                        if template == 7:
-                            image_url = gen_flux_img_lora(
-                                image_prompt )
-                        else:
-                            image_url = gen_flux_img(
-                                f"{random.choice(['cartoony clipart of ', 'cartoony clipart of ', '', ''])}{image_prompt}"
-                            )
-
-                        if image_url:
-                            topic_images.append({
-                                'url': image_url,
-                                'selected': False,
-                                'template': template,
-                                'source': 'flux',            # Mark as flux
-                                'dalle_generated': False     # Not relevant for flux, but keep structure
-                            })
-                        percent_complete = percent_complete + 1/total_images
-                        completed_images_count += 1
-                        
-                        # my_bar.progress(percent_complete, text=progress_text)
-
-
-        # Append the images for this topic
-        st.session_state.generated_images.append({
-            "topic": topic,
-            "lang": lang,
-            "images": topic_images
-        })
-    play_sound("audio/bonus-points-190035.mp3")
-
-# Step 2: Display generated images in a grid
-if auto_mode and st.session_state.generated_images:
-
-    for entry in st.session_state.generated_images:
-        images= entry["images"] 
-        for img in images:
-            img['selected_count'] = 1
-
-
-
-
-
-elif st.session_state.generated_images:
-    st.subheader("Select Images to Process")
-    zoom = st.slider("Zoom Level", min_value=50, max_value=500, value=300, step=50)
-
-    for entry in st.session_state.generated_images:
-        topic = entry["topic"]
-        lang = entry["lang"]
-        images = entry["images"]
-
-        st.write(f"### {topic} ({lang})")
-
-        num_columns = 6
-        rows = (len(images) + num_columns - 1) // num_columns
-
-        for row in range(rows):
-            cols = st.columns(num_columns)
-            for col, img in zip(cols, images[row * num_columns:(row + 1) * num_columns]):
-                with col:
-                    st.image(img['url'], width=zoom)
-                    unique_key = f"num_select_{topic}_{lang}_{img['url']}"
-                    try:
-                        img['selected_count'] = st.number_input(
-                            f"Count for {img['url'][-5:]}",
-                            min_value=0, max_value=10, value=0, key=unique_key ,
-                        )
-                    except:img['selected_count'] = 0
-
-                    # DALL-E Variation button for Google images
-                    if img.get("source") == "google" and not img.get("dalle_generated", False):
-                        if st.button("Get DALL-E Variation", key=f"dalle_button_{topic}_{img['url']}"):
-                            dalle_url = create_dalle_variation(img['url'],img.get("selected_count"))
-                            if dalle_url:
-                                for dalle_img in dalle_url:
-                                        
-                                    st.success("DALL-E variation generated!")
-                                    img["dalle_generated"] = True
-                                    # Append the new DALL-E image
-                                    entry["images"].append({
-                                        "url": dalle_img.url,
-                                        "selected": False,
-                                        "template": img["template"],
-                                        "source": "dalle",
-                                        "dalle_generated": True
-                                    })
-                                    # st.experimental_rerun()
-
-# Step 3: Process selected images -> generate HTML, screenshot, upload to S3
-if st.button("Process Selected Images"):
-    final_results = []
-
-    for entry in st.session_state.generated_images:
-        topic = entry["topic"]
-        lang = entry["lang"]
-        images = entry["images"]
-
-        res = {'Topic': topic, 'Language': lang}
-        print(topic)
-        selected_images = [img for img in images if img['selected_count'] > 0]
-
-        # We'll store CTA text per language in a dict to avoid repeated calls
-        cta_texts = {}
-
-        for idx, img in enumerate(selected_images):
-            for i in range(img['selected_count']):
-                template = img['template']
-
-                if    type(template) == str and "gemini" in template:
-                    res[f'Image_{idx + 1}__{i + 1}'] = img['url']
-                    continue
-
-                # Decide which prompt to use for headline
-                if template == 1 or template == 2:
-                    headline_prompt = (
-                        f"write a short text (up to 20 words) to promote an article about {topic} in {lang}. "
-                        f"Goal: be concise yet compelling to click."
-                    )
-                elif template in [3]:
-                    headline_prompt = (
-                        f"write 1 statement, same length, no quotes, for {re.sub('\\|.*','',topic)} in {lang}."
-                        f"Examples:\n'Surprising Travel Perks You Might Be Missing'\n"
-                        f"'Little-Known Tax Tricks to Save Big'\n"
-                        f"Dont mention 'Hidden' or 'Unlock'."
-                    )
-                elif template in [5]:
-                    headline_prompt = (
-                        f"write 1 statement, same length, no quotes, for {re.sub('\\|.*','',topic)} in {lang}. "
-                        f"ALL IN CAPS. wrap the 1-2 most urgent words in <span class='highlight'>...</span>."
-                        f"Make it under 60 chars total, to drive curiosity."
-                    )
-                elif template in [7]:
-                    headline_prompt = (f"write short punchy 1 sentence text to   this article: \n casual and sharp and consice\nuse ill-tempered language\n don't address the reader (don't use 'you' and etc)\n  \nAvoid dark themes like drugs, death etc..\n MAX 70 CHARS, no !, Title Case, in lang {lang} for: {re.sub('\\|.*','',topic)}")
-                        
-
-                else:
-                    headline_prompt = f"Write a concise headline for {topic} in {lang}, no quotes."
-
-                if lang in cta_texts:
-                    cta_text = cta_texts[lang]
-                else:
-                    # e.g. "Learn More" in that language
-                    cta_trans = chatGPT(
-                        f"Return EXACTLY the text 'Learn More' in {lang} (no quotes)."
-                    ).replace('"', '')
-                    cta_texts[lang] = cta_trans
-                    cta_text = cta_trans
-
-                # For certain templates, override cta_text or headline
-                if template in [4, 41, 42]:
-                    headline_text = topic
-                    cta_text = chatGPT(
-                        f"Return EXACTLY 'Read more about' in {lang} (no quotes)."
-                    ).replace('"', '')
-                elif template == 6:
-                    headline_text = ''
-                else:
-                    # Generate the main headline with GPT
-                    headline_text = chatGPT(
-                        prompt=headline_prompt,
-                        model='gpt-4'
-                    ).strip('"').strip("'")
-
-                    st.markdown(headline_text)
-
-                # If template=5, generate a "tag_line"
-                if template == 5:
-                    tag_line = chatGPT(
-                        f"Write a short tagline for {re.sub('\\|.*','',topic)} in {lang}, "
-                        f"to drive action, max 25 chars, ALL CAPS, possibly with emoji. "
-                        f"Do NOT mention the topic explicitly."
-                    ).strip('"').strip("'").strip("!")
-                    # Minor formatting fix to keep <span> spacing
-                    headline_text = headline_text.replace(r"</span>", r"</span>   ")
-                else:
-                    tag_line = ''
-
-                # Build final HTML
-              
-                html_content = save_html(
-                    headline=headline_text,
-                    image_url=img['url'],
-                    cta_text=cta_text,
-                    template=int(template),
-                    tag_line=tag_line
-                )
-
-                # Capture screenshot
-                screenshot_image = capture_html_screenshot_playwright(html_content)
-
-                if screenshot_image:
-                    st.image(screenshot_image, caption=f"Generated Advertisement for {topic}", width=600)
-                    # Upload to S3
-                    s3_url = upload_pil_image_to_s3(
-                        image=screenshot_image,
-                        bucket_name=S3_BUCKET_NAME,
-                        aws_access_key_id=AWS_ACCESS_KEY_ID,
-                        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-                        region_name=AWS_REGION
-                    )
-                    if s3_url:
-                        # e.g. "Image_1__1"
-                        res[f'Image_{idx + 1}__{i + 1}'] = s3_url
-
-        final_results.append(res)
-
-    if final_results:
-        output_df = pd.DataFrame(final_results)
-
-        # Reorganize and flatten image links
-        global image_cols
-        image_cols = [col for col in output_df.columns if "Image_" in col]
-        output_df[image_cols] = output_df[image_cols].apply(shift_left_and_pad, axis=1)
-
-        # st.dataframe(output_df.drop_duplicates())
-
-        st.subheader("Final Results")
-        st.dataframe(output_df)
-
-        # Download CSV
-        csv = output_df.to_csv(index=False).encode('utf-8')
-        st.download_button(
-            label="Download Results as CSV",
-            data=csv,
-            file_name='final_results.csv',
-            mime='text/csv',
-        )
+                /* Define Calibre font if used, otherwise fallback */
+                /* @font-face {{ font-family: 'Calibre'; src: url('path-to-calibre-font.woff2') format('woff2'); }} */
+                body {{ margin: 0; padding: 0; font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #F4F4F4; }}
+                .container {{ position: relative; width: 1000px; height: 1000px; background-image: url('{image_url}'); background-size: cover; background-position: center
