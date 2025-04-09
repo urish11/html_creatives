@@ -1459,6 +1459,14 @@ if st.button("Generate Images"):
                                                 'Learn More Here >>' in appropriate language\nshould be low quality and very enticing and alerting\nstart with 'square image aspect ratio of 1:1 of '\n\n example output:\n\nsquare image of a concerned middle-aged woman looking at her tongue in the mirror under harsh bathroom lighting, with a cluttered counter and slightly blurry focus — big bold red text says “.....” and a janky yellow button below reads “Learn More Here >>” — the image looks like it was taken on an old phone, with off angle, bad lighting, and a sense of urgency and confusion to provoke clicks.
 
                             """,model="gpt-4o", temperature= 1.0)
+                        
+                        
+
+                    if template_str == 'geministock':
+                            gemini_prompt = chatGPT(f""" write short image prompt for {topic}
+                            """,model="gpt-4o", temperature= 1.0)
+
+
                     if gemini_prompt is not None  :
 
                         if 'batch' in template_str:
@@ -1613,7 +1621,7 @@ if st.button("Generate Images"):
             "lang": lang,
             "images": topic_images
         })
-        play_sound("audio/bonus-points-190035.mp3")
+    play_sound("audio/bonus-points-190035.mp3")
 
 # Step 2: Display generated images in a grid
 if auto_mode and st.session_state.generated_images:
