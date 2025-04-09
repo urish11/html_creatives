@@ -44,7 +44,7 @@ GPT_API_KEY = st.secrets["GPT_API_KEY"] # This seems to be OpenAI key based on u
 FLUX_API_KEY = st.secrets["FLUX_API_KEY"]
 GEMINI_API_KEY = st.secrets.get("GEMINI_API_KEY") # Ensure it's a list or handle single key
 ANTHROPIC_API_KEY = st.secrets["ANTHROPIC_API_KEY"]
-OPENAI_API_KEY = st.secrets.get("OPENAI_API_KEY") # Explicit OpenAI key
+OPENAI_API_KEY = st.secrets.get("GPT_API_KEY") # Explicit OpenAI key
 
 # --- Initialize Async Clients (outside functions for reuse) ---
 # Use context managers (async with) inside functions where possible for specific requests
