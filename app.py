@@ -1401,7 +1401,7 @@ if st.button("Generate Images"):
 
                         this is for a fb ad that tries to look organic, but also make the image content intecing and somewhat perplexing, so try to be that but also draw clicks with high energy in the photo. dont make up facts like discounts! or specific prices!
                         if you want to add a caption, specifically instruct it to be on the image. and be short
-                            """, is_thinking=False).replace("#","")
+                            """, is_thinking=True).replace("#","")
                     
                     if template_str == 'gemini':
                         gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use photos',''])}. add a CTA button with 
