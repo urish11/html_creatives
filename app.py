@@ -1375,14 +1375,14 @@ if st.button("Generate Images Async", key="generate_button"):
     for index, row in df_input.iterrows():
         # ... (logic to determine topic, count, lang, template, is_google_search) ...
 
-        # Pre-fetch Google Images (Sync - Keep this before creating async tasks)
-        if is_google_search and topic_for_google not in google_search_cache:
-             st.text(f"Fetching Google images for: {topic_for_google}")
-             google_urls = fetch_google_images(topic_for_google, num_images=count * 2)
-             google_search_cache[topic_for_google] = google_urls
-             st.text(f"Found {len(google_urls)} Google images.")
+        # # Pre-fetch Google Images (Sync - Keep this before creating async tasks)
+        # if is_google_search and topic_for_google not in google_search_cache:
+        #      st.text(f"Fetching Google images for: {topic_for_google}")
+        #      google_urls = fetch_google_images(topic_for_google, num_images=count * 2)
+        #      google_search_cache[topic_for_google] = google_urls
+        #      st.text(f"Found {len(google_urls)} Google images.")
 
-        total_images_to_generate += count
+        # total_images_to_generate += count
 
         # Create 'count' number of tasks for this row
         for i in range(count):
