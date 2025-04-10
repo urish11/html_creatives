@@ -1831,7 +1831,11 @@ if st.button("Process Selected Images"):
                 )
 
                 # Capture screenshot
-                screenshot_image = capture_html_screenshot_playwright(html_content,width=720,height = 480)
+                if template == 8:
+                    screenshot_image = capture_html_screenshot_playwright(html_content,width=720,height = 480)
+                else:
+                    screenshot_image = capture_html_screenshot_playwright(html_content)
+
 
                 if screenshot_image:
                     st.image(screenshot_image, caption=f"Generated Advertisement for {topic}", width=600)
