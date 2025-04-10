@@ -1189,7 +1189,51 @@ def save_html(headline, image_url, cta_text, template, tag_line='', output_file=
         </body>
         </html>
         """
-    
+    elif template == 7:
+        html_template = f"""
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Nursing Careers in the UK</title>
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@700&display=swap');
+                @font-face {{
+                    font-family: 'Calibre';
+                    src: url('path-to-calibre-font.woff2') format('woff2');
+                }}
+                body {{
+                    margin: 0;
+                    padding: 0;
+                    font-family: Arial, sans-serif;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    height: 100vh;
+                    background-color: #F4F4F4;
+                }}
+                .container {{
+                    position: relative;
+                    width: 999px;
+                    height: 666px;
+                    background-image: url('{image_url}');
+                    background-size: cover;
+                    background-position: center;
+                    border-radius: 10px;
+                    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="text-overlay">
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+
     
     else:
         
@@ -1749,7 +1793,7 @@ if st.button("Process Selected Images"):
                     cta_text = chatGPT(
                         f"Return EXACTLY 'Read more about' in {lang} (no quotes)."
                     ).replace('"', '')
-                elif template == 6:
+                elif template in [6,7]:
                     headline_text = ''
                 else:
                     # Generate the main headline with GPT
