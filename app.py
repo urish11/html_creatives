@@ -512,7 +512,7 @@ def gen_flux_img_lora(prompt,height=784, width=960 ,lora_path="https://huggingfa
 
 
 #@log_function_call
-def capture_html_screenshot_playwright(html_content):
+def capture_html_screenshot_playwright(html_content,width = 1000, height = 1000):
     """
     Use Playwright to capture a screenshot of the given HTML snippet.
     """
@@ -526,7 +526,7 @@ def capture_html_screenshot_playwright(html_content):
                 headless=True,
                 args=['--no-sandbox', '--disable-dev-shm-usage']
             )
-            page = browser.new_page(viewport={'width': 1000, 'height': 1000})
+            page = browser.new_page(viewport={'width': width, 'height': height})
 
             with NamedTemporaryFile(delete=False, suffix='.html', mode='w') as f:
                 f.write(html_content)
@@ -1831,7 +1831,7 @@ if st.button("Process Selected Images"):
                 )
 
                 # Capture screenshot
-                screenshot_image = capture_html_screenshot_playwright(html_content)
+                screenshot_image = capture_html_screenshot_playwright(html_content,width=720,height = 480)
 
                 if screenshot_image:
                     st.image(screenshot_image, caption=f"Generated Advertisement for {topic}", width=600)
