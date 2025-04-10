@@ -1189,7 +1189,7 @@ def save_html(headline, image_url, cta_text, template, tag_line='', output_file=
         </body>
         </html>
         """
-    elif template == 7:
+    elif template == 8:
         html_template = f"""
         <!DOCTYPE html>
         <html lang="en">
@@ -1639,7 +1639,7 @@ if st.button("Generate Images"):
                                 width=688,
                                 height=416
                             )
-                        if template == 7:
+                        if template == 8:
                             image_url = gen_flux_img_lora(
                                 image_prompt )
                         else:
@@ -1793,7 +1793,7 @@ if st.button("Process Selected Images"):
                     cta_text = chatGPT(
                         f"Return EXACTLY 'Read more about' in {lang} (no quotes)."
                     ).replace('"', '')
-                elif template in [6,7]:
+                elif template in [6,8]:
                     headline_text = ''
                 else:
                     # Generate the main headline with GPT
