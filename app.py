@@ -1625,7 +1625,7 @@ if st.button("Generate Images"):
                                 temperature=1.15
                             )
                         elif template == 8:
-                            image_prompt = chatGPT( Generate a  visual image description for stock image of {topic})
+                            image_prompt = chatGPT( f"Generate a  visual image description for stock image of {topic}")
                             
                         else:
                             image_prompt = chatGPT(
