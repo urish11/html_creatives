@@ -1631,8 +1631,8 @@ if st.button("Generate Images"):
                         else:
                             image_prompt = chatGPT(
                                 f"""Generate a  visual image description 15 words MAX for {topic}.
-                                Use a visually enticing style with high CTR, avoid obvious descriptions.""",
-                                model='o1-mini'
+                                Use a visually enticing style with high CTR, avoid obvious descriptions."""
+                                
                             )
 
                         # Generate with FLUX
@@ -1650,6 +1650,12 @@ if st.button("Generate Images"):
                             st.text("mayyyyy" +image_prompt)
                             image_url = gen_flux_img(
                                 image_prompt, width=720, height=480 )
+                        if template == 9:
+                            st.text("mayyyyy" +image_prompt)
+                            image_url = gen_flux_img(
+                                image_prompt, width=720, height=480 )
+                                
+                            
                         else:
                             image_url = gen_flux_img(
                                 f"{random.choice(['cartoony clipart of ', 'cartoony clipart of ', '', ''])}{image_prompt}"
