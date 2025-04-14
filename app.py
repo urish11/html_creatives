@@ -1646,6 +1646,7 @@ if st.button("Generate Images"):
                                 image_prompt )
                             
                         if template == 8:
+                            st.text("mayyyyy" +image_prompt)
                             image_url = gen_flux_img(
                                 image_prompt, width=720, height=480 )
                         else:
