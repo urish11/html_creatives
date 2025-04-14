@@ -1609,33 +1609,33 @@ if st.button("Generate Images"):
                             Make sure the offer’s value is unmistakably clear and visually intriguing"""
                             image_prompt = chatGPT(rand_prompt, model='gpt-4', temperature=1.2)
                             st.markdown(image_prompt)
-                        if template == 7 :
+                        elif template == 7 :
                             image_prompt = chatGPT(f"Generate a  visual image description  50 words MAX for  {topic} , candid moment unstaged , taken  in the moment by eye witness like with a smartphone, viral reddit style, make it dramatic and visually enticing",  
                                         model='o1-mini',
                                 #temperature=1.15
                                 
                             )
-                        elif not new_prompt:
-                            image_prompt = chatGPT(
-                                f"""Generate a  visual image description  15 words MAX for  {topic}.
-                                Be creative, show the value of the offer (saving money, time, health, etc.) in a sensational yet simplistic scene.
-                                Include one person and do not include text in the image. 
-                                Output is up to 5 words. Think like a camera snapshot!""",
-                                model='gpt-4',
-                                temperature=1.15
-                            )
+                        # elif not new_prompt:
+                        #     image_prompt = chatGPT(
+                        #         f"""Generate a  visual image description  15 words MAX for  {topic}.
+                        #         Be creative, show the value of the offer (saving money, time, health, etc.) in a sensational yet simplistic scene.
+                        #         Include one person and do not include text in the image. 
+                        #         Output is up to 5 words. Think like a camera snapshot!""",
+                        #         model='gpt-4',
+                        #         temperature=1.15
+                        #     )
                         elif template == 8:
                             st.text("yyy")
                             image_prompt = chatGPT( f"A clean, high-resolution stock photo of {topic}, no people, well-lit with natural or studio lighting, minimalist background, professionally styled — perfect for commercial or editorial use.")
                             st.text("xxxxx" + image_prompt)
 
                             
-                        # else:
-                        #     image_prompt = chatGPT(
-                        #         f"""Generate a  visual image description 15 words MAX for {topic}.
-                        #         Use a visually enticing style with high CTR, avoid obvious descriptions.""",
-                        #         model='o1-mini'
-                        #     )
+                        else:
+                            image_prompt = chatGPT(
+                                f"""Generate a  visual image description 15 words MAX for {topic}.
+                                Use a visually enticing style with high CTR, avoid obvious descriptions.""",
+                                model='o1-mini'
+                            )
 
                         # Generate with FLUX
                         if template == 5:
