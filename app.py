@@ -1626,7 +1626,7 @@ if st.button("Generate Images"):
                         #     )
                         elif template == 8:
                             st.text("yyy")
-                            image_prompt = chatGPT( f"A clean, high-resolution stock photo of {topic}, no people, well-lit with natural or studio lighting, minimalist background, professionally styled — perfect for commercial or editorial use.")
+                            image_prompt = chatGPT( f"A clean, high-resolution stock photo prompt of {topic}, no people, well-lit with natural or studio lighting, minimalist background, professionally styled — perfect for commercial or editorial use.")
                             st.text("xxxxx" + image_prompt)
 
                             
