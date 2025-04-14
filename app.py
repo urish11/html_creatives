@@ -1630,12 +1630,12 @@ if st.button("Generate Images"):
                             st.text("xxxxx" + image_prompt)
 
                             
-                        else:
-                            image_prompt = chatGPT(
-                                f"""Generate a  visual image description 15 words MAX for {topic}.
-                                Use a visually enticing style with high CTR, avoid obvious descriptions.""",
-                                model='o1-mini'
-                            )
+                        # else:
+                        #     image_prompt = chatGPT(
+                        #         f"""Generate a  visual image description 15 words MAX for {topic}.
+                        #         Use a visually enticing style with high CTR, avoid obvious descriptions.""",
+                        #         model='o1-mini'
+                        #     )
 
                         # Generate with FLUX
                         if template == 5:
