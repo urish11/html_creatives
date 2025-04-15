@@ -1515,13 +1515,7 @@ if st.button("Generate Images"):
                         
 
                     if template_str == 'geministock':
-                            gemini_prompt = chatGPT(f""" write short image prompt for {topic},no text on image,A high-quality  image in a realistic setting, well-lit and visually appealing, suitable for use in marketing or editorial content.
-
-
-
-
-
-                            """,model="gpt-4o", temperature= 1.0)
+                            gemini_prompt = chatGPT(f""" write short image prompt for {topic},no text on image,A high-quality  image in a realistic setting, well-lit and visually appealing, suitable for use in marketing or editorial content.""",model="gpt-4o", temperature= 1.0)
 
 
                     if gemini_prompt is not None  :
