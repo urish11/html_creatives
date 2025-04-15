@@ -1312,11 +1312,12 @@ with st.expander(f"Click to see examples for templates ", expanded=False):
 
     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1743411423_1020.png", "caption": "gemini7"},
     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744098746_6749.png", "caption": "gemini7claude"},
-
     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744107557_6569.png", "caption": "geminicandid"},
     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744107067_6826.png", "caption": "geminicandid"},
-        {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744107348_8664.png", "caption": "geminicandid"},
-                {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744212220_8873.png", "caption": "geministock"}
+    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744107348_8664.png", "caption": "geminicandid"},
+    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744212220_8873.png", "caption": "geministock"},
+     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744716627_8304.png", "caption": "gemini7claude_simple"}
+
 
 
 ]
