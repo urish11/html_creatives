@@ -1725,7 +1725,7 @@ if st.session_state.generated_images:
                         if auto_mode:
                             img['selected_count'] = st.number_input(
                                 f"Count for {img['url'][-5:]}",
-                                min_value=0, max_value=10, key=unique_key ,
+                                min_value=0, max_value=10,value = 1, key=unique_key ,
                             )                        
                         else:
                     
