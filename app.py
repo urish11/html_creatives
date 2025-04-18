@@ -1722,10 +1722,17 @@ if st.session_state.generated_images:
                     st.image(img['url'], width=zoom)
                     unique_key = f"num_select_{topic}_{lang}_{img['url']}"
                     try:
-                        img['selected_count'] = st.number_input(
-                            f"Count for {img['url'][-5:]}",
-                            min_value=0, max_value=10, value=0, key=unique_key ,
-                        )
+                        if auto_mode:
+                            img['selected_count'] = st.number_input(
+                                f"Count for {img['url'][-5:]}",
+                                min_value=0, max_value=10, key=unique_key ,
+                            )                        
+                        else:
+                    
+                            img['selected_count'] = st.number_input(
+                                f"Count for {img['url'][-5:]}",
+                                min_value=0, max_value=10, value=0, key=unique_key ,
+                            )
                     except:img['selected_count'] = 0
 
                     # DALL-E Variation button for Google images
