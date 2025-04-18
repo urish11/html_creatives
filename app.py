@@ -1701,7 +1701,7 @@ if auto_mode and st.session_state.generated_images:
 
 
 
-if st.session_state.generated_images:
+if st.session_state.generated_images: 
     st.subheader("Select Images to Process")
     zoom = st.slider("Zoom Level", min_value=50, max_value=500, value=300, step=50)
 
