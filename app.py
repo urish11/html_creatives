@@ -1459,13 +1459,13 @@ if st.button("Generate Images"):
                     
                     if template_str == 'gemini7': # gemini1 with geimini text
                         gemini_prompt = gemini_text_lib(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
-                                                'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
+                                                'Learn More Here >>' in appropriate language\\nand 'act fast' or 'limited available' \n \nshould be low quality and very enticing and alerting \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
 
                             """)
                     
                     if template_str == 'gemini7claude': # gemini1 with geimini text
                         gemini_prompt = claude(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
-                                                'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting, don't make specific promises like x% discount   \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
+                                                'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting, don't make specific promises like x% discount and 'act fast' or 'limited available'  \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
                                                 if you want to add a caption, specifically instruct it to be on the image. and be short
 
                             """, is_thinking=False)
@@ -1476,7 +1476,7 @@ if st.button("Generate Images"):
                             """)
                     if template_str == 'gemini7claude_simple': # gemini1 with geimini text
                         gemini_prompt = claude(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
-                                                'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting BUT simple  layout , make the text legable and in negative space, don't make specific promises like x% discount   \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
+                                                'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting BUT simple  layout , make the text legable and in negative space, don't make specific promises like x% discount and 'act fast' or 'limited available'    \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
                                                 if you want to add a caption, specifically instruct it to be on the image. and be short
 
                             """, is_thinking=False)
