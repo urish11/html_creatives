@@ -897,12 +897,12 @@ def run_generation(df_to_process):
 
 # --- Rest of the UI (Keep Chunking Logic, Revert Internal Calls in Processing) ---
 
-# Initialize Playwright (Keep Improved Version)
-if 'playwright_installed' not in st.session_state:
-    with st.spinner("Initializing browser automation (one-time setup)..."):
-       st.session_state.playwright_installed = install_playwright_browsers()
-elif not st.session_state.playwright_installed:
-     st.error("Browser automation setup failed previously. Screenshots may not work.")
+# # Initialize Playwright (Keep Improved Version)
+# if 'playwright_installed' not in st.session_state:
+#     with st.spinner("Initializing browser automation (one-time setup)..."):
+#        st.session_state.playwright_installed = install_playwright_browsers()
+# elif not st.session_state.playwright_installed:
+#      st.error("Browser automation setup failed previously. Screenshots may not work.")
 
 st.title("Creative Maker ")
 
