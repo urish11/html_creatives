@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from PIL import Image
 from io import BytesIO
-import boto3
+import boto3 
 from botocore.exceptions import NoCredentialsError
 import random
 import string
