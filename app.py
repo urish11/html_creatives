@@ -23,6 +23,7 @@ import logging
 from openai import OpenAI
 from urllib.parse import urlencode
 import zlib # For potentially compressing data in URL
+import streamlit.components.v1 as components
 
 # --- Basic Logging Setup (Optional but Recommended) ---
 # Configure logging (adjust level as needed)
@@ -1320,55 +1321,113 @@ if total_images > MAX_IMAGES_PER_RUN and not st.session_state.is_chunk_run:
                  st.warning(f"Warning: Generated URLs are very long (up to {max_url_len} chars). This might exceed browser limits.")
 
             # Inject JavaScript to open tabs if URLs were created
-            if urls_to_open:
-                urls_json = json.dumps(urls_to_open) # Python list -> JSON string
 
-                # --- Define the JavaScript string WITH the placeholder ---
-                javascript = """
-                    <script>
-                        const urls = {urls_json_placeholder}; // <<< ENSURE THIS LINE IS PRESENT AND CORRECT
-                        let openedCount = 0;
-                        if (urls && urls.length > 0) {{
-                            alert(`Attempting to open ${urls.length} new tabs for processing. Please allow pop-ups if prompted.`);
-                            urls.forEach((url, index) => {{
-                                console.log(`Opening chunk ${index + 1}`);
-                                const tabWindow = window.open(url, `_blank_chunk_${index}`);
-                                if (tabWindow) {{
-                                    openedCount++;
-                                }} else {{
-                                    console.error(`Failed to open tab for chunk ${index + 1}. Pop-up blocked?`);
-                                }}
-                            }});
-                            if (openedCount < urls.length) {{
-                                alert(`Could only open ${openedCount}/${urls.length} tabs. Please check your pop-up blocker settings.`);
-                            }}
-                        }} else {{
-                             alert("No chunks were prepared to be opened.");
-                        }}
-                    </script>
-                """
-                # --- End of the multi-line string definition ---
 
-                # --- This format call requires the placeholder above ---
-                try:
-                    # Call format using the exact placeholder name
-                    # formatted_javascript = javascript.format(urls_json_placeholder=urls_json)
-                    formatted_javascript  = javascript.replace("{urls_json_placeholder}", urls_json).replace("{{","{").replace("}}","}")
-                    st.text(formatted_javascript)
-                    st.markdown(formatted_javascript, unsafe_allow_html=True)
-                    st.success(f"Attempted to open {len(urls_to_open)} new tabs. Please check your browser.")
-                except KeyError:
-                     # This error block is being hit currently
-                     st.error("Error formatting JavaScript for split tabs: Placeholder missing in the script template. Please check the code.")
-                     logger.error("KeyError: urls_json_placeholder missing in javascript string template.")
-                except Exception as format_err:
-                     st.error(f"An unexpected error occurred while preparing split tab script: {format_err}")
-                     logger.error(f"Error during JS formatting: {format_err}", exc_info=True)
 
-            else:
-                 st.error("No valid URLs could be generated for splitting.")
-        # Stop execution in the current tab after attempting to split
-        st.stop()
+
+            urls_json = json.dumps(urls_to_open) # Python list -> JSON string
+
+
+            comp_str = """
+             <!DOCTYPE html>
+                                <html>
+                                  <body>
+                                    <button onclick="openTabs()">Open Tabs</button>
+                                    <script>
+                                        function openTabs() {
+                                            const urls = [...]; // your URLs
+                                            let openedCount = 0;
+                                            urls.forEach((url, index) => {
+                                                const win = window.open(url, `_blank_chunk_${index}`);
+                                                if (win) openedCount++;
+                                            });
+                                            if (openedCount < urls.length) {
+                                                alert(`Only opened ${openedCount}/${urls.length}. Check pop-up blocker.`);
+                                            }
+                                        }
+                                    </script>
+                                  </body>
+                                </html>
+
+
+
+            """
+            comp_str = comp_str.replace("[...]", urls_json)
+
+            components.html(comp_str, height=300)
+                                
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            
+        #     if urls_to_open:
+        #         urls_json = json.dumps(urls_to_open) # Python list -> JSON string
+
+        #         # --- Define the JavaScript string WITH the placeholder ---
+        #         javascript = """
+        #             <script>
+        #                 const urls = {urls_json_placeholder}; // <<< ENSURE THIS LINE IS PRESENT AND CORRECT
+        #                 let openedCount = 0;
+        #                 if (urls && urls.length > 0) {{
+        #                     alert(`Attempting to open ${urls.length} new tabs for processing. Please allow pop-ups if prompted.`);
+        #                     urls.forEach((url, index) => {{
+        #                         console.log(`Opening chunk ${index + 1}`);
+        #                         const tabWindow = window.open(url, `_blank_chunk_${index}`);
+        #                         if (tabWindow) {{
+        #                             openedCount++;
+        #                         }} else {{
+        #                             console.error(`Failed to open tab for chunk ${index + 1}. Pop-up blocked?`);
+        #                         }}
+        #                     }});
+        #                     if (openedCount < urls.length) {{
+        #                         alert(`Could only open ${openedCount}/${urls.length} tabs. Please check your pop-up blocker settings.`);
+        #                     }}
+        #                 }} else {{
+        #                      alert("No chunks were prepared to be opened.");
+        #                 }}
+        #             </script>
+        #         """
+        #         # --- End of the multi-line string definition ---
+
+        #         # --- This format call requires the placeholder above ---
+        #         try:
+        #             # Call format using the exact placeholder name
+        #             # formatted_javascript = javascript.format(urls_json_placeholder=urls_json)
+        #             formatted_javascript  = javascript.replace("{urls_json_placeholder}", urls_json).replace("{{","{").replace("}}","}")
+        #             st.text(formatted_javascript)
+        #             st.markdown(formatted_javascript, unsafe_allow_html=True)
+        #             st.success(f"Attempted to open {len(urls_to_open)} new tabs. Please check your browser.")
+        #         except KeyError:
+        #              # This error block is being hit currently
+        #              st.error("Error formatting JavaScript for split tabs: Placeholder missing in the script template. Please check the code.")
+        #              logger.error("KeyError: urls_json_placeholder missing in javascript string template.")
+        #         except Exception as format_err:
+        #              st.error(f"An unexpected error occurred while preparing split tab script: {format_err}")
+        #              logger.error(f"Error during JS formatting: {format_err}", exc_info=True)
+
+        #     else:
+        #          st.error("No valid URLs could be generated for splitting.")
+        # # Stop execution in the current tab after attempting to split
+        # st.stop()
 
 # --- Manual Generate Button ---
 # Show if not splitting OR if it's a chunk run (allow manual trigger for chunks too)
