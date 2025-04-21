@@ -805,10 +805,10 @@ def save_html(headline, image_url, cta_text, template, tag_line=''):
                      <img src="{image_url}" alt="Ad image">
                 </div>
                 <div class="intersection-rectangle">
-                     <p class="rectangle-text">{tag_line.upper()}</p> {/* Use tag_line */}
+                     <p class="rectangle-text">{tag_line.upper()}</p> 
                 </div>
                 <div class="content-container">
-                     <h1 class="main-text">{headline}</h1> {/* Headline might contain spans */}
+                     <h1 class="main-text">{headline}</h1>
                      <button class="cta-button">{cta_text}</button>
                 </div>
              </div>
@@ -835,7 +835,7 @@ def save_html(headline, image_url, cta_text, template, tag_line=''):
         </head>
         <body>
              <div class="container">
-                {f'<div class="text-overlay">{headline} {cta_text}</div>' if headline or cta_text else ''} {/* Added optional overlay if needed */}
+                {f'<div class="text-overlay">{headline} {cta_text}</div>' if headline or cta_text else ''} 
              </div>
         </body>
         </html>
