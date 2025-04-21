@@ -1209,7 +1209,7 @@ with st.expander(f"Click to see examples for templates ", expanded=False):
      num_columns = 6
      num_images = len(image_list)
      num_rows = (num_images + num_columns - 1) // num_columns
-    for i in range(num_rows):
+     for i in range(num_rows):
         cols = st.columns(num_columns) # Create columns for the current row
         # Get the slice of images for the current row
         row_images = image_list[i * num_columns : (i + 1) * num_columns]
