@@ -81,7 +81,7 @@ try:
     GOOGLE_CX = st.secrets["GOOGLE_CX"]
 
     # --- Initialize API Clients ---
-    openai_client = OpenAI(api_key=OPENAI_API_KEY) # Client for DALL-E variations
+    openai_client = OpenAI(api_key=GPT_API_KEY ) # Client for DALL-E variations
     gpt_client = OpenAI(api_key=GPT_API_KEY) # Client for GPT text (if using openai lib) - Note: Your chatGPT uses requests
     anthropic_client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
     # genai client initialized within function using random key
