@@ -424,7 +424,7 @@ def gen_gemini_image(prompt, trys = 0): # Keep original signature with unused 't
     # Removed outer while loop
     api = random.choice(GEMINI_API_KEY)
     # Original endpoint:
-    url = f"[https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=](https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=){api}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=){api}"
 
     headers = {"Content-Type": "application/json"}
     # Original data structure:
