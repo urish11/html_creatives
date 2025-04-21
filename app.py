@@ -704,7 +704,12 @@ def save_html(headline, image_url, cta_text, template, tag_line=''):
          """
     # --- Add elif blocks for templates 3, 4, 41, 42, 5, 6, 7, 8 ---
     # --- Make sure to include the exact HTML/CSS from your original code ---
+  # Template 3 / 7 (Corrected code)
     elif template == 3 or template == 7: # Assuming 3 and 7 use the same base
+        # --- FIX: Calculate the button class beforehand ---
+        button_class = 'c1ta-button' if template == 7 else 'cta-button'
+        # --- End FIX ---
+
         html_template = f"""
         <!DOCTYPE html>
         <html>
@@ -719,9 +724,11 @@ def save_html(headline, image_url, cta_text, template, tag_line=''):
                 .overlay-text {{ color: #FFFFFF; font-size: 4em; text-align: center; text-shadow: 2.5px 2.5px 2px #000000; letter-spacing: 2px; font-family: 'Boogaloo', 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif; margin: 0; word-wrap: break-word; }}
                 .cta-button {{ position: absolute; bottom: 10%; left: 50%; transform: translateX(-50%); padding: 20px 40px; background: blue; color: white; border: none; border-radius: 50px; font-size: 3.5em; cursor: pointer; transition: all 0.3s ease; font-family: 'Boogaloo', 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 5px 15px rgba(0,0,255,0.4); }} /* Adjusted shadow */
                 .cta-button:hover {{ background: #4ECDC4; transform: translateX(-50%) translateY(-5px); box-shadow: 0 8px 20px rgba(78,205,196,0.6); }}
-                /* Add shine keyframes if needed */
+                .c1ta-button {{ position: absolute; bottom: 10%; left: 50%; transform: translateX(-50%); padding: 20px 40px; background: green; color: white; border: none; border-radius: 50px; font-size: 3.5em; cursor: pointer; transition: all 0.3s ease; font-family: 'Boogaloo', 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 5px 15px rgba(0,255,0,0.4); }} /* Example style for c1ta */
+                .c1ta-button:hover {{ background: #FFA500; }} /* Example hover for c1ta */
+                /* Make sure both .cta-button and .c1ta-button styles are defined correctly */
             </style>
-            <link href="[https://fonts.googleapis.com/css2?family=Boogaloo&display=swap](https://fonts.googleapis.com/css2?family=Boogaloo&display=swap)" rel="stylesheet">
+            <link href="https://fonts.googleapis.com/css2?family=Boogaloo&display=swap" rel="stylesheet">
         </head>
         <body>
             <div class="container">
@@ -729,7 +736,9 @@ def save_html(headline, image_url, cta_text, template, tag_line=''):
                 <div class="overlay">
                     <h1 class="overlay-text">{headline}</h1>
                 </div>
-                <button class="{'c1ta-button' if template == 7 else 'cta-button'}">{cta_text}</button> {/* Conditional class */}
+                {/* --- FIX: Insert the calculated variable --- */}
+                <button class="{button_class}">{cta_text}</button>
+                {/* --- End FIX --- */}
             </div>
         </body>
         </html>
