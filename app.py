@@ -1327,7 +1327,7 @@ if total_images > MAX_IMAGES_PER_RUN and not st.session_state.is_chunk_run:
                         const urls = {urls_json};
                         let openedCount = 0;
                         if (urls && urls.length > 0) {{
-                            alert(`Attempting to open ${urls.length} new tabs for processing. Please allow pop-ups if prompted.`);
+                            alert(`Attempting to open  new tabs for processing. Please allow pop-ups if prompted.`);
                             urls.forEach((url, index) => {{
                                 console.log(`Opening chunk ${index + 1}`);
                                 // Use a unique name for each tab to potentially allow reopening/focus
