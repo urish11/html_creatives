@@ -1323,10 +1323,10 @@ if total_images > MAX_IMAGES_PER_RUN and not st.session_state.is_chunk_run:
             if urls_to_open:
                 urls_json = json.dumps(urls_to_open) # Python list -> JSON string
 
-                # --- Check this multi-line string definition carefully ---
+                # --- Define the JavaScript string WITH the placeholder ---
                 javascript = """
                     <script>
-                        const urls = {urls_json_placeholder}; // <<< MAKE SURE THIS PLACEHOLDER IS EXACTLY HERE
+                        const urls = {urls_json_placeholder}; // <<< ENSURE THIS LINE IS PRESENT AND CORRECT
                         let openedCount = 0;
                         if (urls && urls.length > 0) {{
                             alert(`Attempting to open ${urls.length} new tabs for processing. Please allow pop-ups if prompted.`);
@@ -1346,14 +1346,17 @@ if total_images > MAX_IMAGES_PER_RUN and not st.session_state.is_chunk_run:
                              alert("No chunks were prepared to be opened.");
                         }}
                     </script>
-                """ # --- End of the multi-line string ---
+                """
+                # --- End of the multi-line string definition ---
 
-                # --- This format call needs the placeholder above to exist ---
+                # --- This format call requires the placeholder above ---
                 try:
+                    # Call format using the exact placeholder name
                     formatted_javascript = javascript.format(urls_json_placeholder=urls_json)
                     st.markdown(formatted_javascript, unsafe_allow_html=True)
                     st.success(f"Attempted to open {len(urls_to_open)} new tabs. Please check your browser.")
                 except KeyError:
+                     # This error block is being hit currently
                      st.error("Error formatting JavaScript for split tabs: Placeholder missing in the script template. Please check the code.")
                      logger.error("KeyError: urls_json_placeholder missing in javascript string template.")
                 except Exception as format_err:
@@ -1364,7 +1367,6 @@ if total_images > MAX_IMAGES_PER_RUN and not st.session_state.is_chunk_run:
                  st.error("No valid URLs could be generated for splitting.")
         # Stop execution in the current tab after attempting to split
         st.stop()
-
 
 # --- Manual Generate Button ---
 # Show if not splitting OR if it's a chunk run (allow manual trigger for chunks too)
