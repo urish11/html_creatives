@@ -1352,7 +1352,8 @@ if total_images > MAX_IMAGES_PER_RUN and not st.session_state.is_chunk_run:
                 # --- This format call requires the placeholder above ---
                 try:
                     # Call format using the exact placeholder name
-                    formatted_javascript = javascript.format(urls_json_placeholder=urls_json)
+                    # formatted_javascript = javascript.format(urls_json_placeholder=urls_json)
+                    formatted_javascript  = javascript.replace("{urls_json_placeholder}", urls_json)
                     st.markdown(formatted_javascript, unsafe_allow_html=True)
                     st.success(f"Attempted to open {len(urls_to_open)} new tabs. Please check your browser.")
                 except KeyError:
