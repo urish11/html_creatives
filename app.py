@@ -279,7 +279,7 @@ def gemini_text(
 
 
 # --- Gemini Text Library (Reverted - Original Model, No Retry, No PD Policy) ---
-def gemini_text_lib(prompt, model='gemini-pro'): # Reverted model
+def gemini_text_lib(prompt, model='gemini-2.5-pro-exp-03-25'): # Reverted model
     """Calls Gemini API using the Python library."""
     # Removed pd_policy logic
     # Original default model was 'gemini-2.5-pro-exp-03-25', use 'gemini-pro' as likely standard alternative
@@ -1007,44 +1007,33 @@ if total_images > MAX_IMAGES_PER_RUN and not st.session_state.is_chunk_run:
             if urls_to_open:
                 urls_json = json.dumps(urls_to_open)
                 # User's fixed version using components.html button
-                comp_str = f"""
-                    <!DOCTYPE html>
-                    <html>
-                    <body>
-                        <p>Click the button below to open {len(urls_to_open)} tabs for chunk processing.</p>
-                        <p><strong>Please ensure your pop-up blocker is disabled for this site BEFORE clicking.</strong></p>
-                        <button id="openTabsButton" onclick="openTabs()">Open {len(urls_to_open)} Tabs Now</button>
-                        <p id="status"></p>
-                        <script>
-                            const urls = {urls_json};
-                            function openTabs() {{
-                                let openedCount = 0;
-                                if (urls && urls.length > 0) {{
-                                    document.getElementById("status").innerText = "Attempting to open tabs...";
-                                    urls.forEach((url, index) => {{
-                                        const win = window.open(url, `_blank_chunk_${{index}}`);
-                                        if (win) {{
-                                             openedCount++;
-                                             console.log(`Opened chunk ${index + 1}`);
-                                        }} else {{
-                                             console.error(`Failed to open tab for chunk ${index + 1}. Pop-up blocked?`);
-                                        }}
-                                    }});
-                                    document.getElementById("status").innerText = `Finished attempting to open tabs. ${openedCount}/${urls.length} might have opened. Check your browser.`;
-                                    if (openedCount < urls.length) {{
-                                        alert(`Could only open ${openedCount}/${urls.length}. Please check your pop-up blocker settings and try again if needed.`);
-                                    }}
-                                    // Optionally disable button after click
-                                    // document.getElementById("openTabsButton").disabled = true;
-                                }} else {{
-                                     alert("No chunks were prepared.");
-                                     document.getElementById("status").innerText = "Error: No chunks prepared.";
-                                }}
-                            }}
-                        </script>
-                    </body>
-                    </html>
-                """
+                comp_str = """
+             <!DOCTYPE html>
+                                <html>
+                                  <body>
+                                    <button onclick="openTabs()">Open Tabs</button>
+                                    <script>
+                                        function openTabs() {
+                                            const urls = [...]; // your URLs
+                                            let openedCount = 0;
+                                            urls.forEach((url, index) => {
+                                                const win = window.open(url, `_blank_chunk_${index}`);
+                                                if (win) openedCount++;
+                                            });
+                                            if (openedCount < urls.length) {
+                                                alert(`Only opened ${openedCount}/${urls.length}. Check pop-up blocker.`);
+                                            }
+                                        }
+                                    </script>
+                                  </body>
+                                </html>
+
+
+
+            """
+            comp_str = comp_str.replace("[...]", urls_json)
+
+
                 components.html(comp_str, height=150) # Adjust height as needed
             else:
                 st.error("No valid URLs generated for splitting.")
