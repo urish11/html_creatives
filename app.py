@@ -1321,26 +1321,24 @@ if total_images > MAX_IMAGES_PER_RUN and not st.session_state.is_chunk_run:
 
             # Inject JavaScript to open tabs if URLs were created
             if urls_to_open:
-                urls_json = json.dumps(urls_to_open)
+                urls_json = json.dumps(urls_to_open) # Python list -> JSON string
+
+                # --- Check this multi-line string definition carefully ---
                 javascript = """
                     <script>
-                        const urls = {urls_json_placeholder}; // Placeholder for Python data
-                        let openedCount = 0; // JavaScript variable
-                        if (urls && urls.length > 0) {{ // Use JS urls.length
-                            // Use JS template literal and JS urls.length
+                        const urls = {urls_json_placeholder}; // <<< MAKE SURE THIS PLACEHOLDER IS EXACTLY HERE
+                        let openedCount = 0;
+                        if (urls && urls.length > 0) {{
                             alert(`Attempting to open ${urls.length} new tabs for processing. Please allow pop-ups if prompted.`);
-                            urls.forEach((url, index) => {{ // Use JS index
-                                // Use JS template literal and JS index
+                            urls.forEach((url, index) => {{
                                 console.log(`Opening chunk ${index + 1}`);
-                                const tabWindow = window.open(url, `_blank_chunk_${index}`); // Use JS index
+                                const tabWindow = window.open(url, `_blank_chunk_${index}`);
                                 if (tabWindow) {{
-                                    openedCount++; // Increment JS variable
+                                    openedCount++;
                                 }} else {{
-                                     // Use JS template literal and JS index
                                     console.error(`Failed to open tab for chunk ${index + 1}. Pop-up blocked?`);
                                 }}
                             }});
-                            // Use JS variables openedCount and urls.length directly in the JS alert
                             if (openedCount < urls.length) {{
                                 alert(`Could only open ${openedCount}/${urls.length} tabs. Please check your pop-up blocker settings.`);
                             }}
@@ -1348,14 +1346,25 @@ if total_images > MAX_IMAGES_PER_RUN and not st.session_state.is_chunk_run:
                              alert("No chunks were prepared to be opened.");
                         }}
                     </script>
-                """.format(urls_json_placeholder=urls_json) # Substitute the Python variable here
+                """ # --- End of the multi-line string ---
 
-                st.markdown(javascript, unsafe_allow_html=True)
-                st.success(f"Attempted to open {len(urls_to_open)} new tabs. Please check your browser.")
+                # --- This format call needs the placeholder above to exist ---
+                try:
+                    formatted_javascript = javascript.format(urls_json_placeholder=urls_json)
+                    st.markdown(formatted_javascript, unsafe_allow_html=True)
+                    st.success(f"Attempted to open {len(urls_to_open)} new tabs. Please check your browser.")
+                except KeyError:
+                     st.error("Error formatting JavaScript for split tabs: Placeholder missing in the script template. Please check the code.")
+                     logger.error("KeyError: urls_json_placeholder missing in javascript string template.")
+                except Exception as format_err:
+                     st.error(f"An unexpected error occurred while preparing split tab script: {format_err}")
+                     logger.error(f"Error during JS formatting: {format_err}", exc_info=True)
+
             else:
                  st.error("No valid URLs could be generated for splitting.")
         # Stop execution in the current tab after attempting to split
         st.stop()
+
 
 # --- Manual Generate Button ---
 # Show if not splitting OR if it's a chunk run (allow manual trigger for chunks too)
