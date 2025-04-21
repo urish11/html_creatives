@@ -1176,11 +1176,11 @@ st.set_page_config(layout="wide", page_title="Creative Gen", page_icon="🎨")
 
 # --- Initialize Playwright ---
 # Guard installation with session state
-if 'playwright_installed' not in st.session_state:
-    with st.spinner("Initializing browser automation (one-time setup)..."):
-        st.session_state.playwright_installed = install_playwright_browsers()
-elif not st.session_state.playwright_installed:
-     st.error("Browser automation setup failed previously. Screenshots may not work.")
+# if 'playwright_installed' not in st.session_state:
+#     with st.spinner("Initializing browser automation (one-time setup)..."):
+#         st.session_state.playwright_installed = install_playwright_browsers()
+# elif not st.session_state.playwright_installed:
+#      st.error("Browser automation setup failed previously. Screenshots may not work.")
 
 st.title("Creative Maker ")
 
