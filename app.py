@@ -24,6 +24,7 @@ from openai import OpenAI
 from urllib.parse import urlencode
 import zlib # For potentially compressing data in URL
 import streamlit.components.v1 as components
+st.set_page_config(layout="wide", page_title="Creative Gen", page_icon="🎨")
 
 # --- Basic Logging Setup (Optional but Recommended) ---
 # Configure logging (adjust level as needed)
@@ -1173,7 +1174,6 @@ def run_generation(df_to_process):
 # --------------------------------------------
 # Streamlit UI Setup
 # --------------------------------------------
-st.set_page_config(layout="wide", page_title="Creative Gen", page_icon="🎨")
 
 # --- Initialize Playwright ---
 # Guard installation with session state
