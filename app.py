@@ -736,9 +736,7 @@ def save_html(headline, image_url, cta_text, template, tag_line=''):
                 <div class="overlay">
                     <h1 class="overlay-text">{headline}</h1>
                 </div>
-                {/* --- FIX: Insert the calculated variable --- */}
                 <button class="{button_class}">{cta_text}</button>
-                {/* --- End FIX --- */}
             </div>
         </body>
         </html>
