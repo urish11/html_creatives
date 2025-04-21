@@ -1322,22 +1322,25 @@ if total_images > MAX_IMAGES_PER_RUN and not st.session_state.is_chunk_run:
             # Inject JavaScript to open tabs if URLs were created
             if urls_to_open:
                 urls_json = json.dumps(urls_to_open)
-                javascript = f"""
+                javascript = """
                     <script>
-                        const urls = {urls_json};
-                        let openedCount = 0;
-                        if (urls && urls.length > 0) {{
-                            alert(`Attempting to open  new tabs for processing. Please allow pop-ups if prompted.`);
-                            urls.forEach((url, index) => {{
+                        const urls = {urls_json_placeholder}; // Placeholder for Python data
+                        let openedCount = 0; // JavaScript variable
+                        if (urls && urls.length > 0) {{ // Use JS urls.length
+                            // Use JS template literal and JS urls.length
+                            alert(`Attempting to open ${urls.length} new tabs for processing. Please allow pop-ups if prompted.`);
+                            urls.forEach((url, index) => {{ // Use JS index
+                                // Use JS template literal and JS index
                                 console.log(`Opening chunk ${index + 1}`);
-                                // Use a unique name for each tab to potentially allow reopening/focus
-                                const tabWindow = window.open(url, `_blank_chunk_${index}`);
+                                const tabWindow = window.open(url, `_blank_chunk_${index}`); // Use JS index
                                 if (tabWindow) {{
-                                    openedCount++;
+                                    openedCount++; // Increment JS variable
                                 }} else {{
+                                     // Use JS template literal and JS index
                                     console.error(`Failed to open tab for chunk ${index + 1}. Pop-up blocked?`);
                                 }}
                             }});
+                            // Use JS variables openedCount and urls.length directly in the JS alert
                             if (openedCount < urls.length) {{
                                 alert(`Could only open ${openedCount}/${urls.length} tabs. Please check your pop-up blocker settings.`);
                             }}
@@ -1345,14 +1348,14 @@ if total_images > MAX_IMAGES_PER_RUN and not st.session_state.is_chunk_run:
                              alert("No chunks were prepared to be opened.");
                         }}
                     </script>
-                """
+                """.format(urls_json_placeholder=urls_json) # Substitute the Python variable here
+
                 st.markdown(javascript, unsafe_allow_html=True)
                 st.success(f"Attempted to open {len(urls_to_open)} new tabs. Please check your browser.")
             else:
                  st.error("No valid URLs could be generated for splitting.")
         # Stop execution in the current tab after attempting to split
         st.stop()
-
 
 # --- Manual Generate Button ---
 # Show if not splitting OR if it's a chunk run (allow manual trigger for chunks too)
