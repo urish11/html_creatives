@@ -1008,30 +1008,30 @@ if total_images > MAX_IMAGES_PER_RUN and not st.session_state.is_chunk_run:
                 urls_json = json.dumps(urls_to_open)
                 # User's fixed version using components.html button
                 comp_str = """
-             <!DOCTYPE html>
-                                <html>
-                                  <body>
-                                    <button onclick="openTabs()">Open Tabs</button>
-                                    <script>
-                                        function openTabs() {
-                                            const urls = [...]; // your URLs
-                                            let openedCount = 0;
-                                            urls.forEach((url, index) => {
-                                                const win = window.open(url, `_blank_chunk_${index}`);
-                                                if (win) openedCount++;
-                                            });
-                                            if (openedCount < urls.length) {
-                                                alert(`Only opened ${openedCount}/${urls.length}. Check pop-up blocker.`);
+                <!DOCTYPE html>
+                                    <html>
+                                    <body>
+                                        <button onclick="openTabs()">Open Tabs</button>
+                                        <script>
+                                            function openTabs() {
+                                                const urls = [...]; // your URLs
+                                                let openedCount = 0;
+                                                urls.forEach((url, index) => {
+                                                    const win = window.open(url, `_blank_chunk_${index}`);
+                                                    if (win) openedCount++;
+                                                });
+                                                if (openedCount < urls.length) {
+                                                    alert(`Only opened ${openedCount}/${urls.length}. Check pop-up blocker.`);
+                                                }
                                             }
-                                        }
-                                    </script>
-                                  </body>
-                                </html>
+                                        </script>
+                                    </body>
+                                    </html>
 
 
 
-            """
-            comp_str = comp_str.replace("[...]", urls_json)
+                """
+                comp_str = comp_str.replace("[...]", urls_json)
 
 
                 components.html(comp_str, height=150) # Adjust height as needed
