@@ -230,27 +230,40 @@ def fetch_google_images(query, num_images=3, max_retries=5): # Keep max_retries 
 # --- Gemini Text REST (Reverted - Original Model, No Retry, No PD Policy) ---
 def gemini_text(
     prompt: str,
-    api_key: str = None,
-    model_id: str = "gemini-pro", # Reverted to likely intended original default (check exact original if needed)
+    
+    api_key: str = random.choice(GEMINI_API_KEY),
+    model_id: str = "gemini-2.5-pro-exp-03-25",
     api_endpoint: str = "generateContent"
 ) -> str | None:
-    """Calls the Gemini API via REST."""
-    # Removed pd_policy logic
+    if is_pd_policy : prompt += predict_policy
 
     if api_key is None:
-         # Original code had "gemini-2.5-pro-exp-03-25", let's assume 'gemini-pro' was more standard if that exp fails
-         # Also original had api_key = random.choice(GEMINI_API_KEY), not os.environ
-         api_key = random.choice(GEMINI_API_KEY)
+        api_key = os.environ.get("GEMINI_API_KEY")
 
     if not api_key:
-         print("Error: API key not provided for Gemini.") # Original used print
-         return None
+        print("Error: API key not provided and GEMINI_API_KEY environment variable not set.")
+        return None
 
     api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:{api_endpoint}?key={api_key}"
-    headers = {"Content-Type": "application/json"}
+
+    headers = {
+        "Content-Type": "application/json",
+    }
+
+
+
     request_data = {
-        "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-        "generationConfig": {"responseMimeType": "text/plain"},
+        "contents": [
+            {
+                "role": "user",
+                "parts": [
+                    {"text": prompt},
+                ],
+            },
+        ],
+        "generationConfig": {
+            "responseMimeType": "text/plain",
+        },
     }
 
     try:
@@ -258,24 +271,44 @@ def gemini_text(
             api_url,
             headers=headers,
             json=request_data,
-            timeout=60 # Original timeout
+            timeout=60
         )
         response.raise_for_status()
 
-        st.text(response.json()) # Original printed response json to UI
+        st.text(response.json())
 
-        # Original extraction logic (simpler)
         return response.json()['candidates'][0]['content']['parts'][0]['text'].replace('```','')
 
     except requests.exceptions.RequestException as e:
-        print(f"Error calling Gemini API: {e}") # Original used print
+        print(f"Error calling Gemini API: {e}")
         if 'response' in locals() and response is not None:
-             print(f"Response status: {response.status_code}") # Original used print
-             print(f"Response text: {response.text}") # Original used print
+             print(f"Response status: {response.status_code}")
+             print(f"Response text: {response.text}")
         return None
     except Exception as e:
-        print(f"An unexpected error occurred in Gemini call: {e}") # Original used print
+        print(f"An unexpected error occurred: {e}")
         return None
+
+def gemini_text_lib(prompt,model ='gemini-2.5-pro-exp-03-25' ):
+    if is_pd_policy : prompt += predict_policy
+
+
+
+
+    client = genai.Client(api_key=random.choice(GEMINI_API_KEY))
+
+
+    try:
+        response = client.models.generate_content(
+            model=model, contents=  prompt
+        )
+
+        return response.text
+    except Exception as e:
+        st.text('gemini_text_lib error ' + str(e))
+        time.sleep(4)
+        return None
+
 
 
 # --- Gemini Text Library (Reverted - Original Model, No Retry, No PD Policy) ---
@@ -296,98 +329,118 @@ def gemini_text_lib(prompt, model='gemini-2.5-pro-exp-03-25'): # Reverted model
 
 
 # --- ChatGPT (Reverted - Original Models/Temps/Logic, No Retry, No PD Policy) ---
-def chatGPT(prompt, model="gpt-4o", temperature=1.0, reasoning_effort=''):
-    """Calls OpenAI API (compatible) via REST for text generation."""
-    # Removed pd_policy logic
+def chatGPT(prompt, model="gpt-4o", temperature=1.0,reasoning_effort=''):
 
+    if is_pd_policy : prompt += predict_policy
     try:
-        st.write("Generating image description...") # Original had this message
+    
+ 
+        st.write("Generating image description...")
         headers = {
             'Authorization': f'Bearer {GPT_API_KEY}',
             'Content-Type': 'application/json'
         }
         data = {
             'model': model,
-            'input' : prompt, # Use 'input' as per original
-            # Original temperature logic: include only if non-default
+            'temperature': temperature,
+            "input" : prompt,
+            'reasoning': {"effort": reasoning_effort}
         }
-        if temperature != 1.0: # Match original logic exactly
-             data['temperature'] = temperature
-        if reasoning_effort != '': # Match original logic exactly
-             data['reasoning'] = {"effort": reasoning_effort}
 
+        if temperature == 0: data.pop('temperature')
+        if reasoning_effort == '': data.pop('reasoning')
 
-        api_url = '[https://api.openai.com/v1/responses](https://api.openai.com/v1/responses)' # Original endpoint
-
-        response = requests.post(api_url, headers=headers, json=data, timeout=60) # Added timeout for safety
-        response.raise_for_status() # Check for HTTP errors
-        content_data = response.json()
-
-        # Original extraction logic
         if 'o1' in model or 'o3' in model:
-            content = content_data['output'][1]['content'][0]['text']
-        else:
-            content = content_data['output'][0]['content'][0]['text']
 
-        # st.text(content) # Original had this commented out
-        return content
+            response = requests.post('https://api.openai.com/v1/responses', headers=headers, json=data)
+            content = json.loads(response.content)['output'][1]['content'][0]['text']
+            # st.text(content)
+            return content
+
+
+
+        else: 
+            response = requests.post('https://api.openai.com/v1/responses', headers=headers, json=data)
+            content = json.loads(response.content)['output'][0]['content'][0]['text']
+            # st.text(content)
+            return content
 
     except Exception as e:
-        st.text(f"Error in chatGPT: {str(e)}") # Original error handling
-        # Attempt to print response JSON on error, if response exists
-        if 'response' in locals() and hasattr(response, 'json'):
-            try:
-                st.text(response.json())
-            except json.JSONDecodeError:
-                 st.text(f"Response text (not JSON): {response.text}")
+        st.text(f"Error in chatGPT: {str(e)}")
+        st.text(response.json())
+
         return None
 
 
+
 # --- Claude (Reverted - Original Model, Original Loop Logic, No PD Policy) ---
-def claude(prompt , model = "claude-3-sonnet-20240229", temperature=1 , is_thinking = False, max_retries = 10): # Reverted default model, kept params
-    # Removed pd_policy logic
+def claude(prompt , model = "claude-3-7-sonnet-20250219", temperature=1 , is_thinking = False, max_retries = 10):
+    if is_pd_policy : prompt += predict_policy
     tries = 0
 
     while tries < max_retries:
         try:
-            # Client is initialized globally now: anthropic_client
-            message_params = {
-                "model": model,
-                "max_tokens": 4096, # Use generous token limit from later versions
-                "temperature": temperature,
-                "messages": [{"role": "user", "content": [{"type": "text", "text": prompt}]}]
-            }
-            # Original logic for top_p based on temperature (approximate)
-            # Original seemed to have top_p=0.8 always? Let's add it back conditionally.
-            if temperature < 1.0: # Add top_p only if temperature is not 1.0
-                 message_params["top_p"] = 0.8
+        
+        
+        
+            client = anthropic.Anthropic(
+            # defaults to os.environ.get("ANTHROPIC_API_KEY")
+            api_key=st.secrets["ANTHROPIC_API_KEY"])
+        
+            if is_thinking == False:
+                    
+                message = client.messages.create(
+                    
+                model=model,
+                max_tokens=20000,
+                temperature=temperature,
+                
+                top_p= 0.8,
 
-            if is_thinking: # Keep thinking logic as it was specific
-                 message_params["thinking"] = {"type": "enabled", "budget_tokens": 16000}
-
-            message = anthropic_client.messages.create(**message_params)
-
-            # Original extraction logic based on is_thinking
-            if is_thinking:
-                 if len(message.content) > 1 and hasattr(message.content[1], 'text'):
-                      return message.content[1].text
-                 else: # Handle case where thinking response might be different
-                      if hasattr(message.content[0], 'text'): return message.content[0].text
-                      else: return "" # Fallback
-            else: # Not thinking
-                 if message.content and hasattr(message.content[0], 'text'):
-                      return message.content[0].text
-                 else:
-                      return "" # Fallback
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": prompt
+                            }
+                        ]
+                    }
+                ]
+            )
+                return message.content[0].text
+            if is_thinking == True:
+                message = client.messages.create(
+                    
+                model=model,
+                max_tokens=20000,
+                temperature=temperature,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": prompt
+                            }
+                        ]
+                    }
+                ],
+                thinking = { "type": "enabled",
+                "budget_tokens": 16000}
+            )
+                return message.content[1].text
+        
+        
+        
+            print(message)
+            return message.content[0].text
 
         except Exception as e:
-            st.text(e) # Original printed error to UI
-            tries += 1
-            time.sleep(5) # Original slept on error
-    # If loop finishes without success
-    st.error(f"Claude call failed after {max_retries} attempts.")
-    return None
-
+            st.text(e)
+            tries += 1 
+            time.sleep(5)
 
 # --- Flux Image Gen (Reverted - Original Model Name, Original Loop) ---
 def gen_flux_img(prompt, height=784, width=960):
