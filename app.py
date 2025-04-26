@@ -1382,6 +1382,7 @@ if st.button("Generate Images"):
         cache_key = f"cached_prompt_gemini7_{topic}_{lang}"
         if cache_key not in st.session_state:
             st.session_state[cache_key] = None
+            st.session_state[cache_key]["count"] = 0
 
         if "google" in topic.lower():
             topic_images = []
@@ -1461,14 +1462,15 @@ if st.button("Generate Images"):
 
                     
                     if template_str == 'gemini7': # gemini1 with geimini text
-                        if cache_key in st.session_state and st.session_state[cache_key]:
+                        if cache_key in st.session_state and st.session_state[cache_key] and st.session_state[cache_key]["count"] % 3 != 0:
                             st.text("using cached prompt")
-                            gemini_prompt = st.session_state[cache_key]
+                            gemini_prompt = st.session_state[cache_key]["data"]
                         else:
                             gemini_prompt = gemini_text_lib(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
                                                     'Learn More Here >>' in appropriate language\\nand 'act fast' or 'limited available' \n \nshould be low quality and very enticing and alerting \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
                             """)
-                            st.session_state[cache_key] = gemini_prompt
+                            st.session_state[cache_key]["data"] = gemini_prompt
+                            st.session_state[cache_key]["count"] = st.session_state[cache_key]["count"] +1
 
                     
                     if template_str == 'gemini7claude': # gemini1 with geimini text
