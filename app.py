@@ -1381,7 +1381,7 @@ if st.button("Generate Images"):
 
         cache_key = f"cached_prompt_gemini7_{topic}_{lang}"
         if cache_key not in st.session_state:
-            st.session_state[cache_key] = None
+            st.session_state[cache_key] = {}
             st.session_state[cache_key]["data"] = None
             st.session_state[cache_key]["count"] = 0
         st.text(st.session_state[cache_key])
