@@ -1377,7 +1377,7 @@ if st.button("Generate Images"):
         lang = row['lang']
         combo = f"{topic}_{lang}"
         template_str = row["template"]
-        headline_temp = None
+        headline_temp = None 
 
         cache_key = f"cached_prompt_gemini7_{topic}_{lang}"
         if cache_key not in st.session_state:
