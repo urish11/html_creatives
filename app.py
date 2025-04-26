@@ -1460,6 +1460,7 @@ if st.button("Generate Images"):
                     
                     if template_str == 'gemini7': # gemini1 with geimini text
                         if cached_prompt_gemini7 :
+                            st.text("using cached prompt")
                             gemini_prompt = cached_prompt_gemini7
                         if cached_prompt_gemini7 is None:
                             gemini_prompt = gemini_text_lib(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
