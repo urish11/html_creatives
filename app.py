@@ -1379,6 +1379,7 @@ if st.button("Generate Images"):
         template_str = row["template"]
         headline_temp = None
 
+        cached_prompt_gemini7 = None
 
         if "google" in topic.lower():
             topic_images = []
@@ -1458,10 +1459,14 @@ if st.button("Generate Images"):
 
                     
                     if template_str == 'gemini7': # gemini1 with geimini text
-                        gemini_prompt = gemini_text_lib(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
+                        if cached_prompt_gemini7 :
+                            gemini_prompt = cached_prompt_gemini7
+                        else:
+                            gemini_prompt = gemini_text_lib(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
                                                 'Learn More Here >>' in appropriate language\\nand 'act fast' or 'limited available' \n \nshould be low quality and very enticing and alerting \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
 
                             """)
+                            cached_prompt_gemini7 = gemini_prompt
                     
                     if template_str == 'gemini7claude': # gemini1 with geimini text
                         gemini_prompt = claude(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
