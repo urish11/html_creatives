@@ -1463,7 +1463,7 @@ if st.button("Generate Images"):
 
                     
                     if template_str == 'gemini7': # gemini1 with geimini text
-                        if cache_key in st.session_state and st.session_state[cache_key] and st.session_state[cache_key]["count"] % 3 != 0:
+                        if cache_key in st.session_state and st.session_state[cache_key] and st.session_state[cache_key]["count"] % 2 != 0:
                             st.text("using cached prompt")
                             gemini_prompt = st.session_state[cache_key]["data"]
                             st.session_state[cache_key]["count"] = st.session_state[cache_key]["count"] +1
