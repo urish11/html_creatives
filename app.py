@@ -1452,9 +1452,9 @@ if st.button("Generate Images"):
                         gemini_prompt = claude(f"""write a image prompt of a candid unstaged photo taken of a regular joe showing off his\her {topic} . the image is taken with smartphone candidly. in 1-2 sentences. Describe the quality of the image looking smartphone. start with "Square photo 1:1 iphone 12 photo uploaded to reddit:"
 
                         this is for a fb ad that tries to look organic, but also make the image content intecing and somewhat perplexing, so try to be that but also draw clicks with high energy in the photo. dont make up facts like discounts! or specific prices!
-                        # if you want to add a caption, specifically instruct it to be on the image. and be short in language {lang}
                             """, is_thinking=True).replace("#","")
-                    
+                                            # if you want to add a caption, specifically instruct it to be on the image. and be short in language {lang}
+
                     if template_str == 'gemini':
                         gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use photos',''])}. add a CTA button with 
                                                 'Learn More Here >>' in appropriate language\nshould be low quality and very enticing and alerting\nstart with 'square image aspect ratio of 1:1 of '\n\n example output:\n\nsquare image of a concerned middle-aged woman looking at her tongue in the mirror under harsh bathroom lighting, with a cluttered counter and slightly blurry focus — big bold red text says “Early Warning Signs?” and a janky yellow button below reads “Learn More Here >>” — the image looks like it was taken on an old phone, with off angle, bad lighting, and a sense of urgency and confusion to provoke clicks.
