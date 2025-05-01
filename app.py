@@ -254,7 +254,7 @@ def gemini_text_lib(prompt,model ='gemini-2.5-pro-exp-03-25', is_with_file=False
             res.raise_for_status()  
             temp_file.write(res.content)
             
-            file = client.files.upload(file=temp_file.name)
+            file = client.files.upload(file=f'media \ {temp_file.name}')
             response = client.models.generate_content(
                 model=model, contents=  [prompt, file]
 
