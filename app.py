@@ -249,7 +249,7 @@ def gemini_text_lib(prompt,model ='gemini-2.5-pro-exp-03-25', is_with_file=False
         st.text(file_url)
         res = requests.get(file_url)
         res.raise_for_status()  
-        file_obj = BytesIO(res.content)
+        file_obj = res.content
         file = client.files.upload(file_obj)
         response = client.models.generate_content(
             model=model, contents=  [prompt, file]
