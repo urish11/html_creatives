@@ -1490,7 +1490,7 @@ if st.button("Generate Images"):
                             st.session_state[cache_key]["count"] = st.session_state[cache_key]["count"] +1
 
                     if template_str == 'gemini_redraw':
-                        gemini_prompt = gemini_text_lib("describe this image in details, only descibe what is seen visually! , especially the layout :", model ="gemini-2.0-flash-exp-image-generation",
+                        gemini_prompt = gemini_text_lib("describe this image in details, only descibe what is seen visually! , especially the layout. if theres image on the text, mention it with text in original language :", model ="gemini-2.0-flash-exp-image-generation",
                                                          is_with_file=True, file_url=random.choice(lang.split("|")))
                     if template_str == 'gemini7claude': # gemini1 with geimini text
                         gemini_prompt = claude(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
