@@ -245,30 +245,30 @@ def gemini_text_lib(prompt,model ='gemini-2.5-pro-exp-03-25', is_with_file=False
     client = genai.Client(api_key=random.choice(GEMINI_API_KEY))
 
 
-    # try:
-    if is_with_file:
-        file_extension ='jpg'
-        with tempfile.NamedTemporaryFile(delete=False, mode='wb', suffix=file_extension or '.tmp') as temp_file:
-            st.text(file_url)
-            res = requests.get(file_url)
-            res.raise_for_status()  
-            temp_file.write(res.content)
-            
-            file = client.files.upload(file=temp_file.name, config={'mime_type' :'image/jpeg'})
+    try:
+        if is_with_file:
+            file_extension ='jpg'
+            with tempfile.NamedTemporaryFile(delete=False, mode='wb', suffix=file_extension or '.tmp') as temp_file:
+                st.text(file_url)
+                res = requests.get(file_url)
+                res.raise_for_status()  
+                temp_file.write(res.content)
+                
+                file = client.files.upload(file=temp_file.name, config={'mime_type' :'image/jpeg'})
+                response = client.models.generate_content(
+                    model=model, contents=  [prompt, file]
+
+                )
+        elif not is_with_file:
             response = client.models.generate_content(
-                model=model, contents=  [prompt, file]
-
+                model=model, contents=  prompt
             )
-    elif not is_with_file:
-        response = client.models.generate_content(
-            model=model, contents=  prompt
-        )
 
-    return response.text
-    # except Exception as e:
-    #     st.text('gemini_text_lib error ' + str(e))
-    #     time.sleep(4)
-    #     return None
+        return response.text
+    except Exception as e:
+        st.text('gemini_text_lib error ' + str(e))
+        time.sleep(4)
+        return None
 
 
 
@@ -1490,7 +1490,7 @@ if st.button("Generate Images"):
                             st.session_state[cache_key]["count"] = st.session_state[cache_key]["count"] +1
 
                     if template_str == 'gemini_redraw':
-                        gemini_prompt = gemini_text_lib("describe this image in details:", model ="gemini-2.0-flash-exp-image-generation",
+                        gemini_prompt = gemini_text_lib("describe this image in details , especially the layout :", model ="gemini-2.0-flash-exp-image-generation",
                                                          is_with_file=True, file_url=random.choice(topic.split("	")))
                     if template_str == 'gemini7claude': # gemini1 with geimini text
                         gemini_prompt = claude(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
