@@ -244,25 +244,25 @@ def gemini_text_lib(prompt,model ='gemini-2.5-pro-exp-03-25', is_with_file=False
     client = genai.Client(api_key=random.choice(GEMINI_API_KEY))
 
 
-    try:
-        if  is_with_file:
-            res = requests.get(file_url).content()
-            file_obj = BytesIO(res)
-            file = client.files.upload(file_obj)
-            response = client.models.generate_content(
-                model=model, contents=  [prompt, file]
+    # try:
+    if is_with_file:
+        res = requests.get(file_url).content()
+        file_obj = BytesIO(res)
+        file = client.files.upload(file_obj)
+        response = client.models.generate_content(
+            model=model, contents=  [prompt, file]
 
-            )
-        elif not is_with_file:
-            response = client.models.generate_content(
-                model=model, contents=  prompt
-            )
+        )
+    elif not is_with_file:
+        response = client.models.generate_content(
+            model=model, contents=  prompt
+        )
 
-        return response.text
-    except Exception as e:
-        st.text('gemini_text_lib error ' + str(e))
-        time.sleep(4)
-        return None
+    return response.text
+    # except Exception as e:
+    #     st.text('gemini_text_lib error ' + str(e))
+    #     time.sleep(4)
+    #     return None
 
 
 
