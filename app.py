@@ -246,6 +246,7 @@ def gemini_text_lib(prompt,model ='gemini-2.5-pro-exp-03-25', is_with_file=False
 
     # try:
     if is_with_file:
+        st.text(file_url)
         res = requests.get(file_url).content()
         file_obj = BytesIO(res)
         file = client.files.upload(file_obj)
@@ -1484,7 +1485,8 @@ if st.button("Generate Images"):
                             st.session_state[cache_key]["count"] = st.session_state[cache_key]["count"] +1
 
                     if template_str == 'gemini_redraw':
-                        gemini_prompt = gemini_text_lib("describe this image in details:", model ="gemini-2.0-flash-exp-image-generation", is_with_file=True, file_url=random.choice(topic.split("  ")))
+                        gemini_prompt = gemini_text_lib("describe this image in details:", model ="gemini-2.0-flash-exp-image-generation",
+                                                         is_with_file=True, file_url=random.choice(topic.split("  ")))
                     if template_str == 'gemini7claude': # gemini1 with geimini text
                         gemini_prompt = claude(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
                                                 'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting!!, don't make specific promises like x% discount and 'act fast' or 'limited available'  \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
