@@ -250,8 +250,8 @@ def gemini_text_lib(prompt,model ='gemini-2.5-pro-exp-03-25', is_with_file=False
         res = requests.get(file_url)
         res.raise_for_status()  
         file_obj = res.content
-        base64 =base64.b64encode(file_obj).decode('utf-8')
-        file = client.files.upload(file=base64)
+        base64_img =base64.b64encode(file_obj).decode('utf-8')
+        file = client.files.upload(file=base64_img)
         response = client.models.generate_content(
             model=model, contents=  [prompt, file]
 
