@@ -10,4 +10,3 @@ openai
 google-genai
 anthropic
 aioboto3
-tempfile
