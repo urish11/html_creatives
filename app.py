@@ -21,6 +21,7 @@ from google_images_search import GoogleImagesSearch
 import openai  # NEW: For DALL-E variations
 import logging
 from openai import OpenAI
+import temp_file
 # Configure logging
 # logging.basicConfig(
 #     format='%(asctime)s [%(levelname)s] %(name)s - %(message)s', 
@@ -246,16 +247,17 @@ def gemini_text_lib(prompt,model ='gemini-2.5-pro-exp-03-25', is_with_file=False
 
     # try:
     if is_with_file:
-        st.text(file_url)
-        res = requests.get(file_url)
-        res.raise_for_status()  
-        file_obj = res.content
-        base64_img =base64.b64encode(file_obj).decode('utf-8')
-        file = client.files.upload(file=base64_img)
-        response = client.models.generate_content(
-            model=model, contents=  [prompt, file]
+        with tempfile.NamedTemporaryFile(delete=False, mode='wb', suffix=file_extension or '.tmp') as temp_file:
+            st.text(file_url)
+            res = requests.get(file_url)
+            res.raise_for_status()  
+            temp_file.write(res.content)
+            
+            file = client.files.upload(file=temp_file.name)
+            response = client.models.generate_content(
+                model=model, contents=  [prompt, file]
 
-        )
+            )
     elif not is_with_file:
         response = client.models.generate_content(
             model=model, contents=  prompt
