@@ -247,6 +247,7 @@ def gemini_text_lib(prompt,model ='gemini-2.5-pro-exp-03-25', is_with_file=False
 
     # try:
     if is_with_file:
+        file_extension ='jpg'
         with tempfile.NamedTemporaryFile(delete=False, mode='wb', suffix=file_extension or '.tmp') as temp_file:
             st.text(file_url)
             res = requests.get(file_url)
