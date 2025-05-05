@@ -1495,7 +1495,7 @@ if st.button("Generate Images"):
                         prompt_txt ="""describe this image in details, only descibe what is seen visually! , especially the layout. start with 'square image aspect ratio of 1:1 of. if theres overlay image on the text, mention it with text in original language! """
                         
 
-                        gemini_prompt = gemini_text_lib( prompt_txt +  f"rewrite (keep original text overlay text language!!) this image prompt, as close to input as possible, but follow the following rules, if some element dosent comply, remove it. , return JUST the output no intros .rules::" + predict_policy , model ="gemini-2.0-flash-exp-image-generation",
+                        gemini_prompt = gemini_text_lib( prompt_txt +  f"YOU MUST  follow the following rules, if some element dosent comply, remove it. , return JUST the output no intros .rules::" + predict_policy , model ="gemini-2.0-flash-exp-image-generation",
                                                          is_with_file=True, file_url=random.choice(lang.split("|")))                        
                         
                         # if is_pd_policy:
