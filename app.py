@@ -1499,7 +1499,7 @@ if st.button("Generate Images"):
                                                          is_with_file=True, file_url=random.choice(lang.split("|")))                        
                         
                         if is_pd_policy:
-                            gemini_prompt = claude(f"rewrite this image prompt, as close to input as possible, but follow the following rules, if some element dosent comply, remove it, input{gemini_prompt} rules:" + predict_policy)
+                            gemini_prompt = claude(f"rewrite (keep original text overlay text) this image prompt, as close to input as possible, but follow the following rules, if some element dosent comply, remove it, input{gemini_prompt} rules:" + predict_policy)
                     if template_str == 'gemini7claude': # gemini1 with geimini text
                         gemini_prompt = claude(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
                                                 'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting!!, don't make specific promises like x% discount and 'act fast' or 'limited available'  \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
