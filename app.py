@@ -1492,10 +1492,10 @@ if st.button("Generate Images"):
                             st.session_state[cache_key]["count"] = st.session_state[cache_key]["count"] +1
 
                     if template_str == 'gemini_redraw':
-                        prompt_txt ="""describe this image in details, only descibe what is seen visually! , especially the layout. start with 'square image aspect ratio of 1:1 of. if theres overlay image on the text, mention it with text in original language! """
-                        
+                        prompt_txt ="""describe this image in details, only descibe what is seen visually! , especially the layout. start with 'square image aspect ratio of 1:1 of. if theres overlay image on the text, mention it with text in original language! """ +  f"YOU MUST  follow the following rules, if some element dosent comply, remove it. , return JUST the output no intros .rules::" + predict_policy+ "Dont use the word 'Today' as text overlay! "
 
-                        gemini_prompt = gemini_text_lib( prompt_txt +  f"YOU MUST  follow the following rules, if some element dosent comply, remove it. , return JUST the output no intros .rules::" + predict_policy+ "Dont use the word 'Today' as text overlay! " , model ="gemini-2.0-flash-exp-image-generation",
+                        st.text("aaa" + prompt_txt)
+                        gemini_prompt = gemini_text_lib( prompt_txt  , model ="gemini-2.0-flash-exp-image-generation",
                                                          is_with_file=True, file_url=random.choice(lang.split("|")))                        
                         
                         # if is_pd_policy:
