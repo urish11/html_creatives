@@ -1494,7 +1494,7 @@ if st.button("Generate Images"):
                     if template_str == 'gemini_redraw':
                         prompt_txt ="""describe this image in details, only descibe what is seen visually! , especially the layout. start with 'square image aspect ratio of 1:1 of. if theres image on the text, mention it with text in original language """
                         if is_pd_policy:
-                            prompt_txt += "return what that follows these rules (even if the text on image is not in english, like never return the word 'Today' as text overlay) :" + predict_policy
+                            prompt_txt += "\n\nreturn what that follows these rules (even if the text on image is not in english, like never return the word 'Today' as text overlay) :" + predict_policy
                         st.text(prompt_txt)
                         gemini_prompt = gemini_text_lib( prompt_txt, model ="gemini-2.0-flash-exp-image-generation",
                                                          is_with_file=True, file_url=random.choice(lang.split("|")))
