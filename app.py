@@ -1336,29 +1336,29 @@ if 'generated_images' not in st.session_state:
 
 
 # ]
-    # Define number of columns for the grid
-    num_columns = 6 # You can change this number
+    # # Define number of columns for the grid
+    # num_columns = 6 # You can change this number
 
-    # Calculate number of rows needed
-    num_images = len(image_list)
-    num_rows = (num_images + num_columns - 1) // num_columns # Ceiling division
+    # # Calculate number of rows needed
+    # num_images = len(image_list)
+    # num_rows = (num_images + num_columns - 1) // num_columns # Ceiling division
 
-    # Create the grid *inside* the expander
-    for i in range(num_rows):
-        cols = st.columns(num_columns) # Create columns for the current row
-        # Get the slice of images for the current row
-        row_images = image_list[i * num_columns : (i + 1) * num_columns]
+    # # Create the grid *inside* the expander
+    # for i in range(num_rows):
+    #     cols = st.columns(num_columns) # Create columns for the current row
+    #     # Get the slice of images for the current row
+    #     row_images = image_list[i * num_columns : (i + 1) * num_columns]
 
-        # Populate columns with images and captions
-        for j, item in enumerate(row_images):
-            if item: # Check if there's an item
-                # Use the j-th column *within the expander*
-                with cols[j]:
-                    st.image(
-                        item["image"],
-                        use_container_width=True
-                        )
-                    st.caption(item["caption"])
+    #     # Populate columns with images and captions
+    #     for j, item in enumerate(row_images):
+    #         if item: # Check if there's an item
+    #             # Use the j-th column *within the expander*
+    #             with cols[j]:
+    #                 st.image(
+    #                     item["image"],
+    #                     use_container_width=True
+    #                     )
+    #                 st.caption(item["caption"])
 
 
 st.subheader("Enter Topics for Image Generation")
