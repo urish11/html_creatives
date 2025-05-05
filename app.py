@@ -1493,11 +1493,13 @@ if st.button("Generate Images"):
 
                     if template_str == 'gemini_redraw':
                         prompt_txt ="""describe this image in details, only descibe what is seen visually! , especially the layout. start with 'square image aspect ratio of 1:1 of. if theres image on the text, mention it with text in original language """
-                        if is_pd_policy:
-                            prompt_txt += "\n\nyour output must comply with  these rules, whatever doesnt comply MUSTNT appear in your output!!!!!!!!!!!!!!! (even if the text on image is not in english, like never return the word 'Today' as text overlay) :" + predict_policy
-                        st.text(prompt_txt)
+                        
+
                         gemini_prompt = gemini_text_lib( prompt_txt, model ="gemini-2.0-flash-exp-image-generation",
-                                                         is_with_file=True, file_url=random.choice(lang.split("|")))
+                                                         is_with_file=True, file_url=random.choice(lang.split("|")))                        
+                        
+                        if is_pd_policy:
+                            gemini_prompt += f"rewrite this image prompt, as close to input as possible, but follow the following rules, if some element dosent comply, dont return it, input{gemini_prompt} rules:" + predict_policy
                     if template_str == 'gemini7claude': # gemini1 with geimini text
                         gemini_prompt = claude(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
                                                 'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting!!, don't make specific promises like x% discount and 'act fast' or 'limited available'  \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
