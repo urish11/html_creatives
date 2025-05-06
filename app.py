@@ -1482,7 +1482,7 @@ if st.button("Generate Images"):
                             generate square image promoting '{topic}' in language {lang}. add a CTA button with 
                             'Learn More Here >>' in appropriate language
                             
-                            should be low quality, very enticing and alerting — like a retro TV ad or catalog image from the 90s. use saturated color theme (e.g. red, blue, green, or pink), just one. 
+                            should be low quality, very enticing and alerting . use saturated color theme (e.g. red, blue, green, or pink), just one. 
                             image should be chaotic but readable, styled like a square ad that grabs attention.
                             
                             start with 'square image aspect ratio of 1:1 of'
@@ -1497,7 +1497,7 @@ if st.button("Generate Images"):
                             generate square image promoting '{topic}' in language {lang}. add a CTA button with 
                             'Learn More Here >>' in appropriate language
                             
-                            should be low quality, very enticing and alerting — like a retro TV ad or catalog image from the 90s. use saturated color theme (e.g. red, blue, green, or pink), just one. 
+                            should be low quality, very enticing and alerting . use saturated color theme (e.g. red, blue, green, or pink), just one. 
                             image should be chaotic but readable, styled like a square ad that grabs attention.
                             
                             start with 'square image aspect ratio of 1:1 of'
