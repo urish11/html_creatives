@@ -1363,7 +1363,7 @@ if 'generated_images' not in st.session_state:
 
 st.subheader("Enter Topics for Image Generation")
 df = st.data_editor(
-    # pd.DataFrame({"topic": ["example_topic"], "count": [1], "lang": ["english"], "template": ["2,3,4,41,42,5,6,7,gemini,gemini2,gemini7,gemini7claude,geminicandid,geministock,gemini7claude_simple | use , for random template"]}),
+    # pd.DataFrame({"topic": ["example_topic"], "count": [1], "lang": ["english"], "template": ["2,3,4,41,42,5,6,7,gemini,gemini2,gemini7,gemini7claude,geminicandid,geministock,gemini7claude_simple,geminiclaude_comic,gemini7_comic | use , for random template"]}),
     pd.DataFrame({"topic": ["example_topic"], "count": [1], "lang": ["english"], "template": [""]}),
 
     num_rows="dynamic",
