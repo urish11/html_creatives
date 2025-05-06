@@ -1505,7 +1505,7 @@ if st.button("Generate Images"):
                             be specific in what is shown: include a person interacting with the product or benefit, big bold text in {lang}, and bright graphic elements like rays or dots in the background.
                             
                             return JUST the best option, no intros
-                            """ ,is_thinking=False)
+                            """ ,is_thinking=True)
 
 
                     
