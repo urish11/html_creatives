@@ -1481,7 +1481,6 @@ if st.button("Generate Images"):
                         gemini_prompt  = gemini_text_lib(f"""write short prompt for
                             generate square image promoting '{topic}' in language {lang}. add a CTA button with 
                             'Learn More Here >>' in appropriate language
-                            and include urgent text like 'Act Fast' or 'Limited Available'
                             
                             should be low quality, very enticing and alerting — like a retro TV ad or catalog image from the 90s. use saturated color theme (e.g. red, blue, green, or pink), just one. 
                             image should be chaotic but readable, styled like a square ad that grabs attention.
@@ -1497,7 +1496,6 @@ if st.button("Generate Images"):
                         gemini_prompt  = claude(f"""write short prompt for
                             generate square image promoting '{topic}' in language {lang}. add a CTA button with 
                             'Learn More Here >>' in appropriate language
-                            and include urgent text like 'Act Fast' or 'Limited Available'
                             
                             should be low quality, very enticing and alerting — like a retro TV ad or catalog image from the 90s. use saturated color theme (e.g. red, blue, green, or pink), just one. 
                             image should be chaotic but readable, styled like a square ad that grabs attention.
