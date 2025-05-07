@@ -1556,7 +1556,7 @@ if st.button("Generate Images"):
                             """,model='o3-mini', temperature= 0,reasoning_effort='high') 
                     if template_str == 'gemini6':
                         cleaned_topic= re.sub('\\|.*','',topic)
-                        headline_temp =gemini_text(f"""write 1 statement,kinda clickbaity, very consice and action click driving, same length, no quotes, for {cleaned_topic)} in {lang}. Examples:\n'Surprising Travel Perks You Might Be Missing'\n 'Little-Known Tax Tricks to Save Big'\n Dont mention 'Hidden' or 'Unlock'.\nmax  6 words""")
+                        headline_temp =gemini_text(f"""write 1 statement,kinda clickbaity, very consice and action click driving, same length, no quotes, for {cleaned_topic} in {lang}. Examples:\n'Surprising Travel Perks You Might Be Missing'\n 'Little-Known Tax Tricks to Save Big'\n Dont mention 'Hidden' or 'Unlock'.\nmax  6 words""")
 
                         # gemini_prompt_angle = gemini_text(f"""For the topic  {topic}, imagine a highly specific and unusual moment in someone's everyday life that would visually hint at the condition — but in a confusing, unexpected way.\nThe moment should:\n– Feel personal, like something they might do alone out of worry or curiosity\n– Be visually simple but puzzling \n-High energy and dramatic\n– Create just enough mystery that the viewer thinks: "Wait… why would someone do that?"\n\nCome up with one clever, click-provoking scenario that could be captured in a smartphone photo, \n must be highly engaging visually for the topic, to be for image prompt.\nReturn just the angle, consicly in 1 sentence up to 16 words""")
 
