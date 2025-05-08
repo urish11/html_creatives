@@ -318,7 +318,7 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0,reasoning_effort=''):
 
 
 def claude(prompt , model = "claude-3-7-sonnet-20250219", temperature=1 , is_thinking = False, max_retries = 10):
-    if is_pd_policy : prompt += predict_policy
+    if is_pd_policy : prompt += "make sure u follow these rules!: " + predict_policy
     tries = 0
 
     while tries < max_retries:
