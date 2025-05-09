@@ -35,7 +35,7 @@ if sys.platform.startswith("win"):
         st.warning(f"Could not set WindowsProactorEventLoopPolicy for asyncio: {e}")
 
 # --- Load Secrets (Ensure these are in your Streamlit secrets) ---
-OPENAI_API_KEY_SECRET = st.secrets.get("GPT_API_KEY ")
+OPENAI_API_KEY_SECRET = st.secrets.get("GPT_API_KEY")
 GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"] # Expects a list
 GOOGLE_API_KEYS_SECRET = st.secrets.get("GOOGLE_API_KEY") # Expects a list
 GOOGLE_CX_SECRET = st.secrets.get("GOOGLE_CX")
