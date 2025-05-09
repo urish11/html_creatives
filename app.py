@@ -512,9 +512,6 @@ def gen_gemini_image(prompt, trys = 0):
 
 
 
-
-
-
 def gen_flux_img_lora(prompt,height=784, width=960 ,lora_path="https://huggingface.co/ddh0/FLUX-Amateur-Photography-LoRA/resolve/main/FLUX-Amateur-Photography-LoRA-v2.safetensors?download=true"):
     retries =0
     while retries < 10:
