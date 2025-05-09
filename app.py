@@ -24,6 +24,8 @@ import openai # For DALL-E and potentially other OpenAI models
 from openai import OpenAI as OpenAIClient # Explicitly for the client
 from google import genai as google_genai # For Gemini
 import anthropic
+# Set up page config
+st.set_page_config(layout="wide",page_title= "Creative Gen", page_icon="🎨")
 
 # --- Asyncio setup for Playwright on Windows ---
 if sys.platform.startswith("win"):
@@ -149,8 +151,6 @@ def install_playwright_browsers():
         st.error(f"Failed to install Playwright browsers: {str(e)}")
         return False
 
-# Set up page config
-st.set_page_config(layout="wide",page_title= "Creative Gen", page_icon="🎨")
 
 # Install playwright if needed
 if 'playwright_installed' not in st.session_state:
