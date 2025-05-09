@@ -1422,7 +1422,7 @@ if st.button("🚀 Start Phase 1: Generate Raw Images (Queued)", type="primary",
                 "original_topic": topic, "current_topic": topic, "lang": lang,
                 "chosen_template": chosen_template, "original_template_str": template_col_str,
                 "redraw_sources": redraw_sources, "instance_num": i + 1,
-                "unique_id": f"p1_{idx}_{i}_{random.alphanumeric(5)}", # For potential unique keys later
+                "unique_id": f"p1_{idx}_{i}_{''.join(random.choices(string.ascii_letters+string.digits , 5))}", # For potential unique keys later
                 "topic_enhanced_this_task": False # Flag to ensure topic is enhanced only once per task if needed
             }
             temp_tasks.append(task)
