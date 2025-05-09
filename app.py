@@ -1749,7 +1749,7 @@ if st.session_state.get('ad_creation_processing_active') and st.session_state.ad
             headline_text_for_ad = chatGPT(headline_prompt, model="gpt-4o")
         elif html_template_id == 3: # also for 7 if styling is same
             headline_prompt = f"1 statement, no quotes, for {clean_topic_for_text} ({lang}). Examples: 'Surprising Travel Perks...'. Don't use 'Hidden' or 'Unlock'. Max 6 words."
-            headline_text_for_ad = gemini_text_lib(headline_prompt)
+            headline_text_for_ad = chatGPT(headline_prompt)
         elif html_template_id == 5:
             headline_prompt = f"1 statement, ALL CAPS, for {clean_topic_for_text} ({lang}). Wrap 1-2 urgent words in <span class='highlight'>...</span>. Max 60 chars. Drive curiosity."
             headline_text_for_ad = chatGPT(headline_prompt, model="gpt-4o")
