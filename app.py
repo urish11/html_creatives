@@ -1709,7 +1709,7 @@ if not st.session_state.get('img_gen_processing_active') and st.session_state.im
         with st.container(border=True):
             st.markdown(f"#### Topic: {result_group['topic']} (Language: {result_group['lang']})")
             images_in_group = result_group['images']
-            cols_per_row = st.slider("Images per row (Phase 1 Display)", 2, 8, 4, key=f"cols_p1_{group_idx}")
+            cols_per_row = st.slider("Images per row (Phase 1 Display)", 2, 8, 6, key=f"cols_p1_{group_idx}")
             
             for i in range(0, len(images_in_group), cols_per_row):
                 cols = st.columns(cols_per_row)
