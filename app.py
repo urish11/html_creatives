@@ -1,37 +1,73 @@
 import streamlit as st
 import pandas as pd
-from PIL import Image 
+from PIL import Image
 from io import BytesIO
-import boto3 
-from botocore.exceptions import NoCredentialsError
+import asyncio
+import sys
+import os
+import time
 import random
 import string
 import requests
-from google import genai
-import anthropic
 import json
 import base64
-import os
-import time
-from playwright.sync_api import sync_playwright
-from tempfile import NamedTemporaryFile
+import tempfile
 import re
 import math
-from google_images_search import GoogleImagesSearch
-import openai  # NEW: For DALL-E variations
-import logging
-from openai import OpenAI
-import tempfile
-# Configure logging
-# logging.basicConfig(
-#     format='%(asctime)s [%(levelname)s] %(name)s - %(message)s', 
-#     level=logging.DEBUG
-# )
-# logger = logging.getLogger(__name__)
 
-# Set your OpenAI key for DALL-E
-openai.api_key = st.secrets.get("OPENAI_API_KEY")
-GEMINI_API_KEY =st.secrets.get("GEMINI_API_KEY")
+# API Client Libraries (ensure these are installed)
+from playwright.sync_api import sync_playwright, Playwright
+import boto3
+from botocore.exceptions import NoCredentialsError
+from google_images_search import GoogleImagesSearch
+import openai # For DALL-E and potentially other OpenAI models
+from openai import OpenAI as OpenAIClient # Explicitly for the client
+from google import genai as google_genai # For Gemini
+import anthropic
+
+# --- Asyncio setup for Playwright on Windows ---
+if sys.platform.startswith("win"):
+    try:
+        asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+    except Exception as e:
+        st.warning(f"Could not set WindowsProactorEventLoopPolicy for asyncio: {e}")
+
+# --- Load Secrets (Ensure these are in your Streamlit secrets) ---
+OPENAI_API_KEY_SECRET = st.secrets.get("OPENAI_API_KEY")
+GEMINI_API_KEYS_SECRET = st.secrets.get("GEMINI_API_KEY", []) # Expects a list
+GOOGLE_API_KEYS_SECRET = st.secrets.get("GOOGLE_API_KEY", []) # Expects a list
+GOOGLE_CX_SECRET = st.secrets.get("GOOGLE_CX")
+AWS_ACCESS_KEY_ID_SECRET = st.secrets.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY_SECRET = st.secrets.get("AWS_SECRET_ACCESS_KEY")
+S3_BUCKET_NAME_SECRET = st.secrets.get("S3_BUCKET_NAME")
+AWS_REGION_SECRET = st.secrets.get("AWS_REGION", "us-east-1")
+GPT_API_KEY_SECRET = st.secrets.get("GPT_API_KEY") # Potentially different from OPENAI_API_KEY_SECRET
+FLUX_API_KEYS_SECRET = st.secrets.get("FLUX_API_KEY", []) # Expects a list
+ANTHROPIC_API_KEY_SECRET = st.secrets.get("ANTHROPIC_API_KEY")
+
+# --- Initialize API Clients ---
+# OpenAI Client (for DALL-E and general GPT if GPT_API_KEY_SECRET is the same)
+if OPENAI_API_KEY_SECRET:
+    openai.api_key = OPENAI_API_KEY_SECRET
+    oai_client = OpenAIClient(api_key=OPENAI_API_KEY_SECRET)
+else:
+    oai_client = None
+    st.error("OpenAI API Key (for DALL-E) is not configured in secrets.")
+
+# Separate OpenAI client if GPT_API_KEY is different (for chatGPT function)
+if GPT_API_KEY_SECRET:
+    chatgpt_oai_client = OpenAIClient(api_key=GPT_API_KEY_SECRET)
+else:
+    chatgpt_oai_client = None # chatGPT function will need to handle this or use oai_client
+
+# Gemini Client (will be initialized per call with random key)
+# Anthropic Client (will be initialized per call)
+
+# --- Global Variables / Constants ---
+PREDICT_POLICY = """  Approved CTAs: Use calls-to-action like "Learn More" or "See Options" that clearly indicate leading to an article. Avoid CTAs like "Apply Now" or "Shop Now" "Today" that promise value not offered on the landing page.  \nProhibited Language: Do not use urgency terms ("Click now"), geographic suggestions ("Near you"), or superlatives ("Best") or "Limited Time" "Last Spots", "WARNING", "URGENT" "Get Today" .never use "Today"!. never use "We" or "Our"\n  \nEmployment/Education Claims: Do not guarantee employment benefits (like high pay or remote work) or education outcomes (like degrees or job placements).  \nFinancial Ad Rules: Do not guarantee loans, credit approval, specific investment returns, or debt relief. Do not offer banking, insurance, or licensed financial services. Avoid showing money bills \n"Free" Promotions: Generally avoid promoting services/products as "free". Exceptions require clarity: directing to an info article about a real free service, promoting a genuinely free course, or advertising free trials with clear terms. USE text on image, the most persuasive as you can you can.The above is regarding the text, for  visual elements and design use it  make up for the policy to make the design very enticing!!!!  .the above is NOT relevent to the visual aspect of the image!  The visual design must be extremely enticing to compensate for the strict text limitations """
+GLOBAL_IMAGE_COLS_FOR_DATAFRAME = [] # To be populated before creating the final CSV
+
+# --- Helper Functions (Copied from your script) ---
 
 def shift_left_and_pad(row):
     """
@@ -239,7 +275,7 @@ def gemini_text(
 def gemini_text_lib(prompt,model ='gemini-2.5-pro-exp-03-25', is_with_file=False,file_url = None ):
     if is_pd_policy : prompt += predict_policy
 
-
+#st.text(prompt)
 
 
     client = genai.Client(api_key=random.choice(GEMINI_API_KEY))
@@ -318,7 +354,7 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0,reasoning_effort=''):
 
 
 def claude(prompt , model = "claude-3-7-sonnet-20250219", temperature=1 , is_thinking = False, max_retries = 10):
-    if is_pd_policy : prompt += "make sure u follow these rules!: " + predict_policy
+    if is_pd_policy : prompt +=   predict_policy
     tries = 0
 
     while tries < max_retries:
@@ -1299,667 +1335,556 @@ def create_dalle_variation(image_url,count):
 
 
 
-predict_policy = """   Approved CTAs: Use calls-to-action like "Learn More" or "See Options" that clearly indicate leading to an article. Avoid CTAs like "Apply Now" or "Shop Now" "Today" that promise value not offered on the landing page.   \nProhibited Language: Do not use urgency terms ("Click now"), geographic suggestions ("Near you"), or superlatives ("Best") or "Limited Time" "Last Spots", "WARNING", "URGENT" "Get Today" .never use "Today"!.   \nEmployment/Education Claims: Do not guarantee employment benefits (like high pay or remote work) or education outcomes (like degrees or job placements).   \nFinancial Ad Rules: Do not guarantee loans, credit approval, specific investment returns, or debt relief. Do not offer banking, insurance, or licensed financial services. Avoid showing money bills  \n"Free" Promotions: Generally avoid promoting services/products as "free". Exceptions require clarity: directing to an info article about a real free service, promoting a genuinely free course, or advertising free trials with clear terms. USE text on image, the most persuasive as you can you can.The above is regarding the text, for   visual elements and design use it  make up for the policy to make the design very enticing!!!!  .the above is NOT relevent to the visual aspect of the image!  The visual design must be extremely enticing to compensate for the strict text limitations """
-# --------------------------------------------
-# Streamlit UI
-# --------------------------------------------
-st.title("Creative Maker ")
 
-# Initialize session state for storing generated images
-if 'generated_images' not in st.session_state:
-    st.session_state.generated_images = {}
+# --- Page Config and Initial Playwright Check ---
+st.set_page_config(layout="wide", page_title="Creative Gen PRO", page_icon="🚀")
 
-# with st.expander(f"Click to see examples for templates ", expanded=False):
-#     # --- Content inside the expander ---
-
-#     image_list =  [
-#     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744112392_1276.png", "caption": "2"},
-#     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744114470_4147.png", "caption": "3"},
-#     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744114474_6128.png", "caption": "3"},
-#     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744112152_3198.png", "caption": "4"},
-#     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744112606_9864.png", "caption": "5"},
-#     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744112288_6237.png", "caption": "6 (image as is)"},
-#     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744114000_7129.png", "caption": "'google' in topic, google image search, use w/ templates 1-6"},
-
-#     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744111656_7460.png", "caption": "gemini"},
-#     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744111645_6029.png", "caption": "gemini7"},
-#      {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1743927991_4259.png", "caption": "gemini7"},
-
-#     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1743411423_1020.png", "caption": "gemini7"},
-#     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744098746_6749.png", "caption": "gemini7claude"},
-#     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744107557_6569.png", "caption": "geminicandid"},
-#     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744107067_6826.png", "caption": "geminicandid"},
-#     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744107348_8664.png", "caption": "geminicandid"},
-#     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744212220_8873.png", "caption": "geministock"},
-#      {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744716627_8304.png", "caption": "gemini7claude_simple"}
+if 'playwright_installed_successfully' not in st.session_state:
+    with st.spinner("Checking Playwright installation..."):
+        st.session_state.playwright_installed_successfully = install_playwright_browsers()
 
 
+# --- Initialize Session State for Task Queues and Results ---
+# Phase 1: Image Generation
+if 'img_gen_task_queue' not in st.session_state: st.session_state.img_gen_task_queue = []
+if 'img_gen_results_accumulator' not in st.session_state: st.session_state.img_gen_results_accumulator = [] # Stores {topic, lang, images: [img_obj, ...]}
+if 'img_gen_processing_active' not in st.session_state: st.session_state.img_gen_processing_active = False
+if 'img_gen_current_task_idx' not in st.session_state: st.session_state.img_gen_current_task_idx = 0
+if 'img_gen_total_tasks' not in st.session_state: st.session_state.img_gen_total_tasks = 0
+if 'img_gen_errors' not in st.session_state: st.session_state.img_gen_errors = []
 
-# ]
-    # # Define number of columns for the grid
-    # num_columns = 6 # You can change this number
-
-    # # Calculate number of rows needed
-    # num_images = len(image_list)
-    # num_rows = (num_images + num_columns - 1) // num_columns # Ceiling division
-
-    # # Create the grid *inside* the expander
-    # for i in range(num_rows):
-    #     cols = st.columns(num_columns) # Create columns for the current row
-    #     # Get the slice of images for the current row
-    #     row_images = image_list[i * num_columns : (i + 1) * num_columns]
-
-    #     # Populate columns with images and captions
-    #     for j, item in enumerate(row_images):
-    #         if item: # Check if there's an item
-    #             # Use the j-th column *within the expander*
-    #             with cols[j]:
-    #                 st.image(
-    #                     item["image"],
-    #                     use_container_width=True
-    #                     )
-    #                 st.caption(item["caption"])
+# Phase 2: Ad Creation (HTML templates, screenshots)
+if 'ad_creation_task_queue' not in st.session_state: st.session_state.ad_creation_task_queue = []
+if 'ad_creation_results_list' not in st.session_state: st.session_state.ad_creation_results_list = [] # Stores final ad objects for CSV
+if 'ad_creation_processing_active' not in st.session_state: st.session_state.ad_creation_processing_active = False
+if 'ad_creation_current_task_idx' not in st.session_state: st.session_state.ad_creation_current_task_idx = 0
+if 'ad_creation_total_tasks' not in st.session_state: st.session_state.ad_creation_total_tasks = 0
+if 'ad_creation_errors' not in st.session_state: st.session_state.ad_creation_errors = []
 
 
-st.subheader("Enter Topics for Image Generation")
-df = st.data_editor(
-    # pd.DataFrame({"topic": ["example_topic"], "count": [1], "lang": ["english"], "template": ["2,3,4,41,42,5,6,7,gemini,gemini2,gemini7,gemini7claude,geminicandid,geministock,gemini7claude_simple,geminiclaude_comic,gemini7_comic | use , for random template"]}),
-    pd.DataFrame({"topic": ["example_topic"], "count": [1], "lang": ["english"], "template": [""]}),
+# --- Streamlit UI ---
+st.title("🎨 Creative Maker PRO 🚀 (Task Queue Version)")
 
-    num_rows="dynamic",
-    key="table_input"
-)
-
-
-auto_mode  = st.checkbox("Auto mode? ")
-is_pd_policy  = st.checkbox("PD policy? ")
-ennhance_input = st.checkbox("Enhance input? ")
-
-# Step 1: Generate Images
-if st.button("Generate Images"):
-    st.session_state.generated_images = []  # Clear previous images
-    processed_combinations = set()
-    progress_text =  "Generating images progress...  "
-    percent_complete = 0
-    my_bar = st.progress(0, text=progress_text)
-
-    total_images = int(sum(row['count'] for _,row in df.iterrows() ))
-    st.text(f"Total images: {total_images}")
-
-    for _, row in df.iterrows():
+# --- Expander for Template Examples ---
+with st.expander("Click to see examples for templates", expanded=False):
+    image_list = [
+        {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744112392_1276.png", "caption": "2"},
+        # ... (add all your other example images here) ...
+        {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744716627_8304.png", "caption": "gemini7claude_simple"}
+    ]
+    num_example_cols = 6
+    for i in range(0, len(image_list), num_example_cols):
+        cols = st.columns(num_example_cols)
+        for col_idx, item in enumerate(image_list[i : i + num_example_cols]):
+            if item:
+                with cols[col_idx]:
+                    st.image(item["image"], use_container_width=True, caption=item["caption"])
 
 
+st.subheader("Step 1: Define Topics for Image Generation")
+with st.container(border=True):
+    df_phase1_input = st.data_editor(
+        pd.DataFrame({"topic": ["futuristic city skyline", "cute animal google", "product advertisement"],
+                      "count": [2, 1, 1],
+                      "lang": ["english", "english", "spanish"],
+                      "template": ["gemini,gemini_comic", "google_image_search,3", "5,gemini7claude_simple"], # Template 3 for google, 5 for product
+                      "imgs_redraw":[""]}), # For gemini_redraw
+        num_rows="dynamic",
+        key="phase1_input_editor"
+    )
+    # Global flags for the entire batch of Phase 1
+    is_pd_policy_global = st.checkbox("Apply PD Policy to Text Generation?", key="pd_policy_global", value=True)
+    enhance_input_topic_global = st.checkbox("Enhance Input Topic (via LLM)?", key="enhance_topic_global", value=False)
+
+
+# --- Phase 1: Image Generation Button & Processing Loop ---
+if st.button("🚀 Start Phase 1: Generate Raw Images (Queued)", type="primary", use_container_width=True,
+             disabled=st.session_state.get('img_gen_processing_active') or st.session_state.get('ad_creation_processing_active')):
+    st.session_state.img_gen_task_queue = []
+    st.session_state.img_gen_results_accumulator = []
+    st.session_state.img_gen_errors = []
+    st.session_state.img_gen_current_task_idx = 0
+    st.session_state.img_gen_total_tasks = 0
+
+    temp_tasks = []
+    for idx, row in df_phase1_input.iterrows():
         topic = row['topic']
         count = int(row['count'])
         lang = row['lang']
-        combo = f"{topic}_{lang}"
-        template_str = row["template"]
-        headline_temp = None 
+        template_col_str = row["template"]
+        redraw_sources = row["imgs_redraw"]
 
-        cache_key = f"cached_prompt_gemini7_{topic}_{lang}"
-        if cache_key not in st.session_state:
-            st.session_state[cache_key] = {}
-            st.session_state[cache_key]["data"] = ""
-            st.session_state[cache_key]["count"] = 0
-        st.text(st.session_state[cache_key])
-        if "google" in topic.lower():
-            topic_images = []
-            # If "google" is in the topic, fetch from Google
-            topic = topic.replace('google', ' ')
-            if '|' in topic:
-                topic_for_google = re.sub("^.*\|", "", topic)
-                st.markdown(topic_for_google)
-            else:
-                topic_for_google = topic
-
-            google_image_urls = fetch_google_images(topic_for_google, num_images=int(count))
-            for img_url in google_image_urls:
-                topic_images.append({
-                    'url': img_url,
-                    'selected': False,
-                    'template': template_str,
-                    'source': 'google',       # Mark as Google
-                    'dalle_generated': False  # For tracking DALL-E generation
-                })
-            percent_complete = percent_complete + 1/total_images
-            percent_complete = percent_complete if percent_complete < 1.0 else 1.0
-            my_bar.progress(percent_complete , text=progress_text)
-
-
-        else: # NOT google!
-
-            if ennhance_input:
-                topic = chatGPT(f"write this as more commercially  attractive for ad promiting a article in {int(topic.count(' ') + 1)} words, 1 best option\n\n {topic}") 
-
-            completed_images_count = 0
-
-            while completed_images_count < count :
-
-                if ',' in row["template"]:
-                    template_str = random.choice([x for x in row["template"].split(",")])
-
-                st.text(template_str)
-                if combo not in processed_combinations:
-                    processed_combinations.add(combo)
-                    st.subheader(f"Generating images for: {topic}")
-                    topic_images = []
-                    temp_topic = topic
-
+        for i in range(count):
+            templates_available = [t.strip() for t in template_col_str.split(',') if t.strip()]
+            if not templates_available:
+                st.warning(f"No template specified for topic '{topic}', instance {i+1}. Skipping.")
+                continue
             
+            chosen_template = random.choice(templates_available) if len(templates_available) > 1 else templates_available[0]
+            
+            task = {
+                "original_topic": topic, "current_topic": topic, "lang": lang,
+                "chosen_template": chosen_template, "original_template_str": template_col_str,
+                "redraw_sources": redraw_sources, "instance_num": i + 1,
+                "unique_id": f"p1_{idx}_{i}_{random.alphanumeric(5)}", # For potential unique keys later
+                "topic_enhanced_this_task": False # Flag to ensure topic is enhanced only once per task if needed
+            }
+            temp_tasks.append(task)
+
+    st.session_state.img_gen_task_queue = temp_tasks
+    st.session_state.img_gen_total_tasks = len(temp_tasks)
+    if temp_tasks:
+        st.session_state.img_gen_processing_active = True
+        st.info(f"Queued {len(temp_tasks)} image generation tasks for Phase 1.")
+        st.rerun()
+    else:
+        st.info("No tasks to queue for Phase 1.")
 
 
-                if 'gemini' in  template_str.lower()  : # gemini
-                    if "^" in template_str:
-                        template_str = random.choice(template_str.split("^"))
+# Phase 1 Processing Loop
+if st.session_state.get('img_gen_processing_active') and st.session_state.img_gen_task_queue:
+    task_to_process = st.session_state.img_gen_task_queue[0]
+    current_idx = st.session_state.img_gen_current_task_idx
+    total_tasks = st.session_state.img_gen_total_tasks
+
+    st.info(f"Phase 1: Processing task {current_idx + 1}/{total_tasks} - Topic: '{task_to_process['original_topic']}', Template: '{task_to_process['chosen_template']}'")
+    st.progress((current_idx) / total_tasks if total_tasks > 0 else 0)
+
+    try:
+        # --- Process this single image generation task ---
+        topic_for_api = task_to_process['current_topic']
+        lang = task_to_process['lang']
+        template = task_to_process['chosen_template']
+        # Global flags (set by checkboxes)
+        apply_pd_policy = is_pd_policy_global
+        enhance_this_topic = enhance_input_topic_global
+
+        # Optional: Enhance topic once per task if flag is set globally and not yet done for this task
+        if enhance_this_topic and not task_to_process.get('topic_enhanced_this_task'):
+            st.write(f"Enhancing topic: {topic_for_api}...")
+            enhanced_topic = chatGPT(f"Rephrase for commercial appeal: '{topic_for_api}'", model="gpt-3.5-turbo") # Use appropriate model
+            if enhanced_topic:
+                topic_for_api = enhanced_topic
+                task_to_process['current_topic'] = enhanced_topic # Update for this task only
+            task_to_process['topic_enhanced_this_task'] = True
 
 
+        img_url_result = None
+        img_source_result = "unknown"
 
-                    if template_str == 'gemini2':
+        if "google" in template.lower() or "google" in topic_for_api.lower(): # Simplified check
+            clean_topic_for_google = topic_for_api.replace('google', '').strip()
+            if '|' in clean_topic_for_google: # From original script
+                clean_topic_for_google = re.sub("^.*\|", "", clean_topic_for_google)
+            
+            google_img_urls = fetch_google_images(clean_topic_for_google, num_images=1)
+            if google_img_urls:
+                img_url_result = google_img_urls[0]
+                img_source_result = "google"
+            else:
+                raise ValueError(f"Google image fetch failed for '{clean_topic_for_google}'.")
 
-                        gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use photos',''])}. add a CTA button with 
-                                            'Learn More Here >>' in appropriate language\ns\nstart with 'square image aspect ratio of 1:1 of '\n\n 
+        elif "gemini" in template.lower():
+            # Complex Gemini prompt logic from original script
+            gemini_api_prompt = f"Prompt for Gemini: Topic '{topic_for_api}', Lang '{lang}', Template '{template}'" # Placeholder
+            if template == 'gemini2':
+                gemini_api_prompt = chatGPT(f"Short square image prompt for '{topic_for_api}' ({lang}) with CTA 'Learn More Here >>'. Start with 'square image 1:1 of'.", model="gpt-4o")
+            elif template == 'gemini7claude':
+                 gemini_api_prompt = claude(f"Short square image prompt for '{topic_for_api}' ({lang}) with CTA 'Learn More Here >>', low quality, enticing. Start with 'square image 1:1 of'. No specific promises.", is_pd_policy_flag=apply_pd_policy)
+            elif template == 'geminicandid':
+                 gemini_api_prompt = claude(f"Image prompt: candid smartphone photo of regular person with '{topic_for_api}'. Organic, perplexing, high energy. No text overlay. Start with 'Square photo 1:1 iphone 12 photo uploaded to reddit:'.", is_thinking_enabled=True, is_pd_policy_flag=apply_pd_policy)
+            elif template == 'gemini_redraw':
+                redraw_img_url_list = [url.strip() for url in task_to_process['redraw_sources'].split('|') if url.strip()]
+                if not redraw_img_url_list: raise ValueError("Redraw images list is empty for gemini_redraw.")
+                chosen_redraw_url = random.choice(redraw_img_url_list)
+                redraw_prompt = f"Describe this image visually in detail for regeneration: {chosen_redraw_url}. Start 'square image 1:1 of'. Include text overlays in original language and CTA."
+                gemini_api_prompt = gemini_text_lib(redraw_prompt, model_name="gemini-1.5-pro-latest", is_with_file=True, file_url=chosen_redraw_url, is_pd_policy_flag=apply_pd_policy) # model supporting vision
+            # ... Add all other Gemini template conditions from your script ...
+            else: # Default Gemini prompt
+                gemini_api_prompt = chatGPT(f"Default square image prompt for '{topic_for_api}' ({lang}) with CTA 'Learn More Here >>', low quality, enticing. Start with 'square image 1:1 of'.", model="gpt-4o", temperature=1.0)
 
-                            """,model="gpt-4o")
-                    if template_str == 'gemini3':
+            if not gemini_api_prompt: raise ValueError("Failed to generate Gemini API prompt.")
+            st.write(f"Gemini API Prompt: {gemini_api_prompt}")
+            pil_image = gen_gemini_image(gemini_api_prompt, is_pd_policy_flag=apply_pd_policy)
+            if pil_image:
+                img_url_result = upload_pil_image_to_s3(pil_image, S3_BUCKET_NAME_SECRET, AWS_ACCESS_KEY_ID_SECRET, AWS_SECRET_ACCESS_KEY_SECRET, region_name=AWS_REGION_SECRET)
+                img_source_result = template # Use the specific gemini template name as source
+            else:
+                raise ValueError("Gemini image generation or S3 upload failed.")
+        
+        # For templates that are numbers (Flux image + HTML template)
+        # This assumes raw Flux/Google images are NOT the final product for these templates.
+        # If a template like "3" means "use Google image in HTML template 3",
+        # then the `img_url_result` from a "google" task above would be passed to Phase 2.
+        # For simplicity in Phase 1, we'll assume numeric templates mean "Flux image that will LATER be used in HTML".
+        # So, Phase 1 for numeric templates only generates the Flux URL.
+        elif template.isdigit() or template in ["geminicandid", "geministock"]: # These might be base images for HTML templates OR direct use
+            flux_topic_prompt = topic_for_api # Default
+            if template == "geminicandid": # Flux LORA
+                flux_topic_prompt = claude(f"Image prompt of a candid unstaged photo of a regular joe showing off his/her {topic_for_api}. Smartphone quality, reddit style, perplexing, high energy. NO TEXT OVERLAY.", is_thinking_enabled=True, is_pd_policy_flag=apply_pd_policy)
+                if flux_topic_prompt:
+                     img_url_result = gen_flux_img_lora(flux_topic_prompt)
+                else: raise ValueError("Failed to generate prompt for flux lora.")
 
-                        gemini_prompt = chatGPT(f""" write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use authentic photos', 'no special photo requirement'])}.\nmake it visually engaging and emotionally intriguing.\nadd a bold CTA button with 'Learn More Here >>' in appropriate language.\nstart the prompt with 'square image aspect ratio of 1:1 of '\nmake sure the image grabs attention and sparks curiosity.\n
-                                            """,model="gpt-4o")
+            elif template == "geministock": # Regular Flux for stock-like
+                flux_topic_prompt = chatGPT(f"Short image prompt for {topic_for_api}, no text on image. High-quality, realistic, well-lit, marketing/editorial style.", model="gpt-4o")
+                if flux_topic_prompt:
+                    img_url_result = gen_flux_img(flux_topic_prompt)
+                else: raise ValueError("Failed to generate prompt for flux stock.")
+            
+            # If it's just a number, it implies a Flux image for a later HTML template.
+            # The actual HTML templating happens in Phase 2. So Phase 1 just gets the Flux image URL.
+            elif template.isdigit():
+                # Default Flux image prompt if not candid or stock
+                flux_topic_prompt = chatGPT(f"Visually enticing image description (15 words max) for {topic_for_api}.", model="gpt-4o")
+                if flux_topic_prompt:
+                    img_url_result = gen_flux_img(flux_topic_prompt)
+                else: raise ValueError("Failed to generate prompt for flux (numeric template).")
 
-                    if template_str == 'geminicandid':
-                        gemini_prompt = claude(f"""write a image prompt of a candid unstaged photo taken of a regular joe showing off his\her {topic} . the image is taken with smartphone candidly. in 1-2 sentences. Describe the quality of the image looking smartphone. start with "Square photo 1:1 iphone 12 photo uploaded to reddit:"
+            if img_url_result == "nsfw_detected":
+                st.error(f"NSFW content detected by Flux for topic '{topic_for_api}'. Task aborted.")
+                img_url_result = None # Ensure it's None so error is caught
+                raise ValueError("NSFW detected")
+            elif not img_url_result:
+                raise ValueError("Flux image generation failed.")
+            img_source_result = f"flux_for_template_{template}"
 
-                        this is for a fb ad that tries to look organic, but also make the image content intecing and somewhat perplexing, so try to be that but also draw clicks with high energy in the photo. dont make up facts like discounts! or specific prices! no text overlay on image
-                            """, is_thinking=True).replace("#","")
-                                            # if you want to add a caption, specifically instruct it to be on the image. and be short in language {lang}
 
-                    if template_str == 'gemini':
-                        gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use photos',''])}. add a CTA button with 
-                                                'Learn More Here >>' in appropriate language\nshould be low quality and very enticing and alerting\nstart with 'square image aspect ratio of 1:1 of '\n\n example output:\n\nsquare image of a concerned middle-aged woman looking at her tongue in the mirror under harsh bathroom lighting, with a cluttered counter and slightly blurry focus — big bold red text says “Early Warning Signs?” and a janky yellow button below reads “Learn More Here >>” — the image looks like it was taken on an old phone, with off angle, bad lighting, and a sense of urgency and confusion to provoke clicks.
+        # --- Accumulate result for Phase 1 ---
+        if img_url_result:
+            # Find or create group for this topic+lang
+            group = next((g for g in st.session_state.img_gen_results_accumulator if g['topic'] == task_to_process['original_topic'] and g['lang'] == lang), None)
+            if not group:
+                group = {"topic": task_to_process['original_topic'], "lang": lang, "images": []}
+                st.session_state.img_gen_results_accumulator.append(group)
+            
+            group['images'].append({
+                'url': img_url_result,
+                'template_used': template, # The specific template chosen for this instance
+                'source_type': img_source_result,
+                'original_topic': task_to_process['original_topic'], # Keep for reference
+                'processed_topic': topic_for_api, # Potentially enhanced topic
+                'lang': lang,
+                'selected_count': 0, # For Phase 2 selection
+                'dalle_variation_requested': False
+            })
+        else:
+            raise ValueError("Image URL was not generated for the task.")
 
-                            """,model="gpt-4o", temperature= 1.0)
-                    if template_str == 'gemini7_comic':
-                        gemini_prompt  = gemini_text_lib(f"""write short prompt for
-                            generate square image promoting '{topic}' in language {lang}. add a CTA button with 
-                            'Learn More Here >>' in appropriate language
+        # Task successful
+        st.session_state.img_gen_task_queue.pop(0)
+        st.session_state.img_gen_current_task_idx += 1
+
+    except Exception as e:
+        st.error(f"Error in Phase 1 Task: {task_to_process['original_topic']} (Tmpl: {template}): {str(e)}")
+        failed_task = st.session_state.img_gen_task_queue.pop(0)
+        st.session_state.img_gen_errors.append({"task": failed_task, "error": str(e)})
+        st.session_state.img_gen_current_task_idx += 1 # Count as processed attempt
+
+    # Rerun for next task or to finish Phase 1
+    if not st.session_state.img_gen_task_queue: # If queue is now empty
+        st.session_state.img_gen_processing_active = False
+        st.success(f"🎉 Phase 1: All {total_tasks} image generation tasks processed!")
+        if total_tasks > 0: play_sound("audio/bonus-points-190035.mp3") # Ensure path is correct
+        # No rerun here, let UI update below for results display
+    else:
+        st.rerun() # Continue to next task in Phase 1
+
+# --- Display Phase 1 Results & Allow Selection for Phase 2 ---
+if not st.session_state.get('img_gen_processing_active') and st.session_state.img_gen_results_accumulator:
+    st.subheader("✅ Phase 1 Complete: Review Generated Images")
+    st.caption("Set 'Ad Count' for images you want to process into final HTML ad creatives in Phase 2.")
+    
+    if st.session_state.img_gen_errors:
+        with st.expander("Show Phase 1 Errors", expanded=False):
+            for err in st.session_state.img_gen_errors:
+                st.error(f"Failed Task: {err['task']['original_topic']} (Template: {err['task']['chosen_template']}) - Error: {err['error']}")
+
+    auto_select_all_phase2 = st.checkbox("Auto-set Ad Count to 1 for all Phase 1 images?", key="auto_select_phase2")
+
+    for group_idx, result_group in enumerate(st.session_state.img_gen_results_accumulator):
+        with st.container(border=True):
+            st.markdown(f"#### Topic: {result_group['topic']} (Language: {result_group['lang']})")
+            images_in_group = result_group['images']
+            cols_per_row = st.slider("Images per row (Phase 1 Display)", 2, 8, 4, key=f"cols_p1_{group_idx}")
+            
+            for i in range(0, len(images_in_group), cols_per_row):
+                cols = st.columns(cols_per_row)
+                for col_idx, img_obj in enumerate(images_in_group[i : i + cols_per_row]):
+                    if col_idx < len(cols): # Ensure we don't go out of bounds for columns
+                        with cols[col_idx]:
+                            img_unique_key = f"p1_img_{group_idx}_{i+col_idx}"
+                            st.image(img_obj['url'], caption=f"Source: {img_obj['source_type']}, Tmpl: {img_obj['template_used']}", use_container_width=True)
                             
-                            should be low quality, very enticing and alerting . use saturated color theme (e.g. red, blue, green, or pink), just one. 
-                            image should be chaotic but readable, styled like a square ad that grabs attention.
-                            
-                            start with 'square image aspect ratio of 1:1 of'
-                            
-                            be specific in what is shown: include a person interacting with the product or benefit, big bold text in {lang}, and bright graphic elements like rays or dots in the background.
-                            
-                            return JUST the best option, no intros
-                            """)
+                            default_ad_count = 1 if auto_select_all_phase2 else img_obj.get('selected_count', 0)
+                            ad_count = st.number_input("Ad Count (for Phase 2)", min_value=0, max_value=5, value=default_ad_count, key=f"ad_count_{img_unique_key}")
+                            img_obj['selected_count'] = ad_count # Update the object in session state
 
-                    if template_str == 'geminiclaude_comic':
-                        gemini_prompt  = claude(f"""write short prompt for
-                            generate square image promoting '{topic}' in language {lang}. add a CTA button with 
-                            'Learn More Here >>' in appropriate language
-                            
-                            should be low quality, very enticing and alerting . use saturated color theme (e.g. red, blue, green, or pink), just one. 
-                            image should be chaotic but readable, styled like a square ad that grabs attention.
-                            
-                            start with 'square image aspect ratio of 1:1 of'
-                            
-                            be specific in what is shown: include a person interacting with the product or benefit, big bold text in {lang}, and bright graphic elements like rays or dots in the background.
-                            
-                            return JUST the best option, no intros
-                            """ ,is_thinking=True)
-
-
-                    
-                    if template_str == 'gemini7': # gemini1 with geimini text
-                        if cache_key in st.session_state and st.session_state[cache_key] and st.session_state[cache_key]["count"] % 2 != 0:
-                            st.text("using cached prompt")
-                            gemini_prompt = st.session_state[cache_key]["data"]
-                            st.session_state[cache_key]["count"] = st.session_state[cache_key]["count"] +1
-                        else:
-                            gemini_prompt = gemini_text_lib(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
-                                                    'Learn More Here >>' in appropriate language\\nand 'act fast' or 'limited available' \n \nshould be low quality and very enticing and alerting!! \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
-                            """)
-                            st.session_state[cache_key]["data"] = gemini_prompt
-                            st.session_state[cache_key]["count"] = st.session_state[cache_key]["count"] +1
-
-                    if template_str == 'gemini_redraw':
-                        prompt_txt ="""describe this image in details, only descibe what is seen visually! , especially the layout. start with 'square image aspect ratio of 1:1 of. if theres overlay image on the text, mention it with text in original language, especially the CTA text!  """ 
-                        gemini_prompt = gemini_text_lib( prompt_txt  , model ="gemini-2.0-flash-exp-image-generation",
-                                                         is_with_file=True, file_url=random.choice(lang.split("|")))                        
-                        
-                        if is_pd_policy:
-                            gemini_prompt = gemini_text_lib(f"given (keep original text overlay text language, also CTA text!!) this image prompt, edit it, dont change the text prompt at all , but  only follow the following rules, if some element dosent comply, edit it so it does comlply (just this text part) , input{gemini_prompt} rules,no sensetional pushing phrasing urgent, FOMO text , return JUST the output no intros:" + predict_policy,model = "gemini-2.0-flash-exp")
-                    if template_str == 'gemini7claude': # gemini1 with geimini text
-                        gemini_prompt = claude(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
-                                                'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting!!, don't make specific promises like x% discount and 'act fast' or 'limited available'  \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
-                                                if you want to add a caption, specifically instruct it to be on the image. and be short
-
-                            """, is_thinking=False)
-                    if template_str == 'gemini7batch': # gemini1 with geimini text
-                        gemini_prompt = gemini_text_lib(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
-                                                'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the {count} best options, each prompt is a FULL PROMPT !! each at least 500 chrs(dont write it),be creative and have variance between the prompts, no intros , as json key is int index , it's value is the prompt. .
-
-                            """)
-                    if template_str == 'gemini7claude_simple': # gemini1 with geimini text
-                        gemini_prompt = claude(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
-                                                'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting!!!! BUT simple  layout , make the text legable and in negative space, don't make specific promises like x% discount and 'act fast' or 'limited available'    \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
-                                                if you want to add a caption, specifically instruct it to be on the image. and be short
-
-                            """, is_thinking=False)
-                        gemini_prompt= gemini_prompt.replace('```json','').replace("```","").replace("python","")
-
-                            
-
-                    if template_str == 'gemini8': # gemini1 with geimini text
-                        gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
-                                                'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
-
-                            """,model='o3-mini', temperature= 0,reasoning_effort='high') 
-                    if template_str == 'gemini6':
-                        cleaned_topic= re.sub('\\|.*','',topic)
-                        headline_temp =gemini_text(f"""write 1 statement,kinda clickbaity, very consice and action click driving, same length, no quotes, for {cleaned_topic} in {lang}. Examples:\n'Surprising Travel Perks You Might Be Missing'\n 'Little-Known Tax Tricks to Save Big'\n Dont mention 'Hidden' or 'Unlock'.\nmax  6 words""")
-
-                        # gemini_prompt_angle = gemini_text(f"""For the topic  {topic}, imagine a highly specific and unusual moment in someone's everyday life that would visually hint at the condition — but in a confusing, unexpected way.\nThe moment should:\n– Feel personal, like something they might do alone out of worry or curiosity\n– Be visually simple but puzzling \n-High energy and dramatic\n– Create just enough mystery that the viewer thinks: "Wait… why would someone do that?"\n\nCome up with one clever, click-provoking scenario that could be captured in a smartphone photo, \n must be highly engaging visually for the topic, to be for image prompt.\nReturn just the angle, consicly in 1 sentence up to 16 words""")
-
-                        gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use photos',''])}. add a CTA button with 
-                                                'Learn More Here >>' in appropriate language\nshould be low quality and very enticing and alerting\ninclude the following text in the image '{headline_temp}\nstart with 'square image aspect ratio of 1:1 of '\n\n example output:\n\nsquare image of a concerned middle-aged woman looking at her tongue in the mirror under harsh bathroom lighting, with a cluttered counter and slightly blurry focus — big bold red text says “Early Warning Signs?” and a janky yellow button below reads “Learn More Here >>” — the image looks like it was taken on an old phone, with off angle, bad lighting, and a sense of urgency and confusion to provoke clicks.
-
-                            """,model="gpt-4o", temperature= 1.0)
-                    if template_str == 'gemini4':
-                        gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use photos',''])}. add a CTA button with 
-                                                'Learn More Here >>' in appropriate language and a driving enticing copy in the image\nMUST be be low quality design , stress that!! and very enticing and alerting,high energy enticing, describe the visuals\nstart with 'square image aspect ratio of 1:1 of '\n\n example output:\n\nsquare image of .....
-
-                            """,model="gpt-4o", temperature= 1.0)
-
-                    if template_str == 'gemini5':
-
-                        gemini_prompt_angle = chatGPT(f"""For the topic  {topic}, imagine a highly specific and unusual moment in someone's everyday life that would visually hint at the condition — but in a confusing, unexpected way.\nThe moment should:\n– Feel personal, like something they might do alone out of worry or curiosity\n– Be visually simple but puzzling \n-High energy and dramatic\n– Create just enough mystery that the viewer thinks: "Wait… why would someone do that?"\n\nCome up with one clever, click-provoking scenario that could be captured in a smartphone photo, \n must be highly engaging visually for the topic, to be for image prompt.\nReturn just the angle, consicly in 1 sentence up to 16 words""",model="o1", temperature= 0)
-                        st.text(f"Angle {gemini_prompt_angle}")
-                        gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' using this angle {gemini_prompt_angle.replace('\n','')} in language {lang} {random.choice(['use photos',''])}. add a CTA button with 
-                                                'Learn More Here >>' in appropriate language\nshould be low quality and very enticing and alerting\nstart with 'square image aspect ratio of 1:1 of '\n\n example output:\n\nsquare image of a concerned middle-aged woman looking at her tongue in the mirror under harsh bathroom lighting, with a cluttered counter and slightly blurry focus — big bold red text says '.....' and a janky yellow button below reads 'Learn More Here >>' — the image looks like it was taken on an old phone, with off angle, bad lighting, and a sense of urgency and confusion to provoke clicks.
-
-                            """,model="gpt-4o", temperature= 1.0)
-                        
-                        
-
-                    if template_str == 'geministock':
-                            gemini_prompt = chatGPT(f""" write short image prompt for {topic},no text on image,A high-quality  image in a realistic setting, well-lit and visually appealing, suitable for use in marketing or editorial content.""",model="gpt-4o", temperature= 1.0)
-
-
-                    if gemini_prompt is not None  :
-
-                        if 'batch' in template_str:
-                            json_data = json.loads(gemini_prompt)
-                            st.text(f'Batch ! {json_data}')
-                            batch_complete_counter = 0
-                            st.text(type(json_data))
-                            while batch_complete_counter < len(json_data):
-                                for key in list(json_data.keys()):
-                                    prompt = json_data[key]
-                                    st.text(f"img prompt {prompt}")
-                                    gemini_img_bytes = gen_gemini_image(prompt)
-                                    if gemini_img_bytes is not None:
-
-                                        gemini_image_url = upload_pil_image_to_s3(image = gemini_img_bytes ,bucket_name=S3_BUCKET_NAME,
-                                                    aws_access_key_id=AWS_ACCESS_KEY_ID,
-                                                    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-                                                    region_name=AWS_REGION
-                                                )
+                            # DALL-E Variation (simplified, runs synchronously here, could be a separate task system too)
+                            if img_obj.get("source_type") == "google" and not img_obj.get("dalle_variation_requested"):
+                                if st.button("Request DALL-E Variations", key=f"dalle_{img_unique_key}", help="Generates DALL-E variations for this Google image based on 'Ad Count'. Adds them to this list."):
+                                    if ad_count > 0 and oai_client:
+                                        with st.spinner(f"Generating {ad_count} DALL-E variations..."):
+                                            variation_data_list = create_dalle_variation(img_obj['url'], ad_count)
+                                            if variation_data_list:
+                                                img_obj["dalle_variation_requested"] = True
+                                                for var_idx, var_data in enumerate(variation_data_list):
+                                                    images_in_group.append({ # Add to current display group
+                                                        'url': var_data.url, 'template_used': img_obj['template_used'],
+                                                        'source_type': f"dalle_variation_{var_idx+1}",
+                                                        'original_topic': img_obj['original_topic'], 'processed_topic': img_obj['processed_topic'],
+                                                        'lang': img_obj['lang'], 'selected_count': 1, # Default selected
+                                                        'dalle_variation_requested': True
+                                                    })
+                                                st.success(f"Added {len(variation_data_list)} DALL-E variations.")
+                                                st.rerun() # Refresh display
+                                    elif not oai_client:
+                                        st.error("OpenAI client for DALL-E not configured.")
                                     else:
-                                        st.text('Image not created, retry')
-                                        continue
-                                    if gemini_image_url:
-                                                topic_images.append({
-                                                    'url': gemini_image_url,
-                                                    'selected': False,
-                                                    'template': template_str,
-                                                    'source': 'gemini',            # Mark as flux
-                                                    'dalle_generated': False     # Not relevant for flux, but keep structure
-                                                })
-                                                
-                                        
-                                    # percent_complete = percent_complete + 1/total_images
-
-                                    my_bar.progress(percent_complete, text=progress_text)
-                                    completed_images_count += 1
-                                    batch_complete_counter += 1
-
-                                
-                        else:
-
-                            st.text(f"img prompt {gemini_prompt.replace('\n','')}")
-                            gemini_img_bytes = gen_gemini_image(gemini_prompt)
-                            if gemini_img_bytes is not None:
-
-                                gemini_image_url = upload_pil_image_to_s3(image = gemini_img_bytes ,bucket_name=S3_BUCKET_NAME,
-                                            aws_access_key_id=AWS_ACCESS_KEY_ID,
-                                            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-                                            region_name=AWS_REGION
-                                        )
-                    else:
-                        st.text('Image not created, retry')
-                        continue
-                    if gemini_image_url:
-                                topic_images.append({
-                                    'url': gemini_image_url,
-                                    'selected': False,
-                                    'template': template_str,
-                                    'source': 'gemini',            # Mark as flux
-                                    'dalle_generated': False     # Not relevant for flux, but keep structure
-                                })
-
-                    percent_complete = percent_complete + 1/total_images
-
-                    my_bar.progress(percent_complete, text=progress_text)
-                    completed_images_count += 1
-
-                else:
-                # Otherwise, use FLUX to generate
-                    topic = temp_topic
-                    if '^' in topic:
-                        topic = random.choice(topic.split("^"))
-
-                    new_prompt = False
-                    if "," in template_str:
-                        template = random.choice([int(x) for x in template_str.split(",")])
-                    elif "*" in template_str:
-                        new_prompt = random.choice([True, False])
-                        template_str = template_str.replace("*", "")
-                        template = int(template_str)
-                    else:
-                        template = int(template_str)
-
-                    with st.spinner(f"Generating image {completed_images_count } for '{topic}'..."):
-                        if template == 5:
-                            rand_prompt = f"""Generate a concise visual image description (15 words MAX) for {topic}.
-                            Be wildly creative, curious, and push the limits of imagination—while staying grounded in real-life scenarios!
-                            Depict an everyday, highly relatable yet dramatically eye-catching scene that sparks immediate curiosity within 3 seconds.
-                            Ensure the image conveys the value of early detection (e.g., saving money, time, improving health, or education) in a sensational but simple way.
-                            The scene must feature one person, clearly illustrating the topic without confusion.
-                            Avoid surreal or abstract elements; instead, focus on relatable yet RANDOM high-energy moments from daily life.
-                            Do not include any text in the image.
-                            Your final output should be 8-13 words, written as if describing a snapshot from a camera.
-                            Make sure the offer’s value is unmistakably clear and visually intriguing"""
-                            image_prompt = chatGPT(rand_prompt, model='gpt-4', temperature=1.2)
-                            st.markdown(image_prompt)
-                        elif template == 7 :
-                            image_prompt = chatGPT(f"Generate a  visual image description  50 words MAX for  {topic} , candid moment unstaged , taken  in the moment by eye witness like with a smartphone, viral reddit style, make it dramatic and visually enticing",  
-                                        model='o1-mini',
-                                #temperature=1.15
-                                
-                            )
-                        # elif not new_prompt:
-                        #     image_prompt = chatGPT(
-                        #         f"""Generate a  visual image description  15 words MAX for  {topic}.
-                        #         Be creative, show the value of the offer (saving money, time, health, etc.) in a sensational yet simplistic scene.
-                        #         Include one person and do not include text in the image. 
-                        #         Output is up to 5 words. Think like a camera snapshot!""",
-                        #         model='gpt-4',
-                        #         temperature=1.15
-                        #     )
-                        elif template == 8:
-                            image_prompt = chatGPT( f"A clean, high-resolution stock photo prompt of {topic}, no people, well-lit with natural or studio lighting, minimalist background, professionally styled — perfect for commercial or editorial use.")
-
-                            
-                        else:
-                            image_prompt = chatGPT(
-                                f"""Generate a  visual image description 15 words MAX for {topic}.
-                                Use a visually enticing style with high CTR, avoid obvious descriptions."""
-                                
-                            )
-
-                        # Generate with FLUX
-                        if template == 5:
-                            image_url = gen_flux_img(
-                                f"{random.choice(['cartoony clipart of ', 'cartoony clipart of ', '', ''])}{image_prompt}",
-                                width=688,
-                                height=416
-                            )
-                        if template == 7:
-                            image_url = gen_flux_img_lora(
-                                image_prompt )
-                            
-                        if template == 8:
-                            st.text("mayyyyy" +image_prompt)
-                            image_url = gen_flux_img(
-                                image_prompt, width=720, height=480 )
-                        if template == 9:
-                            st.text("mayyyyy" +image_prompt)
-                            image_url = gen_flux_img(
-                                image_prompt, width=720, height=480 )
-                                
-                            
-                        else:
-                            image_url = gen_flux_img(
-                                f"{random.choice(['cartoony clipart of ', 'cartoony clipart of ', '', ''])}{image_prompt}"
-                            )
-
-                        if image_url:
-                            topic_images.append({
-                                'url': image_url,
-                                'selected': False,
-                                'template': template,
-                                'source': 'flux',            # Mark as flux
-                                'dalle_generated': False     # Not relevant for flux, but keep structure
-                            })
-                        percent_complete = percent_complete + 1/total_images
-                        completed_images_count += 1
-                        
-                        # my_bar.progress(percent_complete, text=progress_text)
+                                        st.warning("Set 'Ad Count > 0' to generate DALL-E variations.")
+    st.markdown("---")
 
 
-        # Append the images for this topic
-        st.session_state.generated_images.append({
-            "topic": topic,
-            "lang": lang,
-            "images": topic_images
-        })
-    play_sound("audio/bonus-points-190035.mp3")
+# --- Phase 2: Ad Creation (HTML Templating) Button & Processing Loop ---
+st.subheader("Step 2: Create Final Ad Creatives from Selected Images")
+if st.button("🚀 Start Phase 2: Create HTML Ad Creatives (Queued)", type="primary", use_container_width=True,
+             disabled=st.session_state.get('img_gen_processing_active') or st.session_state.get('ad_creation_processing_active') or not st.session_state.img_gen_results_accumulator):
+    
+    st.session_state.ad_creation_task_queue = []
+    st.session_state.ad_creation_results_list = [] # This will store the final {Topic, Language, Image_X_Y} dicts
+    st.session_state.ad_creation_errors = []
+    st.session_state.ad_creation_current_task_idx = 0
+    st.session_state.ad_creation_total_tasks = 0
 
-# Step 2: Display generated images in a grid
-if auto_mode and st.session_state.generated_images:
+    temp_ad_tasks = []
+    for result_group in st.session_state.img_gen_results_accumulator:
+        for img_obj in result_group['images']:
+            if img_obj.get('selected_count', 0) > 0:
+                # Check if this image type is suitable for HTML templating
+                # Gemini images are usually final. Google/Flux images are bases for HTML.
+                # Dalle variations are also usually final.
+                # The original script implied Gemini images were just added to the list.
+                # Numeric templates (1-8 excluding google/gemini ones) were for HTML.
+                
+                is_html_template_task = False
+                template_for_html_str = img_obj['template_used']
 
-    for entry in st.session_state.generated_images:
-        images= entry["images"] 
-        for img in images:
-            img['selected_count'] = 1
-
-
-
-
-
-if st.session_state.generated_images: 
-    st.subheader("Select Images to Process")
-    zoom = st.slider("Zoom Level", min_value=50, max_value=500, value=300, step=50)
-
-    for entry in st.session_state.generated_images:
-        topic = entry["topic"]
-        lang = entry["lang"]
-        images = entry["images"]
-
-        st.write(f"### {topic} ({lang})")
-
-        num_columns = 6
-        rows = (len(images) + num_columns - 1) // num_columns
-
-        for row in range(rows):
-            cols = st.columns(num_columns)
-            for col, img in zip(cols, images[row * num_columns:(row + 1) * num_columns]):
-                with col:
-                    st.image(img['url'], width=zoom)
-                    unique_key = f"num_select_{topic}_{lang}_{img['url']}"
-                    try:
-                        if auto_mode:
-                            img['selected_count'] = st.number_input(
-                                f"Count for {img['url'][-5:]}",
-                                min_value=0, max_value=10,value = 1, key=unique_key ,
-                            )                        
-                        else:
-                    
-                            img['selected_count'] = st.number_input(
-                                f"Count for {img['url'][-5:]}",
-                                min_value=0, max_value=10, value=0, key=unique_key ,
-                            )
-                    except:img['selected_count'] = 0
-
-                    # DALL-E Variation button for Google images
-                    if img.get("source") == "google" and not img.get("dalle_generated", False):
-                        if st.button("Get DALL-E Variation", key=f"dalle_button_{topic}_{img['url']}"):
-                            dalle_url = create_dalle_variation(img['url'],img.get("selected_count"))
-                            if dalle_url:
-                                for dalle_img in dalle_url:
-                                        
-                                    st.success("DALL-E variation generated!")
-                                    img["dalle_generated"] = True
-                                    # Append the new DALL-E image
-                                    entry["images"].append({
-                                        "url": dalle_img.url,
-                                        "selected": False,
-                                        "template": img["template"],
-                                        "source": "dalle",
-                                        "dalle_generated": True
-                                    })
-                                    # st.experimental_rerun()
-
-# Step 3: Process selected images -> generate HTML, screenshot, upload to S3
-if st.button("Process Selected Images"):
-    final_results = []
-
-    for entry in st.session_state.generated_images:
-        topic = entry["topic"]
-        lang = entry["lang"]
-        images = entry["images"]
-
-        res = {'Topic': topic, 'Language': lang}
-        print(topic)
-        selected_images = [img for img in images if img['selected_count'] > 0]
-
-        # We'll store CTA text per language in a dict to avoid repeated calls
-        cta_texts = {}
-
-        for idx, img in enumerate(selected_images):
-            for i in range(img['selected_count']):
-                template = img['template']
-
-                if    type(template) == str and "gemini" in template:
-                    res[f'Image_{idx + 1}__{i + 1}'] = img['url']
-                    continue
-
-                # Decide which prompt to use for headline
-                if template == 1 or template == 2:
-                    headline_prompt = (
-                        f"write a short text (up to 20 words) to promote an article about {topic} in {lang}. "
-                        f"Goal: be concise yet compelling to click."
-                    )
-                elif template in [3]:
-                    headline_prompt = (
-                        f"write 1 statement, same length, no quotes, for {re.sub('\\|.*','',topic)} in {lang}."
-                        f"Examples:\n'Surprising Travel Perks You Might Be Missing'\n"
-                        f"'Little-Known Tax Tricks to Save Big'\n"
-                        f"Dont mention 'Hidden' or 'Unlock'."
-                    )
-                elif template in [5]:
-                    headline_prompt = (
-                        f"write 1 statement, same length, no quotes, for {re.sub('\\|.*','',topic)} in {lang}. "
-                        f"ALL IN CAPS. wrap the 1-2 most urgent words in <span class='highlight'>...</span>."
-                        f"Make it under 60 chars total, to drive curiosity."
-                    )
-                elif template in [7]:
-                    headline_prompt = (f"write short punchy 1 sentence text to   this article: \n casual and sharp and consice\nuse ill-tempered language\n don't address the reader (don't use 'you' and etc)\n  \nAvoid dark themes like drugs, death etc..\n MAX 70 CHARS, no !, Title Case, in lang {lang} for: {re.sub('\\|.*','',topic)}")
-                        
-
-                else:
-                    headline_prompt = f"Write a concise headline for {topic} in {lang}, no quotes."
-
-                if lang in cta_texts:
-                    cta_text = cta_texts[lang]
-                else:
-                    # e.g. "Learn More" in that language
-                    cta_trans = chatGPT(
-                        f"Return EXACTLY the text 'Learn More' in {lang} (no quotes)."
-                    ).replace('"', '')
-                    cta_texts[lang] = cta_trans
-                    cta_text = cta_trans
-
-                # For certain templates, override cta_text or headline
-                if template in [4, 41, 42]:
-                    headline_text = topic
-                    cta_text = chatGPT(
-                        f"Return EXACTLY 'Read more about' in {lang} (no quotes)."
-                    ).replace('"', '')
-                elif template in [6,8]:
-                    headline_text = ''
-                else:
-                    # Generate the main headline with GPT
-                    headline_text = chatGPT(
-                        prompt=headline_prompt,
-                        model='gpt-4'
-                    ).strip('"').strip("'")
-
-                    st.markdown(headline_text)
-
-                # If template=5, generate a "tag_line"
-                if template == 5:
-                    tag_line = chatGPT(
-                        f"Write a short tagline for {re.sub('\\|.*','',topic)} in {lang}, "
-                        f"to drive action, max 25 chars, ALL CAPS, possibly with emoji. "
-                        f"Do NOT mention the topic explicitly."
-                    ).strip('"').strip("'").strip("!")
-                    # Minor formatting fix to keep <span> spacing
-                    headline_text = headline_text.replace(r"</span>", r"</span>   ")
-                else:
-                    tag_line = ''
-
-                # Build final HTML
-              
-                html_content = save_html(
-                    headline=headline_text,
-                    image_url=img['url'],
-                    cta_text=cta_text,
-                    template=int(template),
-                    tag_line=tag_line
-                )
-
-                # Capture screenshot
-                if template == 8:
-                    screenshot_image = capture_html_screenshot_playwright(html_content,width=720,height = 480)
-                else:
-                    screenshot_image = capture_html_screenshot_playwright(html_content)
+                if template_for_html_str.isdigit(): # Templates 1-8 are HTML based
+                    is_html_template_task = True
+                elif img_obj['source_type'] == "google" and not template_for_html_str.lower().startswith("google"):
+                    # If it's a google image BUT the template_used is a numeric HTML template
+                    # (e.g., user input "google_image_search,3" -> template_used becomes "3" for the google image)
+                    if template_for_html_str.isdigit():
+                         is_html_template_task = True
 
 
-                if screenshot_image:
-                    st.image(screenshot_image, caption=f"Generated Advertisement for {topic}", width=600)
-                    # Upload to S3
-                    s3_url = upload_pil_image_to_s3(
-                        image=screenshot_image,
-                        bucket_name=S3_BUCKET_NAME,
-                        aws_access_key_id=AWS_ACCESS_KEY_ID,
-                        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-                        region_name=AWS_REGION
-                    )
-                    if s3_url:
-                        # e.g. "Image_1__1"
-                        res[f'Image_{idx + 1}__{i + 1}'] = s3_url
+                if is_html_template_task:
+                    for i in range(img_obj['selected_count']):
+                        ad_task = {
+                            "base_image_url": img_obj['url'],
+                            "original_topic": img_obj['original_topic'],
+                            "processed_topic": img_obj['processed_topic'],
+                            "lang": img_obj['lang'],
+                            "html_template_id_str": template_for_html_str, # The numeric template ID as string
+                            "instance_num": i + 1,
+                            "unique_id": f"p2_{img_obj['url'][-10:]}_{i}_{random.alphanumeric(5)}"
+                        }
+                        temp_ad_tasks.append(ad_task)
+                else: # Direct use image (Gemini, DALL-E variation, or Google if template was 'google_image_search')
+                    # Add these directly to the ad_creation_results_list for the final CSV
+                    # as they don't need further HTML processing.
+                    for i in range(img_obj['selected_count']):
+                         # This structure needs to match what shift_left_and_pad expects later.
+                         # Original `final_results` was a list of dicts, where each dict is a row.
+                         # We need to build these row-like dicts.
+                         # We'll do this after Phase 2 processing completes. For now, just note them.
+                        st.session_state.ad_creation_results_list.append({
+                            # This structure needs to be transformed for the final CSV.
+                            # Let's store them as "pre_csv_objects"
+                            "type": "direct_image",
+                            "Topic": img_obj['original_topic'],
+                            "Language": img_obj['lang'],
+                            "S3_URL": img_obj['url'], # This is the direct S3 URL
+                            "Source_Template_Phase1" : img_obj['template_used']
+                        })
 
-        final_results.append(res)
 
-    if final_results:
-        output_df = pd.DataFrame(final_results)
+    st.session_state.ad_creation_task_queue = temp_ad_tasks
+    st.session_state.ad_creation_total_tasks = len(temp_ad_tasks)
+    if temp_ad_tasks:
+        st.session_state.ad_creation_processing_active = True
+        st.info(f"Queued {len(temp_ad_tasks)} HTML ad creation tasks for Phase 2.")
+        st.rerun()
+    elif st.session_state.ad_creation_results_list: # Only direct images were selected
+        st.session_state.ad_creation_processing_active = False # No HTML tasks
+        st.success("Phase 2: No HTML ads to create. Direct images collected.")
+        st.rerun() # To trigger final CSV display
+    else:
+        st.info("No images selected or suitable for HTML ad creation in Phase 2.")
 
-        # Reorganize and flatten image links
-        global image_cols
-        image_cols = [col for col in output_df.columns if "Image_" in col]
-        output_df[image_cols] = output_df[image_cols].apply(shift_left_and_pad, axis=1)
 
-        # st.dataframe(output_df.drop_duplicates())
+# Phase 2 Ad Creation Processing Loop
+if st.session_state.get('ad_creation_processing_active') and st.session_state.ad_creation_task_queue:
+    ad_task_to_process = st.session_state.ad_creation_task_queue[0]
+    current_ad_idx = st.session_state.ad_creation_current_task_idx
+    total_ad_tasks = st.session_state.ad_creation_total_tasks
 
-        st.subheader("Final Results")
-        st.dataframe(output_df)
+    st.info(f"Phase 2: Processing Ad Task {current_ad_idx + 1}/{total_ad_tasks} - Topic: '{ad_task_to_process['original_topic']}', HTML Template: '{ad_task_to_process['html_template_id_str']}'")
+    st.progress((current_ad_idx) / total_ad_tasks if total_ad_tasks > 0 else 0)
 
-        # Download CSV
-        csv = output_df.to_csv(index=False).encode('utf-8')
-        st.download_button(
-            label="Download Results as CSV",
-            data=csv,
-            file_name='final_results.csv',
-            mime='text/csv',
+    try:
+        base_img_url = ad_task_to_process['base_image_url']
+        topic = ad_task_to_process['processed_topic'] # Use the (potentially enhanced) topic
+        lang = ad_task_to_process['lang']
+        html_template_id = int(ad_task_to_process['html_template_id_str']) # Convert to int for save_html
+
+        # Global flags
+        apply_pd_policy = is_pd_policy_global # From checkbox
+
+        # --- Generate text components for HTML (from original "Process Selected Images") ---
+        headline_text_for_ad, cta_text_for_ad, tag_line_for_ad = "", "Learn More", "" # Defaults
+
+        # This logic was quite specific in your original script. Replicating main branches.
+        clean_topic_for_text = re.sub(r'\|.*','', ad_task_to_process['original_topic']).strip() # Use original topic for text gen
+
+        if html_template_id in [1, 2]:
+            headline_prompt = f"Short text (max 20 words) to promote article about {clean_topic_for_text} ({lang}). Concise, compelling."
+            headline_text_for_ad = chatGPT(headline_prompt, model="gpt-4o")
+        elif html_template_id == 3: # also for 7 if styling is same
+            headline_prompt = f"1 statement, no quotes, for {clean_topic_for_text} ({lang}). Examples: 'Surprising Travel Perks...'. Don't use 'Hidden' or 'Unlock'. Max 6 words."
+            headline_text_for_ad = gemini_text_lib(headline_prompt, is_pd_policy_flag=apply_pd_policy)
+        elif html_template_id == 5:
+            headline_prompt = f"1 statement, ALL CAPS, for {clean_topic_for_text} ({lang}). Wrap 1-2 urgent words in <span class='highlight'>...</span>. Max 60 chars. Drive curiosity."
+            headline_text_for_ad = chatGPT(headline_prompt, model="gpt-4o")
+            tag_line_prompt = f"Short tagline for {clean_topic_for_text} ({lang}), max 25 chars, ALL CAPS, emoji ok. Don't mention topic. Drive action."
+            tag_line_for_ad = chatGPT(tag_line_prompt, model="gpt-4o").strip('"').strip("'").strip("!")
+            if headline_text_for_ad: headline_text_for_ad = headline_text_for_ad.replace(r"</span>", r"</span> ") # Formatting fix
+        elif html_template_id == 7: # Similar to 3 but punchier?
+            headline_prompt = f"Short punchy 1 sentence for article on {clean_topic_for_text} ({lang}). Casual, sharp, concise, ill-tempered language. No 'you'. Max 70 CHARS, Title Case. No dark themes."
+            headline_text_for_ad = chatGPT(headline_prompt, model="gpt-4o")
+        elif html_template_id in [4, 41, 42]: # Topic is headline, CTA is "Read more about"
+            headline_text_for_ad = topic # Use the processed topic
+            cta_text_for_ad = chatGPT(f"Translate 'Read more about' to {lang}.", model="gpt-4o").replace('"','')
+        elif html_template_id in [6, 8]: # Image only, no text generated for overlay
+            headline_text_for_ad = ""
+            cta_text_for_ad = ""
+        else: # Default headline
+            headline_text_for_ad = chatGPT(f"Concise headline for {clean_topic_for_text} ({lang}), no quotes.", model="gpt-4o")
+        
+        # Default CTA if not set by template-specific logic
+        if not cta_text_for_ad and html_template_id not in [6,8]: # Templates 6,8 have no cta
+            cta_text_for_ad = chatGPT(f"Translate 'Learn More' to {lang}.", model="gpt-4o").replace('"','')
+
+        if not headline_text_for_ad and html_template_id not in [6,8]: headline_text_for_ad = clean_topic_for_text # Fallback headline
+
+        # --- Create HTML, Screenshot, Upload ---
+        html_ad_content = save_html(headline_text_for_ad, base_img_url, cta_text_for_ad, html_template_id, tag_line_for_ad)
+        
+        screenshot_width, screenshot_height = 1000, 1000
+        if html_template_id == 8: screenshot_width, screenshot_height = 999, 666 # Specific dimensions
+
+        screenshot_img_bytes = capture_html_screenshot_playwright(html_ad_content, width=screenshot_width, height=screenshot_height)
+        if not screenshot_img_bytes:
+            raise ValueError("Failed to capture HTML screenshot.")
+
+        final_ad_s3_url = upload_pil_image_to_s3(
+            screenshot_img_bytes, S3_BUCKET_NAME_SECRET, AWS_ACCESS_KEY_ID_SECRET, AWS_SECRET_ACCESS_KEY_SECRET,
+            region_name=AWS_REGION_SECRET, image_format='PNG' # Screenshots are PNG
         )
+        if not final_ad_s3_url:
+            raise ValueError("Failed to upload final ad screenshot to S3.")
+
+        # Add to results list (for CSV generation)
+        st.session_state.ad_creation_results_list.append({
+            "type": "html_ad",
+            "Topic": ad_task_to_process['original_topic'],
+            "Language": lang,
+            "S3_URL": final_ad_s3_url,
+            "Source_Template_Phase1": ad_task_to_process['html_template_id_str'], # Or could store original template from phase 1 if different
+            "HTML_Template_Used": html_template_id
+        })
+        
+        # Task successful
+        st.session_state.ad_creation_task_queue.pop(0)
+        st.session_state.ad_creation_current_task_idx += 1
+
+    except Exception as e:
+        st.error(f"Error in Phase 2 Ad Creation Task: {ad_task_to_process['original_topic']} (HTML Tmpl: {ad_task_to_process['html_template_id_str']}): {str(e)}")
+        failed_ad_task = st.session_state.ad_creation_task_queue.pop(0)
+        st.session_state.ad_creation_errors.append({"task": failed_ad_task, "error": str(e)})
+        st.session_state.ad_creation_current_task_idx += 1
+    
+    # Rerun for next ad task or to finish Phase 2
+    if not st.session_state.ad_creation_task_queue:
+        st.session_state.ad_creation_processing_active = False
+        st.success(f"🎉 Phase 2: All {total_ad_tasks} ad creation tasks processed!")
+        if total_ad_tasks > 0 or st.session_state.ad_creation_results_list : play_sound("audio/bonus-points-190035.mp3")
+        # No rerun, let UI update below for final results display
+    else:
+        st.rerun()
+
+
+# --- Display Final Results Table & CSV Download ---
+if not st.session_state.get('img_gen_processing_active') and \
+   not st.session_state.get('ad_creation_processing_active') and \
+   st.session_state.ad_creation_results_list: # Check if there's anything to display
+
+    st.subheader("✅ All Processing Complete: Final Ad Creatives")
+    if st.session_state.ad_creation_errors:
+        with st.expander("Show Phase 2 Errors", expanded=False):
+            for err in st.session_state.ad_creation_errors:
+                st.error(f"Failed Ad Task: {err['task']['original_topic']} (HTML Tmpl: {err['task']['html_template_id_str']}) - Error: {err['error']}")
+
+    # Prepare data for the final DataFrame (as in your original script)
+    final_df_rows = []
+    # Group results by Topic and Language for the CSV structure
+    grouped_for_csv = {}
+    for item in st.session_state.ad_creation_results_list:
+        key = (item['Topic'], item['Language'])
+        if key not in grouped_for_csv:
+            grouped_for_csv[key] = {'Topic': item['Topic'], 'Language': item['Language'], 'images': []}
+        grouped_for_csv[key]['images'].append(item['S3_URL'])
+    
+    max_images_per_row = 0
+    for data in grouped_for_csv.values():
+        final_df_rows.append(data) # Keep the structure with 'images' as a list for now
+        if len(data['images']) > max_images_per_row:
+            max_images_per_row = len(data['images'])
+
+    # Create columns like Image_1, Image_2, ...
+    GLOBAL_IMAGE_COLS_FOR_DATAFRAME.clear() # Clear before repopulating
+    for i in range(max_images_per_row):
+        GLOBAL_IMAGE_COLS_FOR_DATAFRAME.append(f"Image_{i+1}")
+
+    # Now create the DataFrame and apply shift_left_and_pad
+    output_data_for_df = []
+    for row_data_with_list in final_df_rows:
+        new_row = {'Topic': row_data_with_list['Topic'], 'Language': row_data_with_list['Language']}
+        for i in range(max_images_per_row):
+            col_name = GLOBAL_IMAGE_COLS_FOR_DATAFRAME[i]
+            new_row[col_name] = row_data_with_list['images'][i] if i < len(row_data_with_list['images']) else ''
+        output_data_for_df.append(new_row)
+    
+    if output_data_for_df:
+        output_df = pd.DataFrame(output_data_for_df)
+        # The shift_left_and_pad was more for when columns were not fixed.
+        # Here, columns are fixed. If you need to ensure no empty cells in between,
+        # you might re-apply a modified shift_left_and_pad or ensure the image list is dense.
+        # For now, this structure should be fine.
+        # If you need to apply it:
+        # image_data_cols = [col for col in output_df.columns if col.startswith("Image_")]
+        # if image_data_cols: # Check if any image columns exist
+        # GLOBAL_IMAGE_COLS_FOR_DATAFRAME = image_data_cols # Update global for the function
+        # output_df[image_data_cols] = output_df[image_data_cols].apply(shift_left_and_pad, axis=1)
+
+        st.dataframe(output_df)
+        csv_data = output_df.to_csv(index=False).encode('utf-8')
+        st.download_button(
+            label="Download Final Results as CSV",
+            data=csv_data,
+            file_name='creative_maker_final_ads.csv',
+            mime='text/csv',
+            use_container_width=True
+        )
+    else:
+        st.info("No final ad creatives were generated or collected for the CSV output.")
