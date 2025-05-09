@@ -166,7 +166,7 @@ AWS_REGION = st.secrets.get("AWS_REGION", "us-east-1")
 GPT_API_KEY = st.secrets["GPT_API_KEY"]
 FLUX_API_KEY = st.secrets["FLUX_API_KEY"]
 
-client = OpenAI(api_key=GPT_API_KEY)
+# client = OpenAI(api_key=GPT_API_KEY)
 
 #@log_function_call
 def upload_pil_image_to_s3(
