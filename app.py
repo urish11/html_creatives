@@ -1334,7 +1334,6 @@ def create_dalle_variation(image_url,count):
 
 
 # --- Page Config and Initial Playwright Check ---
-st.set_page_config(layout="wide", page_title="Creative Gen PRO", page_icon="🚀")
 
 if 'playwright_installed_successfully' not in st.session_state:
     with st.spinner("Checking Playwright installation..."):
