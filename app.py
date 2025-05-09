@@ -1364,11 +1364,30 @@ st.title("🎨 Creative Maker PRO 🚀 (Task Queue Version)")
 
 # --- Expander for Template Examples ---
 with st.expander("Click to see examples for templates", expanded=False):
-    image_list = [
-        {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744112392_1276.png", "caption": "2"},
-        # ... (add all your other example images here) ...
-        {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744716627_8304.png", "caption": "gemini7claude_simple"}
-    ]
+    image_list  =  [
+    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744112392_1276.png", "caption": "2"},
+    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744114470_4147.png", "caption": "3"},
+    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744114474_6128.png", "caption": "3"},
+    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744112152_3198.png", "caption": "4"},
+    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744112606_9864.png", "caption": "5"},
+    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744112288_6237.png", "caption": "6 (image as is)"},
+    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744114000_7129.png", "caption": "'google' in topic, google image search, use w/ templates 1-6"},
+
+    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744111656_7460.png", "caption": "gemini"},
+    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744111645_6029.png", "caption": "gemini7"},
+     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1743927991_4259.png", "caption": "gemini7"},
+
+    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1743411423_1020.png", "caption": "gemini7"},
+    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744098746_6749.png", "caption": "gemini7claude"},
+    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744107557_6569.png", "caption": "geminicandid"},
+    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744107067_6826.png", "caption": "geminicandid"},
+    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744107348_8664.png", "caption": "geminicandid"},
+    {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744212220_8873.png", "caption": "geministock"},
+     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744716627_8304.png", "caption": "gemini7claude_simple"}
+
+
+
+]
     num_example_cols = 6
     for i in range(0, len(image_list), num_example_cols):
         cols = st.columns(num_example_cols)
