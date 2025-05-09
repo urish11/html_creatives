@@ -36,7 +36,7 @@ if sys.platform.startswith("win"):
 
 # --- Load Secrets (Ensure these are in your Streamlit secrets) ---
 OPENAI_API_KEY_SECRET = st.secrets.get("OPENAI_API_KEY")
-GEMINI_API_KEYS_SECRET = st.secrets.get("GEMINI_API_KEY") # Expects a list
+GEMINI_API_KEYS_SECRET = st.secrets["GEMINI_API_KEY"] # Expects a list
 GOOGLE_API_KEYS_SECRET = st.secrets.get("GOOGLE_API_KEY") # Expects a list
 GOOGLE_CX_SECRET = st.secrets.get("GOOGLE_CX")
 AWS_ACCESS_KEY_ID_SECRET = st.secrets.get("AWS_ACCESS_KEY_ID")
