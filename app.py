@@ -1607,7 +1607,15 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
             elif template_str == 'geministock':
                 gemini_api_prompt = chatGPT(f""" write short image prompt for {topic},no text on image,A high-quality  image in a realistic setting, well-lit and visually appealing, suitable for use in marketing or editorial content.""", model="gpt-4o", temperature=1.0)
 
-            
+            if not gemini_api_prompt: raise ValueError("Failed to generate Gemini API prompt.")
+            st.write(f"Gemini API Prompt: {gemini_api_prompt}")
+            pil_image = gen_gemini_image(gemini_api_prompt)
+            if pil_image:
+                img_url_result = upload_pil_image_to_s3(pil_image, S3_BUCKET_NAME_SECRET, AWS_ACCESS_KEY_ID_SECRET, AWS_SECRET_ACCESS_KEY_SECRET, region_name=AWS_REGION_SECRET)
+                img_source_result = template # Use the specific gemini template name as source
+            else:
+                raise ValueError("Gemini image generation or S3 upload failed.")
+
             # If it's just a number, it implies a Flux image for a later HTML template.
             # The actual HTML templating happens in Phase 2. So Phase 1 just gets the Flux image URL.
             elif template.isdigit():
