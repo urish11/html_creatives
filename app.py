@@ -1618,7 +1618,7 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
 
             # If it's just a number, it implies a Flux image for a later HTML template.
             # The actual HTML templating happens in Phase 2. So Phase 1 just gets the Flux image URL.
-            elif template.isdigit():
+            if template.isdigit():
                 # Default Flux image prompt if not candid or stock
                 flux_topic_prompt = chatGPT(f"Visually enticing image description (15 words max) for {topic_for_api}.", model="gpt-4o")
                 if flux_topic_prompt:
