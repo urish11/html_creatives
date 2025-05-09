@@ -577,7 +577,7 @@ def capture_html_screenshot_playwright(html_content,width = 1000, height = 1000)
             )
             page = browser.new_page(viewport={'width': width, 'height': height})
 
-            with NamedTemporaryFile(delete=False, suffix='.html', mode='w') as f:
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.html', mode='w') as f:
                 f.write(html_content)
                 temp_html_path = f.name
 
