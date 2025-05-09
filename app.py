@@ -218,7 +218,7 @@ def gemini_text(
     model_id: str = "gemini-2.5-pro-exp-03-25",
     api_endpoint: str = "generateContent"
 ) -> str | None:
-    if is_pd_policy_global : prompt += predict_policy
+    if is_pd_policy_global : prompt += PREDICT_POLICY
 
     if api_key is None:
         api_key = os.environ.get("GEMINI_API_KEY")
@@ -273,7 +273,7 @@ def gemini_text(
         return None
 
 def gemini_text_lib(prompt,model ='gemini-2.5-pro-exp-03-25', is_with_file=False,file_url = None ):
-    if is_pd_policy_global : prompt += predict_policy
+    if is_pd_policy_global : prompt += PREDICT_POLICY
 
 #st.text(prompt)
 
@@ -312,7 +312,7 @@ def gemini_text_lib(prompt,model ='gemini-2.5-pro-exp-03-25', is_with_file=False
 #@log_function_call
 def chatGPT(prompt, model="gpt-4o", temperature=1.0,reasoning_effort=''):
 
-    if is_pd_policy_global : prompt += predict_policy
+    if is_pd_policy_global : prompt += PREDICT_POLICY
     try:
     
  
@@ -354,7 +354,7 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0,reasoning_effort=''):
 
 
 def claude(prompt , model = "claude-3-7-sonnet-20250219", temperature=1 , is_thinking = False, max_retries = 10):
-    if is_pd_policy_global : prompt +=   predict_policy
+    if is_pd_policy_global : prompt +=   PREDICT_POLICY
     tries = 0
 
     while tries < max_retries:
