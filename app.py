@@ -1683,7 +1683,7 @@ if st.button("🚀 Start Phase 2: Create HTML Ad Creatives (Queued)", type="prim
                             "lang": img_obj['lang'],
                             "html_template_id_str": template_for_html_str, # The numeric template ID as string
                             "instance_num": i + 1,
-                            "unique_id": f"p2_{img_obj['url'][-10:]}_{i}_{random.alphanumeric(5)}"
+                            "unique_id": f"p2_{img_obj['url'][-10:]}_{i}_{''.join(random.choices(string.ascii_letters+string.digits , k=5))}"
                         }
                         temp_ad_tasks.append(ad_task)
                 else: # Direct use image (Gemini, DALL-E variation, or Google if template was 'google_image_search')
