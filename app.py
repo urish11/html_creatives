@@ -1486,22 +1486,22 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
             if template == 'gemini2':
                 gemini_api_prompt = chatGPT(f"Short square image prompt for '{topic_for_api}' ({lang}) with CTA 'Learn More Here >>'. Start with 'square image 1:1 of'.", model="gpt-4o")
             elif template == 'gemini7claude':
-                 gemini_api_prompt = claude(f"Short square image prompt for '{topic_for_api}' ({lang}) with CTA 'Learn More Here >>', low quality, enticing. Start with 'square image 1:1 of'. No specific promises.", is_pd_policy_flag=apply_pd_policy)
+                 gemini_api_prompt = claude(f"Short square image prompt for '{topic_for_api}' ({lang}) with CTA 'Learn More Here >>', low quality, enticing. Start with 'square image 1:1 of'. No specific promises.")
             elif template == 'geminicandid':
-                 gemini_api_prompt = claude(f"Image prompt: candid smartphone photo of regular person with '{topic_for_api}'. Organic, perplexing, high energy. No text overlay. Start with 'Square photo 1:1 iphone 12 photo uploaded to reddit:'.", is_thinking_enabled=True, is_pd_policy_flag=apply_pd_policy)
+                 gemini_api_prompt = claude(f"Image prompt: candid smartphone photo of regular person with '{topic_for_api}'. Organic, perplexing, high energy. No text overlay. Start with 'Square photo 1:1 iphone 12 photo uploaded to reddit:'.", is_thinking_enabled=True)
             elif template == 'gemini_redraw':
                 redraw_img_url_list = [url.strip() for url in task_to_process['redraw_sources'].split('|') if url.strip()]
                 if not redraw_img_url_list: raise ValueError("Redraw images list is empty for gemini_redraw.")
                 chosen_redraw_url = random.choice(redraw_img_url_list)
                 redraw_prompt = f"Describe this image visually in detail for regeneration: {chosen_redraw_url}. Start 'square image 1:1 of'. Include text overlays in original language and CTA."
-                gemini_api_prompt = gemini_text_lib(redraw_prompt, model_name="gemini-1.5-pro-latest", is_with_file=True, file_url=chosen_redraw_url, is_pd_policy_flag=apply_pd_policy) # model supporting vision
+                gemini_api_prompt = gemini_text_lib(redraw_prompt, model_name="gemini-1.5-pro-latest", is_with_file=True, file_url=chosen_redraw_url) # model supporting vision
             # ... Add all other Gemini template conditions from your script ...
             else: # Default Gemini prompt
                 gemini_api_prompt = chatGPT(f"Default square image prompt for '{topic_for_api}' ({lang}) with CTA 'Learn More Here >>', low quality, enticing. Start with 'square image 1:1 of'.", model="gpt-4o", temperature=1.0)
 
             if not gemini_api_prompt: raise ValueError("Failed to generate Gemini API prompt.")
             st.write(f"Gemini API Prompt: {gemini_api_prompt}")
-            pil_image = gen_gemini_image(gemini_api_prompt, is_pd_policy_flag=apply_pd_policy)
+            pil_image = gen_gemini_image(gemini_api_prompt)
             if pil_image:
                 img_url_result = upload_pil_image_to_s3(pil_image, S3_BUCKET_NAME_SECRET, AWS_ACCESS_KEY_ID_SECRET, AWS_SECRET_ACCESS_KEY_SECRET, region_name=AWS_REGION_SECRET)
                 img_source_result = template # Use the specific gemini template name as source
@@ -1517,7 +1517,7 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
         elif template.isdigit() or template in ["geminicandid", "geministock"]: # These might be base images for HTML templates OR direct use
             flux_topic_prompt = topic_for_api # Default
             if template == "geminicandid": # Flux LORA
-                flux_topic_prompt = claude(f"Image prompt of a candid unstaged photo of a regular joe showing off his/her {topic_for_api}. Smartphone quality, reddit style, perplexing, high energy. NO TEXT OVERLAY.", is_thinking_enabled=True, is_pd_policy_flag=apply_pd_policy)
+                flux_topic_prompt = claude(f"Image prompt of a candid unstaged photo of a regular joe showing off his/her {topic_for_api}. Smartphone quality, reddit style, perplexing, high energy. NO TEXT OVERLAY.", is_thinking_enabled=True)
                 if flux_topic_prompt:
                      img_url_result = gen_flux_img_lora(flux_topic_prompt)
                 else: raise ValueError("Failed to generate prompt for flux lora.")
@@ -1748,7 +1748,7 @@ if st.session_state.get('ad_creation_processing_active') and st.session_state.ad
             headline_text_for_ad = chatGPT(headline_prompt, model="gpt-4o")
         elif html_template_id == 3: # also for 7 if styling is same
             headline_prompt = f"1 statement, no quotes, for {clean_topic_for_text} ({lang}). Examples: 'Surprising Travel Perks...'. Don't use 'Hidden' or 'Unlock'. Max 6 words."
-            headline_text_for_ad = gemini_text_lib(headline_prompt, is_pd_policy_flag=apply_pd_policy)
+            headline_text_for_ad = gemini_text_lib(headline_prompt)
         elif html_template_id == 5:
             headline_prompt = f"1 statement, ALL CAPS, for {clean_topic_for_text} ({lang}). Wrap 1-2 urgent words in <span class='highlight'>...</span>. Max 60 chars. Drive curiosity."
             headline_text_for_ad = chatGPT(headline_prompt, model="gpt-4o")
