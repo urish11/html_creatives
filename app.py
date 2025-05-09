@@ -1453,6 +1453,7 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
         lang = task_to_process['lang']
         template = task_to_process['chosen_template']
         template_str = str(template)
+        cache_key = f"cached_prompt_gemini7_{topic}_{lang}"
         # Global flags (set by checkboxes)
         apply_pd_policy = is_pd_policy_global
         enhance_this_topic = enhance_input_topic_global
