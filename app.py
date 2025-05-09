@@ -1452,6 +1452,7 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
         topic_for_api = task_to_process['current_topic']
         lang = task_to_process['lang']
         template = task_to_process['chosen_template']
+        template_str = str(template)
         # Global flags (set by checkboxes)
         apply_pd_policy = is_pd_policy_global
         enhance_this_topic = enhance_input_topic_global
