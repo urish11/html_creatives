@@ -1380,10 +1380,10 @@ with st.expander("Click to see examples for templates", expanded=False):
 st.subheader("Step 1: Define Topics for Image Generation")
 with st.container(border=True):
     df_phase1_input = st.data_editor(
-        pd.DataFrame({"topic": ["futuristic city skyline", "cute animal google", "product advertisement"],
-                      "count": [2, 1, 1],
-                      "lang": ["english", "english", "spanish"],
-                      "template": ["gemini,gemini_comic", "google_image_search,3", "5,gemini7claude_simple"], # Template 3 for google, 5 for product
+        pd.DataFrame({"topic": ["example_topic"],
+                      "count": [2],
+                      "lang": ["english"],
+                      "template": [""], # Template 3 for google, 5 for product
                       "imgs_redraw":[""]}), # For gemini_redraw
         num_rows="dynamic",
         key="phase1_input_editor"
