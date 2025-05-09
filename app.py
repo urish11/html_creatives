@@ -1481,53 +1481,129 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
             else:
                 raise ValueError(f"Google image fetch failed for '{clean_topic_for_google}'.")
 
-        elif "gemini" in template.lower():
-            # Complex Gemini prompt logic from original script
-            gemini_api_prompt = f"Prompt for Gemini: Topic '{topic_for_api}', Lang '{lang}', Template '{template}'" # Placeholder
-            if template == 'gemini2':
-                gemini_api_prompt = chatGPT(f"Short square image prompt for '{topic_for_api}' ({lang}) with CTA 'Learn More Here >>'. Start with 'square image 1:1 of'.", model="gpt-4o")
-            elif template == 'gemini7claude':
-                 gemini_api_prompt = claude(f"Short square image prompt for '{topic_for_api}' ({lang}) with CTA 'Learn More Here >>', low quality, enticing. Start with 'square image 1:1 of'. No specific promises.")
-            elif template == 'geminicandid':
-                 gemini_api_prompt = claude(f"Image prompt: candid smartphone photo of regular person with '{topic_for_api}'. Organic, perplexing, high energy. No text overlay. Start with 'Square photo 1:1 iphone 12 photo uploaded to reddit:'.", is_thinking_enabled=True)
-            elif template == 'gemini_redraw':
-                redraw_img_url_list = [url.strip() for url in task_to_process['redraw_sources'].split('|') if url.strip()]
+
+        elif "gemini" in template_str.lower():
+            # Default placeholder prompt, will be overridden if a specific template matches
+            gemini_api_prompt = f"Prompt for Gemini: Topic '{topic_for_api}', Lang '{lang}', Template '{template_str}'"
+        
+            if "^" in template_str:
+                template_str = random.choice(template_str.split("^"))
+        
+            if template_str == 'gemini2':
+                gemini_api_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use photos',''])}. add a CTA button with
+                                             'Learn More Here >>' in appropriate language\ns\nstart with 'square image aspect ratio of 1:1 of '\n\n
+                                             """, model="gpt-4o")
+            elif template_str == 'gemini3':
+                gemini_api_prompt = chatGPT(f""" write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use authentic photos', 'no special photo requirement'])}.\nmake it visually engaging and emotionally intriguing.\nadd a bold CTA button with 'Learn More Here >>' in appropriate language.\nstart the prompt with 'square image aspect ratio of 1:1 of '\nmake sure the image grabs attention and sparks curiosity.\n
+                                             """, model="gpt-4o")
+            elif template_str == 'geminicandid':
+                gemini_api_prompt = claude(f"""write a image prompt of a candid unstaged photo taken of a regular joe showing off his\her {topic} . the image is taken with smartphone candidly. in 1-2 sentences. Describe the quality of the image looking smartphone. start with "Square photo 1:1 iphone 12 photo uploaded to reddit:"
+        
+                                           this is for a fb ad that tries to look organic, but also make the image content intecing and somewhat perplexing, so try to be that but also draw clicks with high energy in the photo. dont make up facts like discounts! or specific prices! no text overlay on image
+                                           """, is_thinking=True).replace("#","")
+                                           # if you want to add a caption, specifically instruct it to be on the image. and be short in language {lang}
+            elif template_str == 'gemini': # This is for the specific 'gemini' template, not the general check
+                gemini_api_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use photos',''])}. add a CTA button with
+                                                 'Learn More Here >>' in appropriate language\nshould be low quality and very enticing and alerting\nstart with 'square image aspect ratio of 1:1 of '\n\n example output:\n\nsquare image of a concerned middle-aged woman looking at her tongue in the mirror under harsh bathroom lighting, with a cluttered counter and slightly blurry focus — big bold red text says “Early Warning Signs?” and a janky yellow button below reads “Learn More Here >>” — the image looks like it was taken on an old phone, with off angle, bad lighting, and a sense of urgency and confusion to provoke clicks.
+                                             """, model="gpt-4o", temperature=1.0)
+            elif template_str == 'gemini_comic':
+                gemini_api_prompt = gemini_text_lib(f"""write short prompt for
+                                        generate square image promoting '{topic}' in language {lang}. add a CTA button with
+                                        'Learn More Here >>' in appropriate language
+        
+                                        should be low quality, very enticing and alerting . use saturated color theme (e.g. red, blue, green, or pink), just one.
+                                        image should be  styled like a square ad that grabs attention.
+        
+                                        start with 'square image aspect ratio of 1:1 of'
+        
+                                        be specific in what is shown: include a person interacting with the product or benefit, big bold text in {lang}, and bright graphic elements like rays or dots in the background.
+                                        A bold, retro-inspired internet ad with vibrant neon colors . The background features comic book-style rays, starbursts, and motion lines in bright hues. A central object or person appears overly excited or expressive, surrounded by oversized, bold text . A large glowing button at the bottom says something like “Learn More Here >>”.  Use heavy drop shadows, sticker-style effects. Make sure to not use senseioal phrasing and false promiese!! dont use the word "Today"!
+        
+                                        return JUST the best option, no intros
+                                        """, model="gemini-2.5-flash-preview-04-17") # original script model: gemini-2.5-flash-preview-04-17
+            elif template_str == 'geminiclaude_comic':
+                gemini_api_prompt = claude(f"""write short prompt for
+                                        generate square image promoting '{topic}' in language {lang}. add a CTA button with
+                                        'Learn More Here >>' in appropriate language
+        
+                                        should be low quality, very enticing and alerting . use saturated color theme (e.g. red, blue, green, or pink), just one.
+                                        image should be chaotic but readable, styled like a square ad that grabs attention.
+        
+                                        start with 'square image aspect ratio of 1:1 of'
+        
+                                        be specific in what is shown: include a person interacting with the product or benefit, big bold text in {lang}, and bright graphic elements like rays or dots in the background.
+                                        A bold, retro-inspired internet ad with vibrant neon colors . The background features comic book-style rays, starbursts, and motion lines in bright hues. A central object or person appears overly excited or expressive, surrounded by oversized, bold text . A large glowing button at the bottom says something like “Learn More Here >>”.  Use heavy drop shadows, sticker-style effects. Make sure to not use senseioal phrasing and false promiese!! dont use the word "Today"!
+        
+                                        return JUST the best option, no intros
+                                        """, is_thinking=False) #is_thinking=False
+            elif template_str == 'gemini7':
+                if cache_key in st.session_state and st.session_state[cache_key] and st.session_state[cache_key]["count"] % 2 != 0:
+                    st.text("using cached prompt")
+                    gemini_api_prompt = st.session_state[cache_key]["data"]
+                    st.session_state[cache_key]["count"] = st.session_state[cache_key]["count"] + 1
+                else:
+                    gemini_api_prompt = gemini_text_lib(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with
+                                                         'Learn More Here >>' in appropriate language\\nand 'act fast' or 'limited available' \n \nshould be low quality and very enticing and alerting!! \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
+                                                         """)
+                    # Ensure cache_key dict exists before accessing "data" or "count"
+                    if cache_key not in st.session_state or not isinstance(st.session_state.get(cache_key), dict):
+                        st.session_state[cache_key] = {"data": "", "count": 0}
+                    st.session_state[cache_key]["data"] = gemini_api_prompt
+                    st.session_state[cache_key]["count"] = st.session_state[cache_key].get("count", 0) + 1
+        
+            elif template_str == 'gemini_redraw':
+                # Using redraw_imgs from the new snippet, assuming it replaces task_to_process['redraw_sources']
+                redraw_img_url_list = [url.strip() for url in redraw_imgs.split('|') if url.strip()]
                 if not redraw_img_url_list: raise ValueError("Redraw images list is empty for gemini_redraw.")
                 chosen_redraw_url = random.choice(redraw_img_url_list)
-                redraw_prompt = f"Describe this image visually in detail for regeneration: {chosen_redraw_url}. Start 'square image 1:1 of'. Include text overlays in original language and CTA."
-                gemini_api_prompt = gemini_text_lib(redraw_prompt, model_name="gemini-1.5-pro-latest", is_with_file=True, file_url=chosen_redraw_url) # model supporting vision
-            # ... Add all other Gemini template conditions from your script ...
-            else: # Default Gemini prompt
-                gemini_api_prompt = chatGPT(f"Default square image prompt for '{topic_for_api}' ({lang}) with CTA 'Learn More Here >>', low quality, enticing. Start with 'square image 1:1 of'.", model="gpt-4o", temperature=1.0)
-
-            if not gemini_api_prompt: raise ValueError("Failed to generate Gemini API prompt.")
-            st.write(f"Gemini API Prompt: {gemini_api_prompt}")
-            pil_image = gen_gemini_image(gemini_api_prompt)
-            if pil_image:
-                img_url_result = upload_pil_image_to_s3(pil_image, S3_BUCKET_NAME_SECRET, AWS_ACCESS_KEY_ID_SECRET, AWS_SECRET_ACCESS_KEY_SECRET, region_name=AWS_REGION_SECRET)
-                img_source_result = template # Use the specific gemini template name as source
-            else:
-                raise ValueError("Gemini image generation or S3 upload failed.")
         
-        # For templates that are numbers (Flux image + HTML template)
-        # This assumes raw Flux/Google images are NOT the final product for these templates.
-        # If a template like "3" means "use Google image in HTML template 3",
-        # then the `img_url_result` from a "google" task above would be passed to Phase 2.
-        # For simplicity in Phase 1, we'll assume numeric templates mean "Flux image that will LATER be used in HTML".
-        # So, Phase 1 for numeric templates only generates the Flux URL.
-        elif template.isdigit() or template in ["geminicandid", "geministock"]: # These might be base images for HTML templates OR direct use
-            flux_topic_prompt = topic_for_api # Default
-            if template == "geminicandid": # Flux LORA
-                flux_topic_prompt = claude(f"Image prompt of a candid unstaged photo of a regular joe showing off his/her {topic_for_api}. Smartphone quality, reddit style, perplexing, high energy. NO TEXT OVERLAY.", is_thinking_enabled=True)
-                if flux_topic_prompt:
-                     img_url_result = gen_flux_img_lora(flux_topic_prompt)
-                else: raise ValueError("Failed to generate prompt for flux lora.")
+                prompt_txt = """describe this image in details, only descibe what is seen visually! , especially the layout. start with 'square image aspect ratio of 1:1 of. if theres overlay image on the text, mention it with text in original language, especially the CTA text!  """
+                gemini_api_prompt = gemini_text_lib(prompt_txt, model="gemini-2.0-flash-exp-image-generation", # Original script: model_name="gemini-1.5-pro-latest"
+                                                   is_with_file=True, file_url=chosen_redraw_url)
+                if is_pd_policy:
+                    gemini_api_prompt = gemini_text_lib(f"given (keep original text overlay text language, also CTA text!!) this image prompt, edit it, dont change the text prompt at all , but  only follow the following rules, if some element dosent comply, edit it so it does comlply (just this text part) , input{gemini_api_prompt} rules,no sensetional pushing phrasing urgent, FOMO text , return JUST the output no intros:" + predict_policy, model="gemini-2.0-flash-exp")
+        
+            elif template_str == 'gemini7claude':
+                gemini_api_prompt = claude(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with
+                                                 'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting!!, don't make specific promises like x% discount and 'act fast' or 'limited available'  \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
+                                                 if you want to add a caption, specifically instruct it to be on the image. and be short
+                                                 """, is_thinking=False)
+            elif template_str == 'gemini7batch':
+                gemini_api_prompt = gemini_text_lib(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with
+                                                         'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the {count} best options, each prompt is a FULL PROMPT !! each at least 500 chrs(dont write it),be creative and have variance between the prompts, no intros , as json key is int index , it's value is the prompt. .
+                                                         """)
+            elif template_str == 'gemini7claude_simple':
+                gemini_api_prompt = claude(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with
+                                                 'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting!!!! BUT simple  layout , make the text legable and in negative space, don't make specific promises like x% discount and 'act fast' or 'limited available'    \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
+                                                 if you want to add a caption, specifically instruct it to be on the image. and be short
+                                                 """, is_thinking=False)
+                gemini_api_prompt = gemini_api_prompt.replace('```json','').replace("```","").replace("python","")
+        
+            elif template_str == 'gemini8':
+                gemini_api_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with
+                                                 'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
+                                             """, model='o3-mini', temperature=0, reasoning_effort='high')
+            elif template_str == 'gemini6':
+                cleaned_topic = re.sub('\\|.*', '', topic)
+                headline_temp = gemini_text(f"""write 1 statement,kinda clickbaity, very consice and action click driving, same length, no quotes, for {cleaned_topic} in {lang}. Examples:\n'Surprising Travel Perks You Might Be Missing'\n 'Little-Known Tax Tricks to Save Big'\n Dont mention 'Hidden' or 'Unlock'.\nmax  6 words""")
+        
+                gemini_api_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use photos',''])}. add a CTA button with
+                                                 'Learn More Here >>' in appropriate language\nshould be low quality and very enticing and alerting\ninclude the following text in the image '{headline_temp}'\nstart with 'square image aspect ratio of 1:1 of '\n\n example output:\n\nsquare image of a concerned middle-aged woman looking at her tongue in the mirror under harsh bathroom lighting, with a cluttered counter and slightly blurry focus — big bold red text says “Early Warning Signs?” and a janky yellow button below reads “Learn More Here >>” — the image looks like it was taken on an old phone, with off angle, bad lighting, and a sense of urgency and confusion to provoke clicks.
+                                             """, model="gpt-4o", temperature=1.0) # Note: original code had '{headline_temp}\nstart with...' this might need an extra space or review based on gemini_text output.
+            elif template_str == 'gemini4':
+                gemini_api_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use photos',''])}. add a CTA button with
+                                                 'Learn More Here >>' in appropriate language and a driving enticing copy in the image\nMUST be be low quality design , stress that!! and very enticing and alerting,high energy enticing, describe the visuals\nstart with 'square image aspect ratio of 1:1 of '\n\n example output:\n\nsquare image of .....
+                                             """, model="gpt-4o", temperature=1.0)
+            elif template_str == 'gemini5':
+                gemini_prompt_angle = chatGPT(f"""For the topic  {topic}, imagine a highly specific and unusual moment in someone's everyday life that would visually hint at the condition — but in a confusing, unexpected way.\nThe moment should:\n– Feel personal, like something they might do alone out of worry or curiosity\n– Be visually simple but puzzling \n-High energy and dramatic\n– Create just enough mystery that the viewer thinks: "Wait… why would someone do that?"\n\nCome up with one clever, click-provoking scenario that could be captured in a smartphone photo, \n must be highly engaging visually for the topic, to be for image prompt.\nReturn just the angle, consicly in 1 sentence up to 16 words""", model="o1", temperature=0)
+                st.text(f"Angle {gemini_prompt_angle}")
+                clean_gemini_prompt_angle = gemini_prompt_angle.replace('\n', '')
+                gemini_api_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' using this angle {clean_gemini_prompt_angle} in language {lang} {random.choice(['use photos',''])}. add a CTA button with
+                                                 'Learn More Here >>' in appropriate language\nshould be low quality and very enticing and alerting\nstart with 'square image aspect ratio of 1:1 of '\n\n example output:\n\nsquare image of a concerned middle-aged woman looking at her tongue in the mirror under harsh bathroom lighting, with a cluttered counter and slightly blurry focus — big bold red text says '.....' and a janky yellow button below reads 'Learn More Here >>' — the image looks like it was taken on an old phone, with off angle, bad lighting, and a sense of urgency and confusion to provoke clicks.
+                                             """, model="gpt-4o", temperature=1.0)
+            elif template_str == 'geministock':
+                gemini_api_prompt = chatGPT(f""" write short image prompt for {topic},no text on image,A high-quality  image in a realistic setting, well-lit and visually appealing, suitable for use in marketing or editorial content.""", model="gpt-4o", temperature=1.0)
 
-            elif template == "geministock": # Regular Flux for stock-like
-                flux_topic_prompt = chatGPT(f"Short image prompt for {topic_for_api}, no text on image. High-quality, realistic, well-lit, marketing/editorial style.", model="gpt-4o")
-                if flux_topic_prompt:
-                    img_url_result = gen_flux_img(flux_topic_prompt)
-                else: raise ValueError("Failed to generate prompt for flux stock.")
             
             # If it's just a number, it implies a Flux image for a later HTML template.
             # The actual HTML templating happens in Phase 2. So Phase 1 just gets the Flux image URL.
