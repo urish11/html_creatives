@@ -1398,7 +1398,7 @@ with st.expander("Click to see examples for templates", expanded=False):
 
 
 st.subheader("Step 1: Define Topics for Image Generation")
-with st.container(border=True):
+with st.container(border=False):
     df_phase1_input = st.data_editor(
         pd.DataFrame({"topic": ["example_topic"],
                       "count": [2],
@@ -1706,7 +1706,7 @@ if not st.session_state.get('img_gen_processing_active') and st.session_state.im
     auto_select_all_phase2 = st.checkbox("Auto-set Ad Count to 1 for all Phase 1 images?", key="auto_select_phase2")
 
     for group_idx, result_group in enumerate(st.session_state.img_gen_results_accumulator):
-        with st.container(border=True):
+        with st.container(border=False):
             st.markdown(f"#### Topic: {result_group['topic']} (Language: {result_group['lang']})")
             images_in_group = result_group['images']
             cols_per_row = st.slider("Images per row (Phase 1 Display)", 2, 8, 6, key=f"cols_p1_{group_idx}")
