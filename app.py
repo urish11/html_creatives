@@ -276,7 +276,7 @@ def gemini_text(
 
 def gemini_text_lib(prompt,model ='gemini-2.5-pro-exp-03-25', is_with_file=False,file_url = None ):
     if is_pd_policy_global : prompt += PREDICT_POLICY
-
+    st.text(prompt)
 #st.text(prompt)
 
 
