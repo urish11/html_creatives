@@ -358,7 +358,7 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0,reasoning_effort=''):
 def claude(prompt , model = "claude-3-7-sonnet-20250219", temperature=1 , is_thinking = False, max_retries = 10):
     if is_pd_policy_global : prompt +=   PREDICT_POLICY
     tries = 0
-
+    st.text(prompt)
     while tries < max_retries:
         try:
         
