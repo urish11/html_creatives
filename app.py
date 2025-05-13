@@ -220,6 +220,7 @@ def gemini_text(
     api_endpoint: str = "generateContent"
 ) -> str | None:
     if is_pd_policy_global : prompt += PREDICT_POLICY
+    st.text(prompt)
 
     if api_key is None:
         api_key = os.environ.get("GEMINI_API_KEY")
