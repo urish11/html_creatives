@@ -1586,7 +1586,7 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
                 prompt_txt = """describe this image in details, only descibe what is seen visually! , especially the layout. start with 'square image aspect ratio of 1:1 of. if theres overlay image on the text, mention it with text in original language, especially the CTA text!  """
                 gemini_api_prompt = gemini_text_lib(prompt_txt, model="gemini-2.0-flash-exp-image-generation", # Original script: model_name="gemini-1.5-pro-latest"
                                                    is_with_file=True, file_url=chosen_redraw_url)
-                if is_pd_policy:
+                if is_pd_policy_global:
                     gemini_api_prompt = gemini_text_lib(f"given (keep original text overlay text language, also CTA text!!) this image prompt, edit it, dont change the text prompt at all , but  only follow the following rules, if some element dosent comply, edit it so it does comlply (just this text part) , input{gemini_api_prompt} rules,no sensetional pushing phrasing urgent, FOMO text , return JUST the output no intros:" + predict_policy, model="gemini-2.0-flash-exp")
         
             elif template_str == 'gemini7claude':
