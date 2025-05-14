@@ -1425,6 +1425,7 @@ if st.button("🚀 Start Phase 1: Generate Raw Images (Queued)", type="primary",
 
     temp_tasks = []
     for idx, row in df_phase1_input.iterrows():
+        
         topic = row['topic']
         count = int(row['count'])
         lang = row['lang']
@@ -1473,7 +1474,7 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
         topic = topic_for_api
         lang = task_to_process['lang']
         template = task_to_process['chosen_template']
-        redraw_imgs = task_to_process['imgs_redraw']
+        redraw_imgs = task_to_process['redraw_sources']
         template_str = str(template)
         cache_key = f"cached_prompt_gemini7_{topic}_{lang}"
         # Global flags (set by checkboxes)
