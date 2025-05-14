@@ -1361,7 +1361,7 @@ if 'ad_creation_errors' not in st.session_state: st.session_state.ad_creation_er
 
 
 # --- Streamlit UI ---
-st.title("🎨 Creative Maker PRO 🚀 (Task Queue Version)")
+st.title("🎨 Creative Maker Task Queue Version")
 
 # --- Expander for Template Examples ---
 with st.expander("Click to see examples for templates", expanded=False):
@@ -1478,6 +1478,7 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
         # Global flags (set by checkboxes)
         apply_pd_policy = is_pd_policy_global
         enhance_this_topic = enhance_input_topic_global
+        redraw_imgs = task_to_process['imgs_redraw']
 
         # Optional: Enhance topic once per task if flag is set globally and not yet done for this task
         if enhance_this_topic and not task_to_process.get('topic_enhanced_this_task'):
