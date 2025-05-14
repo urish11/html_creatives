@@ -1473,12 +1473,13 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
         topic = topic_for_api
         lang = task_to_process['lang']
         template = task_to_process['chosen_template']
+        redraw_imgs = task_to_process['imgs_redraw']
         template_str = str(template)
         cache_key = f"cached_prompt_gemini7_{topic}_{lang}"
         # Global flags (set by checkboxes)
         apply_pd_policy = is_pd_policy_global
         enhance_this_topic = enhance_input_topic_global
-        redraw_imgs = task_to_process['imgs_redraw']
+        
 
         # Optional: Enhance topic once per task if flag is set globally and not yet done for this task
         if enhance_this_topic and not task_to_process.get('topic_enhanced_this_task'):
