@@ -1597,7 +1597,7 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
                                                          """)
             elif template_str == 'gemini7claude_simple':
                 gemini_api_prompt = claude(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with
-                                                 'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting!!!! BUT simple  layout , make the text legable and in negative space, don't make specific promises like x% discount and 'act fast' or 'limited available' 'weekly pay' dont write promises you are not sure about!! !     \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
+                                                 'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting!!!! BUT simple  layout , make the text legable and in negative space, don't make specific promises like x% discount and 'act fast' or 'limited available' 'weekly pay' 'Flexible Hours' 'Stable Work'.  dont write promises you are not sure about!! !     \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
                                                  if you want to add a caption, specifically instruct it to be on the image. and be short
                                                  """, is_thinking=False)
                 gemini_api_prompt = gemini_api_prompt.replace('```json','').replace("```","").replace("python","")
@@ -1718,7 +1718,7 @@ if not st.session_state.get('img_gen_processing_active') and st.session_state.im
                     if col_idx < len(cols): # Ensure we don't go out of bounds for columns
                         with cols[col_idx]:
                             img_unique_key = f"p1_img_{group_idx}_{i+col_idx}"
-                            st.image(img_obj['url'], caption=f"Source: {img_obj['source_type']}, Tmpl: {img_obj['template_used']}", use_container_width=True)
+                            st.image(img_obj['url'], caption=f" Tmpl: {img_obj['template_used']}", use_container_width=True)
                             
                             default_ad_count = 1 if auto_select_all_phase2 else img_obj.get('selected_count', 0)
                             ad_count = st.number_input("Ad Count (for Phase 2)", min_value=0, max_value=5, value=default_ad_count, key=f"ad_count_{img_unique_key}")
