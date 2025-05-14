@@ -1415,8 +1415,8 @@ with st.container(border=False):
 
 
 # --- Phase 1: Image Generation Button & Processing Loop ---
-if st.button("🚀 Start Phase 1: Generate Raw Images (Queued)", type="primary", use_container_width=True,
-             disabled=st.session_state.get('img_gen_processing_active') or st.session_state.get('ad_creation_processing_active')):
+if st.button("🚀 Start Phase 1: Generate Raw Images (Queued)", type="primary", use_container_width=False)
+             #disabled=st.session_state.get('img_gen_processing_active') or st.session_state.get('ad_creation_processing_active')):
     st.session_state.img_gen_task_queue = []
     st.session_state.img_gen_results_accumulator = []
     st.session_state.img_gen_errors = []
