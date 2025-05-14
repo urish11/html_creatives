@@ -1415,7 +1415,7 @@ with st.container(border=False):
 
 
 # --- Phase 1: Image Generation Button & Processing Loop ---
-if st.button("🚀 Start Phase 1: Generate Raw Images (Queued)", type="primary", use_container_width=False)
+if st.button("🚀 Start Phase 1: Generate Raw Images (Queued)", type="primary", use_container_width=False):
              #disabled=st.session_state.get('img_gen_processing_active') or st.session_state.get('ad_creation_processing_active')):
     st.session_state.img_gen_task_queue = []
     st.session_state.img_gen_results_accumulator = []
@@ -1587,7 +1587,7 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
                 gemini_api_prompt = gemini_text_lib(prompt_txt, model="gemini-2.0-flash-exp-image-generation", # Original script: model_name="gemini-1.5-pro-latest"
                                                    is_with_file=True, file_url=chosen_redraw_url)
                 if is_pd_policy_global:
-                    gemini_api_prompt = gemini_text_lib(f"given (keep original text overlay text language, also CTA text!!) this image prompt, edit it, dont change the text prompt at all , but  only follow the following rules, if some element dosent comply, edit it so it does comlply (just this text part) , input{gemini_api_prompt} rules,no sensetional pushing phrasing urgent, FOMO text , return JUST the output no intros:" + predict_policy, model="gemini-2.0-flash-exp")
+                    gemini_api_prompt = gemini_text_lib(f"given (keep original text overlay text language, also CTA text!!) this image prompt, edit it, dont change the text prompt at all , but  only follow the following rules, if some element dosent comply, edit it so it does comlply (just this text part) , input{gemini_api_prompt} rules,no sensetional pushing phrasing urgent, FOMO text , return JUST the output no intros:" + PREDICT_POLICY, model="gemini-2.0-flash-exp")
         
             elif template_str == 'gemini7claude':
                 gemini_api_prompt = claude(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with
