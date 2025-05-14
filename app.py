@@ -1597,7 +1597,7 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
                                                          """)
             elif template_str == 'gemini7claude_simple':
                 gemini_api_prompt = claude(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with
-                                                 'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting!!!! BUT simple  layout , make the text legable and in negative space, don't make specific promises like x% discount and 'act fast' or 'limited available'    \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
+                                                 'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting!!!! BUT simple  layout , make the text legable and in negative space, don't make specific promises like x% discount and 'act fast' or 'limited available' 'weekly pay' dont write promises you are not sure about!! !     \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
                                                  if you want to add a caption, specifically instruct it to be on the image. and be short
                                                  """, is_thinking=False)
                 gemini_api_prompt = gemini_api_prompt.replace('```json','').replace("```","").replace("python","")
