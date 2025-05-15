@@ -1565,7 +1565,7 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
                                             return JUST the best option, no intros
                                             """, is_thinking=False) #is_thinking=False
                 elif template_str == 'gemini7':
-                    if cache_key in st.session_state and st.session_state[cache_key] and st.session_state[cache_key]["count"] % 9999999 != 0:
+                    if cache_key in st.session_state and st.session_state[cache_key] and st.session_state[cache_key]["count"] % 5 != 0:
                         st.text("using cached prompt")
                         gemini_api_prompt = st.session_state[cache_key]["data"]
                         st.session_state[cache_key]["count"] = st.session_state[cache_key]["count"] + 1
