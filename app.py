@@ -1462,14 +1462,14 @@ if st.button("🚀 Start Phase 1: Generate Raw Images (Queued)", type="primary",
 # Phase 1 Processing Loop
 if st.session_state.get('img_gen_processing_active') and st.session_state.img_gen_task_queue:
     
-    try = 1
+    trial = 1
     task_to_process = st.session_state.img_gen_task_queue[0]
     current_idx = st.session_state.img_gen_current_task_idx
     total_tasks = st.session_state.img_gen_total_tasks
     img_url_result = None
     st.info(f"Phase 1: Processing task {current_idx + 1}/{total_tasks} - Topic: '{task_to_process['original_topic']}', Template: '{task_to_process['chosen_template']}'")
     st.progress((current_idx) / total_tasks if total_tasks > 0 else 0)
-    while img_url_result is None and try < 5 :
+    while img_url_result is None and trial < 5 :
         try:
             # --- Process this single image generation task ---
             topic_for_api = task_to_process['current_topic']
@@ -1679,7 +1679,7 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
                 })
             else:
                 raise ValueError("Image URL was not generated for the task.")
-                try +=1
+                trial +=1
 
         # Task successful
         st.session_state.img_gen_task_queue.pop(0)
