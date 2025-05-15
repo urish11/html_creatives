@@ -1690,10 +1690,10 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
             trial +=1
             st.error(f"Error in Phase 1 Task: {task_to_process['original_topic']} (Tmpl: {template}): {str(e)}")
 
-        if img_url_result is None:
-            failed_task = st.session_state.img_gen_task_queue.pop(0)
-            st.session_state.img_gen_errors.append({"task": failed_task, "error": str(e)})
-            st.session_state.img_gen_current_task_idx += 1 # Count as processed attempt
+    if img_url_result is None:
+        failed_task = st.session_state.img_gen_task_queue.pop(0)
+        # st.session_state.img_gen_errors.append({"task": failed_task, "error": str(e)})
+        st.session_state.img_gen_current_task_idx += 1 # Count as processed attempt
 
     # Rerun for next task or to finish Phase 1
     if not st.session_state.img_gen_task_queue: # If queue is now empty
