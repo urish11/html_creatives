@@ -1677,9 +1677,10 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
                     'selected_count': 0, # For Phase 2 selection
                     'dalle_variation_requested': False
                 })
-            else:
-                raise ValueError("Image URL was not generated for the task.")
-                trial +=1
+        except:
+            trial +=1
+            st.text("Image URL was not generated for the task.")
+            
 
         # Task successful
         st.session_state.img_gen_task_queue.pop(0)
