@@ -1467,7 +1467,7 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
     current_idx = st.session_state.img_gen_current_task_idx
     total_tasks = st.session_state.img_gen_total_tasks
     img_url_result = None
-    st.info(f"Phase 1: Processing task {current_idx + 1}/{total_tasks} - Topic: '{task_to_process['original_topic']}', Template: '{task_to_process['chosen_template']}'")
+    st.info(f"Phase 1: Processing task {current_idx + 1}/{total_tasks} - Topic: '{task_to_process['original_topic']}', Template: '{task_to_process['chosen_template']}' Trial : {trial}")
     st.progress((current_idx) / total_tasks if total_tasks > 0 else 0)
     while img_url_result is None and trial < 5 :
         try:
@@ -1565,7 +1565,7 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
                                             return JUST the best option, no intros
                                             """, is_thinking=False) #is_thinking=False
                 elif template_str == 'gemini7':
-                    if cache_key in st.session_state and st.session_state[cache_key] and st.session_state[cache_key]["count"] % 5 == 0:
+                    if cache_key in st.session_state and st.session_state[cache_key] and st.session_state[cache_key]["count"] % 2 == 0:
                         st.text("using cached prompt")
                         gemini_api_prompt = st.session_state[cache_key]["data"]
                         st.session_state[cache_key]["count"] = st.session_state[cache_key]["count"] + 1
