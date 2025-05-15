@@ -1578,7 +1578,12 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
                             st.session_state[cache_key] = {"data": "", "count": 0}
                         st.session_state[cache_key]["data"] = gemini_api_prompt
                         st.session_state[cache_key]["count"] = st.session_state[cache_key].get("count", 0) + 1
-            
+                elif template_str == 'gemini7_flash':
+                    gemini_api_prompt = gemini_text_lib(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with
+                                                             'Learn More Here >>' in appropriate language\\nand 'act fast' or 'limited available' \n \nshould be low quality and very enticing and alerting!! \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
+                                                             """ , model = "gemini-2.5-flash-preview-04-17")
+
+                
                 elif template_str == 'gemini_redraw':
                     # Using redraw_imgs from the new snippet, assuming it replaces task_to_process['redraw_sources']
                     redraw_img_url_list = [url.strip() for url in redraw_imgs.split('|') if url.strip()]
