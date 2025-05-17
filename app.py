@@ -1404,7 +1404,7 @@ with st.container(border=False):
         pd.DataFrame({"topic": ["example_topic"],
                       "count": [2],
                       "lang": ["english"],
-                      "template": ["2,3,4,41,42,5,6,7,gemini,gemini2,gemini7,gemini7claude,geminicandid,geministock,gemini7claude_simple,gemini_comic,geminiclaude_comic,gemini7_flash,gemini_redraw,gemini7claude_think  | use , for random template  " ], # Template 3 for google, 5 for product
+                      "template": ["2,3,4,41,42,5,6,7,gemini,gemini2,gemini7,gemini7claude,geminicandid,geministock,gemini7claude_simple,gemini_comic,geminiclaude_comic,gemini7_flash,gemini_redraw,gemini7claude_think,gemini7_learmlm  | use , for random template  " ], # Template 3 for google, 5 for product
                       "imgs_redraw":[""]}), # For gemini_redraw
         num_rows="dynamic",
         key="phase1_input_editor"
@@ -1564,6 +1564,17 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
             
                                             return JUST the best option, no intros
                                             """, is_thinking=False) #is_thinking=False
+                elif template_str == 'gemini7_learmlm':
+                    gemini_api_prompt = gemini_text_lib(f"""
+
+                                                            write short text  prompt for
+                                        square image promoting '{topic}' in language '{lang}' . add a CTA button with
+                                        'Learn More Here >>' in appropriate language\n
+                                        should be low quality and very enticing and alerting!!
+                                        start with 'square image aspect ratio of 1:1 of '
+                                        be specific in what is shown . return JUST the best option, no intros
+                                        
+                                                                                    """, model ="learnlm-2.0-flash-experimental") #is_thinking=False                                            
                 elif template_str == 'gemini7':
                     if cache_key in st.session_state and st.session_state[cache_key] and st.session_state[cache_key]["count"] % 5 == 0:
                         st.text("using cached prompt")
