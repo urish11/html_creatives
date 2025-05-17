@@ -1404,7 +1404,7 @@ with st.container(border=False):
         pd.DataFrame({"topic": ["example_topic"],
                       "count": [2],
                       "lang": ["english"],
-                      "template": ["2,3,4,41,42,5,6,7,gemini,gemini2,gemini7,gemini7claude,geminicandid,geministock,gemini7claude_simple,geminiclaude_comic,gemini_comic | use , for random template,geminiclaude_comic,gemini7_flash,gemini_redraw,gemini7claude_think"], # Template 3 for google, 5 for product
+                      "template": ["2,3,4,41,42,5,6,7,gemini,gemini2,gemini7,gemini7claude,geminicandid,geministock,gemini7claude_simple,geminiclaude_comic,gemini_comic,geminiclaude_comic,gemini7_flash,gemini_redraw,gemini7claude_think  | use , for random template  " ], # Template 3 for google, 5 for product
                       "imgs_redraw":[""]}), # For gemini_redraw
         num_rows="dynamic",
         key="phase1_input_editor"
