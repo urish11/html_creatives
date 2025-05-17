@@ -1565,14 +1565,14 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
                                             return JUST the best option, no intros
                                             """, is_thinking=False) #is_thinking=False
                 elif template_str == 'gemini7':
-                    if cache_key in st.session_state and st.session_state[cache_key] and st.session_state[cache_key]["count"] % 2 == 0:
+                    if cache_key in st.session_state and st.session_state[cache_key] and st.session_state[cache_key]["count"] % 5 == 0:
                         st.text("using cached prompt")
                         gemini_api_prompt = st.session_state[cache_key]["data"]
                         st.session_state[cache_key]["count"] = st.session_state[cache_key]["count"] + 1
                     else:
                         gemini_api_prompt = gemini_text_lib(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with
                                                              'Learn More Here >>' in appropriate language\\nand 'act fast' or 'limited available' \n \nshould be low quality and very enticing and alerting!! \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
-                                                             """)
+                                                             """,model = "gemini-2.5-flash-preview-04-17")
                         # Ensure cache_key dict exists before accessing "data" or "count"
                         if cache_key not in st.session_state or not isinstance(st.session_state.get(cache_key), dict):
                             st.session_state[cache_key] = {"data": "", "count": 0}
