@@ -1559,8 +1559,8 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
             
                                             start with 'square image aspect ratio of 1:1 of'
             
-                                            be specific in what is shown: include a person interacting with the product or benefit, big bold text in {lang}, and bright graphic elements like rays or dots in the background.
-                                            A bold, retro-inspired internet ad with vibrant neon colors . The background features comic book-style rays, starbursts, and motion lines in bright hues. A central object or person appears overly excited or expressive, surrounded by oversized, bold text . A large glowing button at the bottom says something like “Learn More Here >>”.  Use heavy drop shadows, sticker-style effects. Make sure to not use senseioal phrasing and false promiese!! dont use the word "Today"!
+                                            be specific in what is shown: include a person (photorealstic style) interacting with the product or benefit, big bold text in {lang}, and bright graphic elements like rays or dots in the background.
+                                            A bold, retro-inspired internet ad with vibrant neon colors . The background features comic book-style rays, starbursts, and motion lines in bright hues. A central object or person appears overly excited or expressive, surrounded by oversized, bold text . A large glowing button at the bottom says something like “Learn More Here >>”.  Use heavy drop shadows, sticker-style effects.  Make sure to not use senseioal phrasing and false promiese!! dont use the word "Today"!
             
                                             return JUST the best option, no intros
                                             """, is_thinking=False) #is_thinking=False
