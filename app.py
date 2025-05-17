@@ -1404,7 +1404,7 @@ with st.container(border=False):
         pd.DataFrame({"topic": ["example_topic"],
                       "count": [2],
                       "lang": ["english"],
-                      "template": [""], # Template 3 for google, 5 for product
+                      "template": ["2,3,4,41,42,5,6,7,gemini,gemini2,gemini7,gemini7claude,geminicandid,geministock,gemini7claude_simple,geminiclaude_comic,gemini_comic | use , for random template,geminiclaude_comic,gemini7_flash,gemini_redraw,gemini7claude_think"], # Template 3 for google, 5 for product
                       "imgs_redraw":[""]}), # For gemini_redraw
         num_rows="dynamic",
         key="phase1_input_editor"
@@ -1539,7 +1539,7 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
                                             generate square image promoting '{topic}' in language {lang}. add a CTA button with
                                             'Learn More Here >>' in appropriate language
             
-                                            should be low quality, very enticing and alerting . use saturated color theme (e.g. red, blue, green, or pink), just one.
+                                            should be low quality, very enticing and alerting visually. use saturated color theme (e.g. red, blue, green, or pink), just one.
                                             image should be  styled like a square ad that grabs attention.
             
                                             start with 'square image aspect ratio of 1:1 of'
@@ -1554,7 +1554,7 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
                                             generate square image promoting '{topic}' in language {lang}. add a CTA button with
                                             'Learn More Here >>' in appropriate language
             
-                                            should be low quality, very enticing and alerting . use saturated color theme (e.g. red, blue, green, or pink), just one.
+                                            should be low quality, very enticing and alerting visually . use saturated color theme (e.g. red, blue, green, or pink), just one.
                                             image should be chaotic but readable, styled like a square ad that grabs attention.
             
                                             start with 'square image aspect ratio of 1:1 of'
@@ -1572,7 +1572,7 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
                     else:
                         gemini_api_prompt = gemini_text_lib(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with
                                                              'Learn More Here >>' in appropriate language\\n \n \nshould be low quality and very enticing and alerting!! \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
-                                                             """,model = "gemini-2.5-flash-preview-04-17")
+                                                             """,)
                         # Ensure cache_key dict exists before accessing "data" or "count"
                         if cache_key not in st.session_state or not isinstance(st.session_state.get(cache_key), dict):
                             st.session_state[cache_key] = {"data": "", "count": 0}
@@ -1580,7 +1580,7 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
                         st.session_state[cache_key]["count"] = st.session_state[cache_key].get("count", 0) + 1
                 elif template_str == 'gemini7_flash':
                     gemini_api_prompt = gemini_text_lib(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with
-                                                             'Learn More Here >>' in appropriate language\\n \n \nshould be low quality and very enticing and alerting!! \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
+                                                             'Learn More Here >>' in appropriate language\\n \n \nshould be low quality and very enticing and alerting visually!! \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
                                                              """ , model = "gemini-2.5-flash-preview-04-17")
 
                 
@@ -1601,6 +1601,12 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
                                                      'Learn More Here >>' in appropriate language\ \nshould be low quality design and very enticing and alerting!!, don't make specific promises like x% discount and 'act fast' or 'limited available'  \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
                                                      if you want to add a caption, specifically instruct it to be on the image. and be short
                                                      """, is_thinking=False)
+                elif template_str == 'gemini7claude_think':
+                    gemini_api_prompt = claude(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with
+                                                     'Learn More Here >>' in appropriate language\ \nshould be low quality design and very enticing and alerting!!, don't make specific promises like x% discount and 'act fast' or 'limited available'  \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
+                                                     if you want to add a caption, specifically instruct it to be on the image. and be short
+                                                     """, is_thinking=False)
+                                            
                 elif template_str == 'gemini7batch':
                     gemini_api_prompt = gemini_text_lib(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with
                                                              'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the {count} best options, each prompt is a FULL PROMPT !! each at least 500 chrs(dont write it),be creative and have variance between the prompts, no intros , as json key is int index , it's value is the prompt. .
