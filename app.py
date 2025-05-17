@@ -1571,7 +1571,7 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
                         st.session_state[cache_key]["count"] = st.session_state[cache_key]["count"] + 1
                     else:
                         gemini_api_prompt = gemini_text_lib(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with
-                                                             'Learn More Here >>' in appropriate language\\nand 'act fast' or 'limited available' \n \nshould be low quality and very enticing and alerting!! \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
+                                                             'Learn More Here >>' in appropriate language\\n \n \nshould be low quality and very enticing and alerting!! \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
                                                              """,model = "gemini-2.5-flash-preview-04-17")
                         # Ensure cache_key dict exists before accessing "data" or "count"
                         if cache_key not in st.session_state or not isinstance(st.session_state.get(cache_key), dict):
@@ -1580,7 +1580,7 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
                         st.session_state[cache_key]["count"] = st.session_state[cache_key].get("count", 0) + 1
                 elif template_str == 'gemini7_flash':
                     gemini_api_prompt = gemini_text_lib(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with
-                                                             'Learn More Here >>' in appropriate language\\nand 'act fast' or 'limited available' \n \nshould be low quality and very enticing and alerting!! \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
+                                                             'Learn More Here >>' in appropriate language\\n \n \nshould be low quality and very enticing and alerting!! \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
                                                              """ , model = "gemini-2.5-flash-preview-04-17")
 
                 
