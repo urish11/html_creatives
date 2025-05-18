@@ -355,7 +355,7 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0,reasoning_effort=''):
         return None
 
 
-def claude(prompt , model = "claude-3-7-sonnet-latest", temperature=1 , is_thinking = False, max_retries = 10):
+def claude(prompt , model = "claude-3-7-sonnet-latest", temperature=0.9 , is_thinking = False, max_retries = 10):
     if is_pd_policy_global : prompt +=   PREDICT_POLICY
     tries = 0
     st.text(prompt)
