@@ -47,6 +47,7 @@ AWS_REGION_SECRET = st.secrets.get("AWS_REGION", "us-east-1")
 GPT_API_KEY_SECRET = st.secrets.get("GPT_API_KEY") # Potentially different from OPENAI_API_KEY_SECRET
 FLUX_API_KEYS_SECRET = st.secrets.get("FLUX_API_KEY", []) # Expects a list
 ANTHROPIC_API_KEY_SECRET = st.secrets.get("ANTHROPIC_API_KEY")
+GROK_API_KEY = st.secrets.get("GROK_API_KEY")
 
 # --- Initialize API Clients ---
 # OpenAI Client (for DALL-E and general GPT if GPT_API_KEY_SECRET is the same)
@@ -354,6 +355,30 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0,reasoning_effort=''):
         st.text(response.json())
 
         return None
+
+def grok_text(prompt, model="grok-3-mini-beta", temperature=1.0,reasoning_effort='', retries = 5):
+    trial = 0
+    while trial < retries : 
+        if is_pd_policy_global : prompt += PREDICT_POLICY
+        try:
+        
+            client = OpenAIClient(GROK_API_KEY,base_url="https://api.x.ai/v1")
+            st.write("Generating image description...")
+            st.text(prompt)
+            
+            messages=[{"role": "user", "content": prompt}]
+
+            completion = client.chat.completions.create(model = model,messages=messages)
+
+            if completion:
+                return completion.choices[0].message.content
+
+        except Exception as e:
+            trial += 1
+            st.text(f"grok_text failed : {e}")
+
+
+
 
 
 def claude(prompt , model = "claude-3-7-sonnet-latest", temperature=0.87 , is_thinking = False, max_retries = 10):
@@ -1596,7 +1621,11 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
                                                              'Learn More Here >>' in appropriate language\\n \n \nshould be low quality and very enticing and alerting visually!! \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
                                                              """ , model = "gemini-2.5-flash-preview-04-17")
 
-                
+                elif template_str == 'gemini7_grok':
+
+                    gemini_api_prompt = grok_text(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with
+                                                             'Learn More Here >>' in appropriate language\\n \n \nshould be low quality and very enticing and alerting!! \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
+                                                             """)
                 elif template_str == 'gemini_redraw':
                     # Using redraw_imgs from the new snippet, assuming it replaces task_to_process['redraw_sources']
                     redraw_img_url_list = [url.strip() for url in redraw_imgs.split('|') if url.strip()]
