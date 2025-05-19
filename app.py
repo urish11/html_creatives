@@ -366,11 +366,11 @@ def grok_text(prompt, model="grok-3-mini-beta", temperature=1.0,reasoning_effort
             st.write("Generating image description...")
             st.text(prompt)
             
-            messages=[{"role": "system", "content": "you are a visual fb ad marketer"},
+            messages=[{"role": "system", "content": "you are a CREATIVE visual fb ad marketer"},
                 
                 {"role": "user", "content": prompt}]
 
-            completion = client.chat.completions.create(model = model,messages=messages,temperature=1.3)
+            completion = client.chat.completions.create(model = model,messages=messages,temperature=temperature)
 
             if completion:
                 return completion.choices[0].message.content
