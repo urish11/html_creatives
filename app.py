@@ -1624,7 +1624,7 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
                 elif template_str == 'gemini7_grok':
 
                     gemini_api_prompt = grok_text(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with
-                                                             'Learn More Here >>' in appropriate language\\n \n \nshould be low quality and very enticing and alerting!! \nTHINk how u can use the visual to create high CTR (creating tension , perplexion)\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
+                                                             'Learn More Here >>' in appropriate language\\n \n \nshould be low quality and very enticing and alerting design!! \nTHINK how u can use the visual to create high CTR (creating tension , perplexion)\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
                                                              """)
                 elif template_str == 'gemini_redraw':
                     # Using redraw_imgs from the new snippet, assuming it replaces task_to_process['redraw_sources']
