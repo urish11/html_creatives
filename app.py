@@ -1664,7 +1664,7 @@ start with 'square image aspect ratio of 1:1 of '
  be specific in what is shown . return JUST the best option, no intros
                                                      if you want to add a caption, specifically instruct it to be on the image. and be short
 
-                                                 """, model="gpt-4o", temperature=1.0)
+                                                 """, model="gpt-4o", temperature=1.2)
                 elif template_str == 'gemini5':
                     gemini_prompt_angle = chatGPT(f"""For the topic  {topic}, imagine a highly specific and unusual moment in someone's everyday life that would visually hint at the condition — but in a confusing, unexpected way.\nThe moment should:\n– Feel personal, like something they might do alone out of worry or curiosity\n– Be visually simple but puzzling \n-High energy and dramatic\n– Create just enough mystery that the viewer thinks: "Wait… why would someone do that?"\n\nCome up with one clever, click-provoking scenario that could be captured in a smartphone photo, \n must be highly engaging visually for the topic, to be for image prompt.\nReturn just the angle, consicly in 1 sentence up to 16 words""", model="o1", temperature=0)
                     st.text(f"Angle {gemini_prompt_angle}")
