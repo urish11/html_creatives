@@ -366,7 +366,7 @@ def grok_text(prompt, model="grok-3-mini-beta", temperature=1.0,reasoning_effort
             st.write("Generating image description...")
             st.text(prompt)
             
-            messages=[{"role": "system", "content": "you are a visual fb ad marketer"}
+            messages=[{"role": "system", "content": "you are a visual fb ad marketer"},
                 
                 {"role": "user", "content": prompt}]
 
