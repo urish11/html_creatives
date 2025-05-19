@@ -1953,6 +1953,7 @@ if st.session_state.get('ad_creation_processing_active') and st.session_state.ad
         })
         
         # Task successful
+        st.progress((current_ad_idx) / total_ad_tasks if total_ad_tasks > 0 else 0)
         st.session_state.ad_creation_task_queue.pop(0)
         st.session_state.ad_creation_current_task_idx += 1
 
