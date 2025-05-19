@@ -370,7 +370,7 @@ def grok_text(prompt, model="grok-3-mini-beta", temperature=1.0,reasoning_effort
                 
                 {"role": "user", "content": prompt}]
 
-            completion = client.chat.completions.create(model = model,messages=messages)
+            completion = client.chat.completions.create(model = model,messages=messages,temperature=1.3)
 
             if completion:
                 return completion.choices[0].message.content
