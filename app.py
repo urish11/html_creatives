@@ -362,7 +362,7 @@ def grok_text(prompt, model="grok-3-mini-beta", temperature=1.0,reasoning_effort
         if is_pd_policy_global : prompt += PREDICT_POLICY
         try:
         
-            client = OpenAIClient(GROK_API_KEY,base_url="https://api.x.ai/v1")
+            client = OpenAIClient(api_key=GROK_API_KEY,base_url="https://api.x.ai/v1")
             st.write("Generating image description...")
             st.text(prompt)
             
