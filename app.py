@@ -319,6 +319,7 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0,reasoning_effort=''):
     
  
         st.write("Generating image description...")
+        st.text(prompt)
         headers = {
             'Authorization': f'Bearer {GPT_API_KEY}',
             'Content-Type': 'application/json'
