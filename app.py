@@ -1731,8 +1731,7 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
 
     # Rerun for next task or to finish Phase 1
     if not st.session_state.img_gen_task_queue: # If queue is now empty
-        st.progress((current_ad_idx+1) / total_ad_tasks if total_ad_tasks > 0 else 0)
-
+        st.progress((current_idx+1) / total_tasks if total_tasks > 0 else 0)
         st.session_state.img_gen_processing_active = False
         st.success(f"🎉 Phase 1: All {total_tasks} image generation tasks processed!")
         if total_tasks > 0: play_sound("audio/bonus-points-190035.mp3") # Ensure path is correct
