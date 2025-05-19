@@ -1615,7 +1615,7 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
                                                      """, is_thinking=False)
                 elif template_str == 'gemini7claude_think':
                     cache_key = cache_key + template_str
-                    if cache_key in st.session_state and st.session_state[cache_key] and st.session_state[cache_key]["count"] % 2 == 0:
+                    if cache_key in st.session_state and st.session_state[cache_key] and st.session_state[cache_key]["count"] % 3 == 0:
                         st.text("using cached prompt")
                         gemini_api_prompt = st.session_state[cache_key]["data"]
                         st.session_state[cache_key]["count"] = st.session_state[cache_key]["count"] + 1
@@ -1953,7 +1953,7 @@ if st.session_state.get('ad_creation_processing_active') and st.session_state.ad
         })
         
         # Task successful
-        st.progress((current_ad_idx) / total_ad_tasks if total_ad_tasks > 0 else 0)
+        
         st.session_state.ad_creation_task_queue.pop(0)
         st.session_state.ad_creation_current_task_idx += 1
 
@@ -1965,6 +1965,7 @@ if st.session_state.get('ad_creation_processing_active') and st.session_state.ad
     
     # Rerun for next ad task or to finish Phase 2
     if not st.session_state.ad_creation_task_queue:
+        st.progress((current_ad_idx) / total_ad_tasks if total_ad_tasks > 0 else 0)
         st.session_state.ad_creation_processing_active = False
         st.success(f"🎉 Phase 2: All {total_ad_tasks} ad creation tasks processed!")
         if total_ad_tasks > 0 or st.session_state.ad_creation_results_list : play_sound("audio/bonus-points-190035.mp3")
