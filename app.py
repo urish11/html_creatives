@@ -1478,7 +1478,7 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
             template = task_to_process['chosen_template']
             redraw_imgs = task_to_process['redraw_sources']
             template_str = str(template)
-            cache_key = f"cached_prompt_gemini7_{topic}_{lang}"
+            cache_key = f"cached_prompt_{topic}_{lang}"
             # Global flags (set by checkboxes)
             apply_pd_policy = is_pd_policy_global
             enhance_this_topic = enhance_input_topic_global
@@ -1576,6 +1576,7 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
                                         
                                                                                     """, model ="learnlm-2.0-flash-experimental") #is_thinking=False                                            
                 elif template_str == 'gemini7':
+                    cache_key = cache_key + template_str
                     if cache_key in st.session_state and st.session_state[cache_key] and st.session_state[cache_key]["count"] % 5 == 0:
                         st.text("using cached prompt")
                         gemini_api_prompt = st.session_state[cache_key]["data"]
@@ -1613,10 +1614,21 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
                                                      if you want to add a caption, specifically instruct it to be on the image. and be short
                                                      """, is_thinking=False)
                 elif template_str == 'gemini7claude_think':
-                    gemini_api_prompt = claude(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with
+                    cache_key = cache_key + template_str
+                    if cache_key in st.session_state and st.session_state[cache_key] and st.session_state[cache_key]["count"] % 3 == 0:
+                        st.text("using cached prompt")
+                        gemini_api_prompt = st.session_state[cache_key]["data"]
+                        st.session_state[cache_key]["count"] = st.session_state[cache_key]["count"] + 1
+                    else:
+
+                        gemini_api_prompt = claude(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with
                                                      'Learn More Here >>' in appropriate language\ \nshould be low quality design and very enticing and alerting!!, don't make specific promises like x% discount and 'act fast' or 'limited available'  \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
                                                      if you want to add a caption, specifically instruct it to be on the image. and be short
                                                      """, is_thinking=False)
+                        if cache_key not in st.session_state or not isinstance(st.session_state.get(cache_key), dict):
+                            st.session_state[cache_key] = {"data": "", "count": 0}
+                        st.session_state[cache_key]["data"] = gemini_api_prompt
+                        st.session_state[cache_key]["count"] = st.session_state[cache_key].get("count", 0) + 1
                                             
                 elif template_str == 'gemini7batch':
                     gemini_api_prompt = gemini_text_lib(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with
