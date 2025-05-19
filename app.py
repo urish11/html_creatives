@@ -1615,7 +1615,7 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
                                                      """, is_thinking=False)
                 elif template_str == 'gemini7claude_think':
                     cache_key = cache_key + template_str
-                    if cache_key in st.session_state and st.session_state[cache_key] and st.session_state[cache_key]["count"] % 3 == 0:
+                    if cache_key in st.session_state and st.session_state[cache_key] and st.session_state[cache_key]["count"] % 2 == 0:
                         st.text("using cached prompt")
                         gemini_api_prompt = st.session_state[cache_key]["data"]
                         st.session_state[cache_key]["count"] = st.session_state[cache_key]["count"] + 1
