@@ -1965,7 +1965,7 @@ if st.session_state.get('ad_creation_processing_active') and st.session_state.ad
     
     # Rerun for next ad task or to finish Phase 2
     if not st.session_state.ad_creation_task_queue:
-        st.progress((current_ad_idx) / total_ad_tasks if total_ad_tasks > 0 else 0)
+        st.progress((current_ad_idx+1) / total_ad_tasks if total_ad_tasks > 0 else 0)
         st.session_state.ad_creation_processing_active = False
         st.success(f"🎉 Phase 2: All {total_ad_tasks} ad creation tasks processed!")
         if total_ad_tasks > 0 or st.session_state.ad_creation_results_list : play_sound("audio/bonus-points-190035.mp3")
