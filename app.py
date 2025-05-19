@@ -1652,9 +1652,17 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
                     gemini_api_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use photos',''])}. add a CTA button with
                                                      'Learn More Here >>' in appropriate language\nshould be low quality and very enticing and alerting\ninclude the following text in the image '{headline_temp}'\nstart with 'square image aspect ratio of 1:1 of '\n\n example output:\n\nsquare image of a concerned middle-aged woman looking at her tongue in the mirror under harsh bathroom lighting, with a cluttered counter and slightly blurry focus — big bold red text says “Early Warning Signs?” and a janky yellow button below reads “Learn More Here >>” — the image looks like it was taken on an old phone, with off angle, bad lighting, and a sense of urgency and confusion to provoke clicks.
                                                  """, model="gpt-4o", temperature=1.0) # Note: original code had '{headline_temp}\nstart with...' this might need an extra space or review based on gemini_text output.
-                elif template_str == 'gemini4':
-                    gemini_api_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use photos',''])}. add a CTA button with
-                                                     'Learn More Here >>' in appropriate language and a driving enticing copy in the image\nMUST be be low quality design , stress that!! and very enticing and alerting,high energy enticing, describe the visuals\nstart with 'square image aspect ratio of 1:1 of '\n\n example output:\n\nsquare image of .....
+                elif template_str == 'gemini7_gpt':
+                    gemini_api_prompt = chatGPT(f"""write short  text prompt for
+generate square image promoting 'australia to antarctica ' in language french . add a CTA button with
+                                                     'Learn More Here >>' in appropriate language\ 
+should be low quality design and very enticing and alerting!!, don't make specific promises like x% discount and 'act fast' or 'limited available'  
+
+start with 'square image aspect ratio of 1:1 of '
+
+ be specific in what is shown . return JUST the best option, no intros
+                                                     if you want to add a caption, specifically instruct it to be on the image. and be short
+
                                                  """, model="gpt-4o", temperature=1.0)
                 elif template_str == 'gemini5':
                     gemini_prompt_angle = chatGPT(f"""For the topic  {topic}, imagine a highly specific and unusual moment in someone's everyday life that would visually hint at the condition — but in a confusing, unexpected way.\nThe moment should:\n– Feel personal, like something they might do alone out of worry or curiosity\n– Be visually simple but puzzling \n-High energy and dramatic\n– Create just enough mystery that the viewer thinks: "Wait… why would someone do that?"\n\nCome up with one clever, click-provoking scenario that could be captured in a smartphone photo, \n must be highly engaging visually for the topic, to be for image prompt.\nReturn just the angle, consicly in 1 sentence up to 16 words""", model="o1", temperature=0)
