@@ -345,7 +345,7 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0,reasoning_effort=''):
         else: 
             response = requests.post('https://api.openai.com/v1/responses', headers=headers, json=data)
             content = json.loads(response.content)['output'][0]['content'][0]['text']
-            # st.text(content)
+            st.text(content)
             return content
 
     except Exception as e:
