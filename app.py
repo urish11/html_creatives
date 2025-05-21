@@ -1712,7 +1712,7 @@ start with 'square image aspect ratio of 1:1 of '
                 if pil_image:
                     img_url_result = upload_pil_image_to_s3(pil_image, S3_BUCKET_NAME_SECRET, AWS_ACCESS_KEY_ID_SECRET, AWS_SECRET_ACCESS_KEY_SECRET, region_name=AWS_REGION_SECRET)
                     img_source_result = template # Use the specific gemini template name as source
-                    st.image(img_url_result)
+                    
                 else:
                     raise ValueError("Gemini image generation or S3 upload failed.")
     
@@ -1736,6 +1736,7 @@ start with 'square image aspect ratio of 1:1 of '
     
             # --- Accumulate result for Phase 1 ---
             if img_url_result:
+                st.image(img_url_result)
                 # Find or create group for this topic+lang
                 group = next((g for g in st.session_state.img_gen_results_accumulator if g['topic'] == task_to_process['original_topic'] and g['lang'] == lang), None)
                 if not group:
