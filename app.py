@@ -1499,6 +1499,7 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
     st.progress((current_idx) / total_tasks if total_tasks > 0 else 0)
     while img_url_result is None and trial < 5 :
         try:
+            st.image(img_url_result)
             # --- Process this single image generation task ---
             topic_for_api = task_to_process['current_topic']
             topic = topic_for_api
@@ -1736,7 +1737,7 @@ start with 'square image aspect ratio of 1:1 of '
     
             # --- Accumulate result for Phase 1 ---
             if img_url_result:
-                st.image(img_url_result)
+                
                 # Find or create group for this topic+lang
                 group = next((g for g in st.session_state.img_gen_results_accumulator if g['topic'] == task_to_process['original_topic'] and g['lang'] == lang), None)
                 if not group:
