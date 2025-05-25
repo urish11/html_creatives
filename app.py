@@ -6,7 +6,7 @@ import asyncio
 import sys
 import os
 import time
-import random 
+import random
 import string
 import requests
 import json
@@ -1498,17 +1498,7 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
     st.info(f"Phase 1: Processing task {current_idx + 1}/{total_tasks} - Topic: '{task_to_process['original_topic']}', Template: '{task_to_process['chosen_template']}' Trial : {trial}")
     st.progress((current_idx) / total_tasks if total_tasks > 0 else 0)
     while img_url_result is None and trial < 5 :
-       with st.expander("See Image"):
-          st.markdown(f"""<img src="{img_url_result}" alt="Italian Trulli">""")
-        # try:
-
-        #    # try:
-        #       # with st.expander("See Image"):
-
-           
-        #       #    st.image(img_url_result)
-        #  # except:pass
-            
+        try:
             # --- Process this single image generation task ---
             topic_for_api = task_to_process['current_topic']
             topic = topic_for_api
@@ -1722,7 +1712,7 @@ start with 'square image aspect ratio of 1:1 of '
                 if pil_image:
                     img_url_result = upload_pil_image_to_s3(pil_image, S3_BUCKET_NAME_SECRET, AWS_ACCESS_KEY_ID_SECRET, AWS_SECRET_ACCESS_KEY_SECRET, region_name=AWS_REGION_SECRET)
                     img_source_result = template # Use the specific gemini template name as source
-                    
+                    st.image(img_url_result)
                 else:
                     raise ValueError("Gemini image generation or S3 upload failed.")
     
@@ -1746,7 +1736,6 @@ start with 'square image aspect ratio of 1:1 of '
     
             # --- Accumulate result for Phase 1 ---
             if img_url_result:
-                
                 # Find or create group for this topic+lang
                 group = next((g for g in st.session_state.img_gen_results_accumulator if g['topic'] == task_to_process['original_topic'] and g['lang'] == lang), None)
                 if not group:
