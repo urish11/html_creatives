@@ -1647,7 +1647,7 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
                                                      """, is_thinking=False)
                 elif template_str == 'gemini7claude_sentence':
                     gemini_api_prompt = claude(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with
-                                                     'Learn More Here >>' in appropriate language\ \nshould be low quality design and very enticing and alerting!! add a convincing sentence to the image at least 10 words, big and legiable at least 50% of image, don't make specific promises like x% discount and 'act fast' or 'limited available'  \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
+                                                     'Learn More Here >>' in appropriate language\ \nshould be low quality design and very enticing and alerting!! add a convincing sentence to the image at least 13 words, big and legiable at least 50% of image, don't make specific promises like x% discount and 'act fast' or 'limited available'  \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
                                                      if you want to add a caption, specifically instruct it to be on the image. and be short
                                                      """, is_thinking=False)
                                     
