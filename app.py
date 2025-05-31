@@ -1433,7 +1433,7 @@ with st.container(border=False):
                      "lang": ["english"],
                       "count": [2],
 
-                      "template": ["2,3,4,41,42,5,6,7,gemini,gemini2,gemini7,gemini7claude,geminicandid,geministock,gemini7claude_simple,gemini_comic,geminiclaude_comic,gemini7_flash,gemini_redraw,gemini7claude_think,gemini7_learmlm,gemini7_gpt,gemini7_grok,gemini7claude_sentence  | use , for random template  " ], # Template 3 for google, 5 for product
+                      "template": ["2,3,4,41,42,5,6,7,gemini,gemini2,gemini7,gemini7claude,geminicandid,geministock,gemini7claude_simple,gemini_comic,geminiclaude_comic,gemini7_flash,gemini_redraw,gemini7claude_think,gemini7_learmlm,gemini7_gpt,gemini7_grok,gemini7claude_sentence,gemini7claude_question  | use , for random template  " ], # Template 3 for google, 5 for product
                       "imgs_redraw":[""]}), # For gemini_redraw
         num_rows="dynamic",
         key="phase1_input_editor"
@@ -1646,6 +1646,13 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
                                                      'Learn More Here >>' in appropriate language\ \nshould be low quality design and very enticing and alerting!!, don't make specific promises like x% discount and 'act fast' or 'limited available'  \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
                                                      if you want to add a caption, specifically instruct it to be on the image. and be short
                                                      """, is_thinking=False)
+               elif template_str == 'gemini7claude_question':
+                    gemini_api_prompt = claude(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with
+                                                     'Learn More Here >>' in appropriate language\ \n use  a curiosity-driven headline in that emphasizes  interest in solutions related to the topic. Keep the tone persuasive and newsy and as a question if convincing\n \nshould be low quality design and very enticing and alerting!!, don't make specific promises like x% discount and 'act fast' or 'limited available'  \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
+                                                     if you want to add a caption, specifically instruct it to be on the image. and be short
+                                                     """, is_thinking=False)
+
+                              
                 elif template_str == 'gemini7claude_sentence':
                     gemini_api_prompt = claude(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with
                                                      'Learn More Here >>' in appropriate language\ \nshould be low quality design and very enticing and alerting!! add a convincing sentence to the image at least 13 words, big and legiable at least 50% of image, don't make specific promises like x% discount and 'act fast' or 'limited available'  \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
