@@ -98,7 +98,33 @@ def play_sound(audio_file_path):
         st.markdown(md, unsafe_allow_html=True)
 
 
-
+def gen_flux_img(prompt, height=784, width=960):
+    """
+    Generate images using FLUX model from the Together.xyz API.
+    """
+    while True:
+        try:
+            url = "https://api.together.xyz/v1/images/generations"
+            payload = {
+                "prompt": prompt,
+                "model": "black-forest-labs/FLUX.1-schnell-Free",
+                "steps": 4,
+                "n": 1,
+                "height": height,
+                "width": width,
+            }
+            headers = {
+                "accept": "application/json",
+                "content-type": "application/json",
+                "authorization": f"Bearer {random.choice(FLUX_API_KEY)}"
+            }
+            response = requests.post(url, json=payload, headers=headers)
+            return response.json()["data"][0]["url"]
+        except Exception as e:
+            print(e)
+            if "NSFW" in str(e):
+                return None
+            time.sleep(2)
 
 #@log_function_call
 def install_playwright_browsers():
@@ -317,102 +343,7 @@ def chatGPT(prompt, model="gpt-4o", temperature=1.0,reasoning_effort=''):
         return None
 
 
-def claude(prompt , model = "claude-3-7-sonnet-20250219", temperature=1 , is_thinking = False, max_retries = 10):
-    if is_pd_policy : prompt += "make sure u follow these rules!: " + predict_policy
-    tries = 0
 
-    while tries < max_retries:
-        try:
-        
-        
-        
-            client = anthropic.Anthropic(
-            # defaults to os.environ.get("ANTHROPIC_API_KEY")
-            api_key=st.secrets["ANTHROPIC_API_KEY"])
-        
-            if is_thinking == False:
-                    
-                message = client.messages.create(
-                    
-                model=model,
-                max_tokens=20000,
-                temperature=temperature,
-                
-                top_p= 0.8,
-
-                messages=[
-                    {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "text",
-                                "text": prompt
-                            }
-                        ]
-                    }
-                ]
-            )
-                return message.content[0].text
-            if is_thinking == True:
-                message = client.messages.create(
-                    
-                model=model,
-                max_tokens=20000,
-                temperature=temperature,
-                messages=[
-                    {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "text",
-                                "text": prompt
-                            }
-                        ]
-                    }
-                ],
-                thinking = { "type": "enabled",
-                "budget_tokens": 16000}
-            )
-                return message.content[1].text
-        
-        
-        
-            print(message)
-            return message.content[0].text
-
-        except Exception as e:
-            st.text(e)
-            tries += 1 
-            time.sleep(5)
-
-#@log_function_call
-def gen_flux_img(prompt, height=784, width=960):
-    """
-    Generate images using FLUX model from the Together.xyz API.
-    """
-    while True:
-        try:
-            url = "https://api.together.xyz/v1/images/generations"
-            payload = {
-                "prompt": prompt,
-                "model": "black-forest-labs/FLUX.1-schnell-Free",
-                "steps": 4,
-                "n": 1,
-                "height": height,
-                "width": width,
-            }
-            headers = {
-                "accept": "application/json",
-                "content-type": "application/json",
-                "authorization": f"Bearer {random.choice(FLUX_API_KEY)}"
-            }
-            response = requests.post(url, json=payload, headers=headers)
-            return response.json()["data"][0]["url"]
-        except Exception as e:
-            print(e)
-            if "NSFW" in str(e):
-                return None
-            time.sleep(2)
 
 def gen_gemini_image(prompt, trys = 0):
 
@@ -1309,61 +1240,10 @@ st.title("Creative Maker ")
 if 'generated_images' not in st.session_state:
     st.session_state.generated_images = {}
 
-# with st.expander(f"Click to see examples for templates ", expanded=False):
-#     # --- Content inside the expander ---
-
-#     image_list =  [
-#     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744112392_1276.png", "caption": "2"},
-#     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744114470_4147.png", "caption": "3"},
-#     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744114474_6128.png", "caption": "3"},
-#     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744112152_3198.png", "caption": "4"},
-#     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744112606_9864.png", "caption": "5"},
-#     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744112288_6237.png", "caption": "6 (image as is)"},
-#     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744114000_7129.png", "caption": "'google' in topic, google image search, use w/ templates 1-6"},
-
-#     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744111656_7460.png", "caption": "gemini"},
-#     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744111645_6029.png", "caption": "gemini7"},
-#      {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1743927991_4259.png", "caption": "gemini7"},
-
-#     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1743411423_1020.png", "caption": "gemini7"},
-#     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744098746_6749.png", "caption": "gemini7claude"},
-#     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744107557_6569.png", "caption": "geminicandid"},
-#     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744107067_6826.png", "caption": "geminicandid"},
-#     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744107348_8664.png", "caption": "geminicandid"},
-#     {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744212220_8873.png", "caption": "geministock"},
-#      {"image": "https://image-script.s3.us-east-1.amazonaws.com/image_1744716627_8304.png", "caption": "gemini7claude_simple"}
-
-
-
-# ]
-    # # Define number of columns for the grid
-    # num_columns = 6 # You can change this number
-
-    # # Calculate number of rows needed
-    # num_images = len(image_list)
-    # num_rows = (num_images + num_columns - 1) // num_columns # Ceiling division
-
-    # # Create the grid *inside* the expander
-    # for i in range(num_rows):
-    #     cols = st.columns(num_columns) # Create columns for the current row
-    #     # Get the slice of images for the current row
-    #     row_images = image_list[i * num_columns : (i + 1) * num_columns]
-
-    #     # Populate columns with images and captions
-    #     for j, item in enumerate(row_images):
-    #         if item: # Check if there's an item
-    #             # Use the j-th column *within the expander*
-    #             with cols[j]:
-    #                 st.image(
-    #                     item["image"],
-    #                     use_container_width=True
-    #                     )
-    #                 st.caption(item["caption"])
 
 
 st.subheader("Enter Topics for Image Generation")
 df = st.data_editor(
-    # pd.DataFrame({"topic": ["example_topic"], "count": [1], "lang": ["english"], "template": ["2,3,4,41,42,5,6,7,gemini,gemini2,gemini7,gemini7claude,geminicandid,geministock,gemini7claude_simple,geminiclaude_comic,gemini7_comic | use , for random template"]}),
     pd.DataFrame({"topic": ["example_topic"], "count": [1], "lang": ["english"], "template": [""]}),
 
     num_rows="dynamic",
@@ -1465,13 +1345,7 @@ if st.button("Generate Images"):
                         gemini_prompt = chatGPT(f""" write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use authentic photos', 'no special photo requirement'])}.\nmake it visually engaging and emotionally intriguing.\nadd a bold CTA button with 'Learn More Here >>' in appropriate language.\nstart the prompt with 'square image aspect ratio of 1:1 of '\nmake sure the image grabs attention and sparks curiosity.\n
                                             """,model="gpt-4o")
 
-                    if template_str == 'geminicandid':
-                        gemini_prompt = claude(f"""write a image prompt of a candid unstaged photo taken of a regular joe showing off his\her {topic} . the image is taken with smartphone candidly. in 1-2 sentences. Describe the quality of the image looking smartphone. start with "Square photo 1:1 iphone 12 photo uploaded to reddit:"
-
-                        this is for a fb ad that tries to look organic, but also make the image content intecing and somewhat perplexing, so try to be that but also draw clicks with high energy in the photo. dont make up facts like discounts! or specific prices! no text overlay on image
-                            """, is_thinking=True).replace("#","")
-                                            # if you want to add a caption, specifically instruct it to be on the image. and be short in language {lang}
-
+               
                     if template_str == 'gemini':
                         gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} {random.choice(['use photos',''])}. add a CTA button with 
                                                 'Learn More Here >>' in appropriate language\nshould be low quality and very enticing and alerting\nstart with 'square image aspect ratio of 1:1 of '\n\n example output:\n\nsquare image of a concerned middle-aged woman looking at her tongue in the mirror under harsh bathroom lighting, with a cluttered counter and slightly blurry focus — big bold red text says “Early Warning Signs?” and a janky yellow button below reads “Learn More Here >>” — the image looks like it was taken on an old phone, with off angle, bad lighting, and a sense of urgency and confusion to provoke clicks.
@@ -1492,68 +1366,8 @@ if st.button("Generate Images"):
                             return JUST the best option, no intros
                             """)
 
-                    if template_str == 'geminiclaude_comic':
-                        gemini_prompt  = claude(f"""write short prompt for
-                            generate square image promoting '{topic}' in language {lang}. add a CTA button with 
-                            'Learn More Here >>' in appropriate language
-                            
-                            should be low quality, very enticing and alerting . use saturated color theme (e.g. red, blue, green, or pink), just one. 
-                            image should be chaotic but readable, styled like a square ad that grabs attention.
-                            
-                            start with 'square image aspect ratio of 1:1 of'
-                            
-                            be specific in what is shown: include a person interacting with the product or benefit, big bold text in {lang}, and bright graphic elements like rays or dots in the background.
-                            
-                            return JUST the best option, no intros
-                            """ ,is_thinking=True)
-
 
                     
-                    if template_str == 'gemini7': # gemini1 with geimini text
-                        if cache_key in st.session_state and st.session_state[cache_key] and st.session_state[cache_key]["count"] % 2 != 0:
-                            st.text("using cached prompt")
-                            gemini_prompt = st.session_state[cache_key]["data"]
-                            st.session_state[cache_key]["count"] = st.session_state[cache_key]["count"] +1
-                        else:
-                            gemini_prompt = gemini_text_lib(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
-                                                    'Learn More Here >>' in appropriate language\\nand 'act fast' or 'limited available' \n \nshould be low quality and very enticing and alerting!! \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
-                            """)
-                            st.session_state[cache_key]["data"] = gemini_prompt
-                            st.session_state[cache_key]["count"] = st.session_state[cache_key]["count"] +1
-
-                    if template_str == 'gemini_redraw':
-                        prompt_txt ="""describe this image in details, only descibe what is seen visually! , especially the layout. start with 'square image aspect ratio of 1:1 of. if theres overlay image on the text, mention it with text in original language, especially the CTA text!  """ 
-                        gemini_prompt = gemini_text_lib( prompt_txt  , model ="gemini-2.0-flash-exp-image-generation",
-                                                         is_with_file=True, file_url=random.choice(lang.split("|")))                        
-                        
-                        if is_pd_policy:
-                            gemini_prompt = gemini_text_lib(f"given (keep original text overlay text language, also CTA text!!) this image prompt, edit it, dont change the text prompt at all , but  only follow the following rules, if some element dosent comply, edit it so it does comlply (just this text part) , input{gemini_prompt} rules,no sensetional pushing phrasing urgent, FOMO text , return JUST the output no intros:" + predict_policy,model = "gemini-2.0-flash-exp")
-                    if template_str == 'gemini7claude': # gemini1 with geimini text
-                        gemini_prompt = claude(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
-                                                'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting!!, don't make specific promises like x% discount and 'act fast' or 'limited available'  \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
-                                                if you want to add a caption, specifically instruct it to be on the image. and be short
-
-                            """, is_thinking=False)
-                    if template_str == 'gemini7batch': # gemini1 with geimini text
-                        gemini_prompt = gemini_text_lib(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
-                                                'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the {count} best options, each prompt is a FULL PROMPT !! each at least 500 chrs(dont write it),be creative and have variance between the prompts, no intros , as json key is int index , it's value is the prompt. .
-
-                            """)
-                    if template_str == 'gemini7claude_simple': # gemini1 with geimini text
-                        gemini_prompt = claude(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
-                                                'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting!!!! BUT simple  layout , make the text legable and in negative space, don't make specific promises like x% discount and 'act fast' or 'limited available'    \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
-                                                if you want to add a caption, specifically instruct it to be on the image. and be short
-
-                            """, is_thinking=False)
-                        gemini_prompt= gemini_prompt.replace('```json','').replace("```","").replace("python","")
-
-                            
-
-                    if template_str == 'gemini8': # gemini1 with geimini text
-                        gemini_prompt = chatGPT(f"""write short prompt for\ngenerate square image promoting '{topic}' in language {lang} . add a CTA button with 
-                                                'Learn More Here >>' in appropriate language\ \nshould be low quality and very enticing and alerting \n\nstart with 'square image aspect ratio of 1:1 of '\n\n be specific in what is shown . return JUST the best option, no intros
-
-                            """,model='o3-mini', temperature= 0,reasoning_effort='high') 
                     if template_str == 'gemini6':
                         cleaned_topic= re.sub('\\|.*','',topic)
                         headline_temp =gemini_text(f"""write 1 statement,kinda clickbaity, very consice and action click driving, same length, no quotes, for {cleaned_topic} in {lang}. Examples:\n'Surprising Travel Perks You Might Be Missing'\n 'Little-Known Tax Tricks to Save Big'\n Dont mention 'Hidden' or 'Unlock'.\nmax  6 words""")
