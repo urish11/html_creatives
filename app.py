@@ -8,7 +8,6 @@ import random
 import string
 import requests
 from google import genai
-import anthropic
 import json
 import base64
 import os
@@ -18,16 +17,16 @@ from tempfile import NamedTemporaryFile
 import re
 import math
 from google_images_search import GoogleImagesSearch
-import openai  # NEW: For DALL-E variations
+import openai 
 import logging
 from openai import OpenAI
 import tempfile
 # Configure logging
-# logging.basicConfig(
-#     format='%(asctime)s [%(levelname)s] %(name)s - %(message)s', 
-#     level=logging.DEBUG
-# )
-# logger = logging.getLogger(__name__)
+logging.basicConfig(
+    format='%(asctime)s [%(levelname)s] %(name)s - %(message)s', 
+    level=logging.DEBUG
+)
+logger = logging.getLogger(__name__)
 
 # Set your OpenAI key for DALL-E
 openai.api_key = st.secrets.get("OPENAI_API_KEY")
