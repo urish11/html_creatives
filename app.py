@@ -178,7 +178,7 @@ def upload_pil_image_to_s3(
     aws_secret_access_key, 
     object_name='',
     region_name='us-east-1', 
-    image_format='PNG'
+    image_format='JPEG'
 ):
     """
     Upload a PIL image to S3 in PNG (or other) format.
@@ -195,7 +195,7 @@ def upload_pil_image_to_s3(
             object_name = f"image_{int(time.time())}_{random.randint(1000, 9999)}.{image_format.lower()}"
 
         img_byte_arr = BytesIO()
-        image.save(img_byte_arr, format="JPEG", quality= 60)
+        image.save(img_byte_arr, format=image_format, quality= 60)
         img_byte_arr.seek(0)
 
         s3_client.put_object(
