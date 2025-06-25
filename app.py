@@ -1501,7 +1501,7 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
     while img_url_result is None and trial < 5 :
         try:
             # --- Process this single image generation task ---
-            topic_for_api = task_to_process['current_topic']
+            topic_for_api = task_to_process['current_topic'].strip()
             topic = topic_for_api
             lang = task_to_process['lang']
             template = task_to_process['chosen_template']
