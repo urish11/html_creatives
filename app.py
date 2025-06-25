@@ -1993,7 +1993,7 @@ if st.session_state.get('ad_creation_processing_active') and st.session_state.ad
 
         final_ad_s3_url = upload_pil_image_to_s3(
             screenshot_img_bytes, S3_BUCKET_NAME_SECRET, AWS_ACCESS_KEY_ID_SECRET, AWS_SECRET_ACCESS_KEY_SECRET,
-            region_name=AWS_REGION_SECRET, image_format='PNG' # Screenshots are PNG
+            region_name=AWS_REGION_SECRET, image_format='JPEG' # Screenshots are PNG
         )
         if not final_ad_s3_url:
             raise ValueError("Failed to upload final ad screenshot to S3.")
