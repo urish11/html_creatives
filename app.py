@@ -72,7 +72,31 @@ PREDICT_POLICY = """  Approved CTAs: Use calls-to-action like "Learn More" or "S
 GLOBAL_IMAGE_COLS_FOR_DATAFRAME = [] # To be populated before creating the final CSV
 
 # --- Helper Functions (Copied from your script) ---
+def google_sheets_append_df(spreadsheet_id,range_name, df_data_input ):
+    # Load credentials from Streamlit secrets
+    credentials_dict = st.secrets["gcp_service_account"]
+    creds = service_account.Credentials.from_service_account_info(
+        credentials_dict,
+        scopes=["https://www.googleapis.com/auth/spreadsheets"]
+    )
 
+
+    service = build("sheets", "v4", credentials=creds)
+    
+    body = {"values": df_data_input.values.tolist()}
+    try:
+        # Append the row
+        result = service.spreadsheets().values().append(
+            spreadsheetId=spreadsheet_id,
+            range=range_name,
+            valueInputOption="RAW",
+            insertDataOption="INSERT_ROWS",
+            body=body
+        ).execute()
+
+        st.success(f"Row added: {result['updates']['updatedRange']}")
+    except Exception as e:
+        st.text(f"error google_sheets_append_row:  {e}")
 def shift_left_and_pad(row):
     """
     Utility function to left-shift non-null values in each row
@@ -2086,6 +2110,7 @@ if not st.session_state.get('img_gen_processing_active') and \
         # output_df[image_data_cols] = output_df[image_data_cols].apply(shift_left_and_pad, axis=1)
 
         st.dataframe(output_df)
+        google_sheets_append_df("13TOgYTYpVV0ysvKqufS2Q5RDdgTP097x1hH_eMtCL4w","HTML_Creatives!A1",output_df  )
         csv_data = output_df.to_csv(index=False).encode('utf-8')
         st.download_button(
             label="Download Final Results as CSV",
