@@ -1527,12 +1527,12 @@ if st.session_state.get('img_gen_processing_active') and st.session_state.img_ge
     total_tasks = st.session_state.img_gen_total_tasks
     task_to_process = st.session_state.img_gen_task_queue[0]
     st.info(f"Phase 1: Processing task {current_idx + 1}/{total_tasks} - Topic: '{task_to_process['original_topic']}', Template: '{task_to_process['chosen_template']}' Trial : {trial}")
+    st.progress((current_idx) / total_tasks if total_tasks > 0 else 0)
 
     with st.status("Proccessing Log"):
     
        
        img_url_result = None
-       st.progress((current_idx) / total_tasks if total_tasks > 0 else 0)
        while img_url_result is None and trial < 5 :
            try:
                # --- Process this single image generation task ---
