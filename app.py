@@ -15,7 +15,8 @@ import tempfile
 import re
 import math
 from google import genai 
-   
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
 # API Client Libraries (ensure these are installed)
 from playwright.sync_api import sync_playwright, Playwright
 import boto3
