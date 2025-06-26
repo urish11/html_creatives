@@ -1492,7 +1492,7 @@ if st.button("🚀 Start Phase 1: Generate Raw Images (Queued)", type="primary",
 if st.session_state.get('img_gen_processing_active') and st.session_state.img_gen_task_queue:
     st.info(f"Phase 1: Processing task {current_idx + 1}/{total_tasks} - Topic: '{task_to_process['original_topic']}', Template: '{task_to_process['chosen_template']}' Trial : {trial}")
 
-    with st.status("Proccessing Log:"):
+    with st.status("Proccessing Log"):
     
        trial = 1
        task_to_process = st.session_state.img_gen_task_queue[0]
