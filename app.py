@@ -26,6 +26,7 @@ import openai # For DALL-E and potentially other OpenAI models
 from openai import OpenAI as OpenAIClient # Explicitly for the client
 from google import genai as google_genai # For Gemini
 import anthropic
+from datetime import datetime
 # Set up page config
 st.set_page_config(layout="wide",page_title= "Creative Gen", page_icon="🎨")
 
