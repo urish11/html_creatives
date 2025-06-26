@@ -88,7 +88,7 @@ def google_sheets_append_df(spreadsheet_id,range_name, df_data_input ):
     service = build("sheets", "v4", credentials=creds)
     time_now = [datetime.now(ZoneInfo("Asia/Jerusalem")).strftime("%Y-%m-%d %H:%M")]
     df_list = df_data_input.values.tolist()
-    for idx in len(df_list):
+    for idx in range(len(df_list)):
         df_list[idx] = [time_now] + df_list[idx]
         
     
