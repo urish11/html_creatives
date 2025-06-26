@@ -11,4 +11,4 @@ google-genai
 anthropic
 aioboto3
 google
-googleapiclient
+google-api-python-client
