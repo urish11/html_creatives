@@ -307,7 +307,7 @@ def gemini_text(
         print(f"An unexpected error occurred: {e}")
         return None
 
-def gemini_text_lib(prompt,model ='gemini-2.5-pro', is_with_file=False,file_url = None ): # gemini-2.5-pro-exp-03-25
+def gemini_text_lib(prompt,model ='gemini-2.5-pro-preview-06-05', is_with_file=False,file_url = None ): # gemini-2.5-pro-exp-03-25
     if is_pd_policy_global : prompt += PREDICT_POLICY
     st.text(prompt)
 #st.text(prompt)
